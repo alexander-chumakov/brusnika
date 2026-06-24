@@ -4,7 +4,9 @@
  *
  * Pixel-faithful port of index.html lines 131-174.
  * Data from getCollection('tracks') — the v1→v2 CMS seam (FND-05, D-07).
- * Includes #now-playing bar markup (D-04 throwaway demo; Phase 2 deletes this + demo-player.js).
+ *
+ * Phase 2: demo player removed. AudioPlayer.astro island renders after this
+ * component in index.astro and reads data-audio-url from each .track button.
  *
  * Streaming links: Spotify + YouTube real; Яндекс Музыка placeholder '#' (D-02/D-03).
  * Mobile: track-time column hidden; grid-template-columns overridden by global.css.
@@ -50,6 +52,7 @@ const headerStreaming = headerStreamingLabels
         class="track"
         data-i={t.data.number}
         data-title={t.data.title}
+        data-audio-url={t.data.audioUrl ?? ''}
       >
         <span class="track-num">{t.data.number}</span>
         <span class="track-info">
@@ -62,49 +65,6 @@ const headerStreaming = headerStreamingLabels
     ))}
   </div>
 </section>
-
-<!-- NOW PLAYING BAR — D-04 throwaway demo; Phase 2 replaces with real audio island -->
-<div id="now-playing" class="now-playing">
-  <div class="np-eq">
-    <span class="np-bar"></span>
-    <span class="np-bar np-bar-2"></span>
-    <span class="np-bar np-bar-3"></span>
-    <span class="np-bar np-bar-4"></span>
-  </div>
-  <div class="np-info">
-    <div class="np-label">сейчас играет · демо</div>
-    <div id="np-title" class="np-title"></div>
-  </div>
-  <div id="np-index" class="np-index"></div>
-  <button id="np-close" class="icon-btn np-close">×</button>
-</div>
-
-<!--
-  D-04 throwaway demo player — verbatim IIFE from index.html lines 413-425.
-  Source file: src/scripts/demo-player.js
-  Isolation: Phase 2 deletes this <script is:inline> block and src/scripts/demo-player.js.
-  Why is:inline on a <script> block (not <script src>): Astro bundles bare <script> with Vite,
-  which can transform/split the IIFE. is:inline prevents bundling and preserves the verbatim IIFE.
-  (Assumption A2 resolved: is:inline on a <script> BLOCK works; is:inline on <script src> does not
-  inline the file — it just bypasses Vite but still emits a src= tag that breaks relative paths.)
--->
-<script is:inline>
-(function demoDemoPlayer() {
-  var npBar = document.getElementById('now-playing');
-  var npTitle = document.getElementById('np-title');
-  var npIndex = document.getElementById('np-index');
-  document.querySelectorAll('.track').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      npTitle.textContent = btn.dataset.title;
-      npIndex.textContent = 'трек ' + btn.dataset.i;
-      npBar.style.display = 'flex';
-    });
-  });
-  document.getElementById('np-close').addEventListener('click', function () {
-    npBar.style.display = 'none';
-  });
-})();
-</script>
 
 <style>
   .tracks-section {
@@ -217,83 +177,5 @@ const headerStreaming = headerStreamingLabels
     .track-time {
       display: none;
     }
-  }
-
-  /* NOW PLAYING BAR */
-  .now-playing {
-    display: none;
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 60;
-    backdrop-filter: blur(16px);
-    background: rgba(6, 6, 6, 0.92);
-    border-top: 1px solid rgba(243, 169, 189, 0.4);
-    padding: 14px 28px;
-    align-items: center;
-    gap: 20px;
-  }
-
-  .np-eq {
-    display: flex;
-    align-items: flex-end;
-    gap: 3px;
-    height: 22px;
-  }
-
-  .np-bar {
-    width: 3px;
-    height: 100%;
-    background: var(--color-accent);
-    border-radius: 2px;
-    transform-origin: bottom;
-    animation: eq 1s ease-in-out infinite;
-  }
-
-  .np-bar-2 {
-    animation-duration: 1.1s;
-    animation-delay: 0.2s;
-  }
-
-  .np-bar-3 {
-    animation-duration: 0.9s;
-    animation-delay: 0.4s;
-  }
-
-  .np-bar-4 {
-    animation-duration: 1.2s;
-    animation-delay: 0.1s;
-  }
-
-  .np-info {
-    flex: 1;
-  }
-
-  .np-label {
-    font-size: 12px;
-    color: var(--color-text-subtle);
-    letter-spacing: 0.5px;
-  }
-
-  .np-title {
-    font-family: var(--font-serif);
-    font-size: 18px;
-    color: var(--color-text);
-  }
-
-  .np-index {
-    font-family: var(--font-mono);
-    font-size: 13px;
-    color: var(--color-text-dim);
-  }
-
-  .np-close {
-    all: unset;
-    cursor: pointer;
-    color: var(--color-text-muted);
-    font-size: 20px;
-    padding: 4px 10px;
-    line-height: 1;
   }
 </style>
