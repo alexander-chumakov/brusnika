@@ -65,7 +65,7 @@ Plans:
   3. Clicking the video poster opens inline playback with browser controls; video plays `playsinline` on iOS without forced fullscreen; video does not autoplay on page load
   4. Clicking a gallery photo opens it fullscreen in a lightbox; visitor can advance and go back using arrow buttons, keyboard left/right, and mobile swipe; an image counter shows position (e.g. "3 / 12"); pressing Escape, clicking ×, or tapping outside closes the lightbox
 
-**Plans:** 2/4 plans executed
+**Plans:** 3/4 plans executed
 Plans:
 **Wave 1**
 
@@ -74,7 +74,7 @@ Plans:
 **Wave 2** *(blocked on Wave 1 completion; these two run in parallel — no shared files)*
 
 - [x] 02-02-PLAN.md — Audio island: real <audio> player, now-playing bar controls, auto-advance + fade, buffering state; delete demo player (AUD-01/02/03/04/05)
-- [ ] 02-03-PLAN.md — Gallery lightbox: PhotoSwipe 5 over the existing grid, dark/pink theming, optional captions (GAL-01/02/03)
+- [x] 02-03-PLAN.md — Gallery lightbox: PhotoSwipe 5 over the existing grid, dark/pink theming, optional captions (GAL-01/02/03)
 
 **Wave 3** *(blocked on Wave 2 — shares index.astro with 02-02)*
 
@@ -122,7 +122,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Static Site | 4/4 | Complete   | 2026-06-24 |
-| 2. Media Islands | 2/4 | In Progress|  |
+| 2. Media Islands | 3/4 | In Progress|  |
 | 3. Sharing & Booking | 0/? | Not started | - |
 | 4. Pre-Launch Verification | 0/? | Not started | - |
 

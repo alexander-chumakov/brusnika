@@ -8,8 +8,8 @@ progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 8
-  completed_plans: 6
-  percent: 38
+  completed_plans: 7
+  percent: 88
 ---
 
 # Project State: внимание брусника! — Band Website
@@ -30,10 +30,10 @@ progress:
 ## Current Position
 
 Phase: 02 (media-islands) — EXECUTING
-Plan: 2 of 4 complete (02-01 CDN/content + 02-02 audio player); 02-03 lightbox in progress
-**Plan:** Plan 02-02 complete — AudioPlayer.astro island (real CDN audio: play/pause, next, auto-advance w/ fade/gap, buffering, × dismiss; AUD-01..05), demo player removed, hero «слушать» play CTA, desktop volume control (SVG icons), brusnika "play" animation (final form). User approved at human-verify checkpoint.
+Plan: 3 of 4 complete (02-01 CDN/content + 02-02 audio player + 02-03 gallery lightbox); 02-04 video section remaining
+**Plan:** Plan 02-03 complete — PhotoSwipe 5 fullscreen gallery lightbox (anchor-wrapped grid, id="gallery-grid", bundled <script> avoiding the is:inline CSS-bundling pitfall, dark/pink theme, native arrows/keyboard/swipe + N/M counter + 3 close methods; GAL-01..03). D-18 captions wired via data-pswp-caption + hidden span + uiRegister; 2 of 5 photos captioned; post-checkpoint legibility fix made captions a high-contrast bottom-center pill (commit 6bb8818). User approved at human-verify checkpoint.
 **Status:** Executing Phase 02
-**Progress:** [███████░░░] 75%
+**Progress:** [████████░░] 88%
 
 ---
 
@@ -80,6 +80,8 @@ Plan: 2 of 4 complete (02-01 CDN/content + 02-02 audio player); 02-03 lightbox i
 | .js-reveal added via render-blocking inline <script> in <head> | Prevents flash-then-hide — class must be set BEFORE first paint; prefers-reduced-motion skips it entirely |
 | site.ts typed singletons drive all outbound links (LINK-01/02) | Single source of truth for Phase 4 placeholder fill-in; streamingLinks ordered Яндекс/VK first per LINK-01 |
 | LessonsModal placed in Layout.astro (not index.astro) | Available globally on any Layout-using page; keeps IIFEs co-located with markup |
+| PhotoSwipe init in a standard bundled <script> (never is:inline) | is:inline bypasses Vite so photoswipe/style.css is silently dropped on the Vercel prod build (#11035); standard script bundles the CSS — verified in dist/_astro/*.css |
+| Lightbox captions = bottom-center dark pill (scrim + bright text), hidden when empty | Muted no-backing captions were unreadable over photos (user feedback); text-over-photo needs a semi-transparent scrim; D-18 captionless photos show counter only |
 
 ### External Prerequisites
 
