@@ -19,10 +19,10 @@ Requirements for the initial private (noindex) release. v1 = the complete final 
 
 ### Audio
 
-- [ ] **AUD-01**: Visitor can play a track on-site by clicking it in the track list
-- [ ] **AUD-02**: A sticky now-playing bar shows the active track (title, number, animated EQ) and persists while scrolling
-- [ ] **AUD-03**: Visitor can pause/resume the active track; clicking a different track switches playback (only one plays at a time)
-- [ ] **AUD-04**: Visitor can dismiss the now-playing bar to stop playback
+- [x] **AUD-01**: Visitor can play a track on-site by clicking it in the track list
+- [x] **AUD-02**: A sticky now-playing bar shows the active track (title, number, animated EQ) and persists while scrolling
+- [x] **AUD-03**: Visitor can pause/resume the active track; clicking a different track switches playback (only one plays at a time)
+- [x] **AUD-04**: Visitor can dismiss the now-playing bar to stop playback
 - [x] **AUD-05**: Audio files are served from CDN (Vercel Blob), never from the repo or a serverless function, and support seeking on iOS
 
 ### Video
@@ -33,9 +33,9 @@ Requirements for the initial private (noindex) release. v1 = the complete final 
 
 ### Gallery
 
-- [ ] **GAL-01**: Visitor can click a gallery photo to open it fullscreen in a lightbox
-- [ ] **GAL-02**: Visitor can navigate between photos (arrow buttons, keyboard, mobile swipe) with a position indicator
-- [ ] **GAL-03**: Visitor can close the lightbox (× button, click outside, Escape)
+- [x] **GAL-01**: Visitor can click a gallery photo to open it fullscreen in a lightbox
+- [x] **GAL-02**: Visitor can navigate between photos (arrow buttons, keyboard, mobile swipe) with a position indicator
+- [x] **GAL-03**: Visitor can close the lightbox (× button, click outside, Escape)
 
 ### Shows
 
@@ -109,17 +109,17 @@ Which phases cover which requirements. Populated during roadmap creation.
 | SHOW-02 | Phase 1 | Complete |
 | LINK-01 | Phase 1 | Complete |
 | LINK-02 | Phase 1 | Complete |
-| AUD-01 | Phase 2 | Pending |
-| AUD-02 | Phase 2 | Pending |
-| AUD-03 | Phase 2 | Pending |
-| AUD-04 | Phase 2 | Pending |
+| AUD-01 | Phase 2 | Complete |
+| AUD-02 | Phase 2 | Complete |
+| AUD-03 | Phase 2 | Complete |
+| AUD-04 | Phase 2 | Complete |
 | AUD-05 | Phase 2 | Complete |
 | VID-01 | Phase 2 | Complete |
 | VID-02 | Phase 2 | Complete |
 | VID-03 | Phase 2 | Complete |
-| GAL-01 | Phase 2 | Pending |
-| GAL-02 | Phase 2 | Pending |
-| GAL-03 | Phase 2 | Pending |
+| GAL-01 | Phase 2 | Complete |
+| GAL-02 | Phase 2 | Complete |
+| GAL-03 | Phase 2 | Complete |
 | SHARE-01 | Phase 3 | Pending |
 | SHARE-02 | Phase 3 | Pending |
 | SHARE-03 | Phase 3 | Pending |

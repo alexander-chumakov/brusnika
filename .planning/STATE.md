@@ -2,14 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-last_updated: "2026-06-25T01:05:00.000Z"
+status: ready_to_plan
+last_updated: 2026-06-24T22:32:43.971Z
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 8
   completed_plans: 8
   percent: 50
+stopped_at: Phase 02 complete (4/4) — ready to discuss Phase 3
 ---
 
 # Project State: внимание брусника! — Band Website
@@ -29,10 +30,10 @@ progress:
 
 ## Current Position
 
-Phase: 02 (media-islands) — COMPLETE (all 4 plans)
+Phase: 3
 Plan: 4 of 4 complete (02-01 CDN/content + 02-02 audio player + 02-03 gallery lightbox + 02-04 video clip section)
-**Plan:** Plan 02-04 complete — video clip section. VideoSection.astro renders ALL 9 CDN clips as PORTRAIT 9:16 cards in a horizontal CSS scroll-snap carousel (touch-swipe + ◂▸ desktop arrows); CDN poster + play button, no page autoplay (VID-02), preload="none". Clicking a card opens a YouTube-Shorts-style centered enlarge modal (native <video controls playsinline>, NOT browser-fullscreen) portaled to <body> (z-index 2000, above the nav); closed modal fully inert (pointer-events:none/visibility:hidden); × outside the video bounds; close via ×/Esc/backdrop. Starting a video pauses the audio player via a decoupled brusnika:video-play CustomEvent → AudioPlayer pausePlayback(). D-16 share hooks ready (data-clip-url/title + reserved 44×44 slot, no share button). Heading "Смотрите и делитесь с друзьями"; "клипы" (#clips) nav link added. 5 extra posters uploaded to CDN; upload-media.sh covers all 9. VID-01..03 satisfied. User approved on a real device. Commits: bee6d64, c46db22, ec52af5, dd32ec6, 7d3de19, c77ed16, 5dd3858, d097f08, c38277c, eca4c27.
-**Status:** Phase 02 complete — next: Phase 03 (Sharing & Booking)
+**Plan:** Not started
+**Status:** Ready to plan
 **Progress:** [█████░░░░░] 50% (2 of 4 phases complete; 8 of 8 planned plans across Phases 1–2)
 
 ---
