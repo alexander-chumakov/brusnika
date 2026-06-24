@@ -1,0 +1,294 @@
+---
+/**
+ * TracksSection.astro — «Синглы и любимое» track list
+ *
+ * Pixel-faithful port of index.html lines 131-174.
+ * Data from getCollection('tracks') — the v1→v2 CMS seam (FND-05, D-07).
+ * Includes #now-playing bar markup (D-04 throwaway demo; Phase 2 deletes this + demo-player.js).
+ *
+ * Streaming links: Spotify + YouTube real; Яндекс Музыка placeholder '#' (D-02/D-03).
+ * Mobile: track-time column hidden; grid-template-columns overridden by global.css.
+ */
+import { getCollection } from 'astro:content';
+
+const tracks = (await getCollection('tracks')).sort((a, b) =>
+  a.data.number.localeCompare(b.data.number)
+);
+---
+
+<section class="tracks-section">
+  <div data-reveal class="tracks-header">
+    <h3 class="tracks-title">Синглы и любимое</h3>
+    <div class="tracks-links">
+      <a
+        href="https://open.spotify.com/artist/11epkfgLUMWmXsTbgfPu4B"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="tracks-link"
+      >Spotify ↗</a>
+      <a
+        href="#"
+        class="tracks-link"
+      >Яндекс Музыка ↗</a>
+      <a
+        href="https://www.youtube.com/@vnimaniebrusnika"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="tracks-link"
+      >YouTube ↗</a>
+    </div>
+  </div>
+
+  <div data-reveal class="tracks-list">
+    {tracks.map((t, idx) => (
+      <button
+        class="track"
+        data-i={t.data.number}
+        data-title={t.data.title}
+      >
+        <span class="track-num">{t.data.number}</span>
+        <span class="track-info">
+          {t.data.title}{' '}
+          {t.data.subtitle && <span class="track-sub">{t.data.subtitle}</span>}
+        </span>
+        <span class="track-play">▶ слушать</span>
+        <span class="track-time">{t.data.displayDuration}</span>
+      </button>
+    ))}
+  </div>
+</section>
+
+<!-- NOW PLAYING BAR — D-04 throwaway demo; Phase 2 replaces with real audio island -->
+<div id="now-playing" class="now-playing">
+  <div class="np-eq">
+    <span class="np-bar"></span>
+    <span class="np-bar np-bar-2"></span>
+    <span class="np-bar np-bar-3"></span>
+    <span class="np-bar np-bar-4"></span>
+  </div>
+  <div class="np-info">
+    <div class="np-label">сейчас играет · демо</div>
+    <div id="np-title" class="np-title"></div>
+  </div>
+  <div id="np-index" class="np-index"></div>
+  <button id="np-close" class="icon-btn np-close">×</button>
+</div>
+
+<!--
+  D-04 throwaway demo player — verbatim IIFE from index.html lines 413-425.
+  Source file: src/scripts/demo-player.js
+  Isolation: Phase 2 deletes this <script is:inline> block and src/scripts/demo-player.js.
+  Why is:inline on a <script> block (not <script src>): Astro bundles bare <script> with Vite,
+  which can transform/split the IIFE. is:inline prevents bundling and preserves the verbatim IIFE.
+  (Assumption A2 resolved: is:inline on a <script> BLOCK works; is:inline on <script src> does not
+  inline the file — it just bypasses Vite but still emits a src= tag that breaks relative paths.)
+-->
+<script is:inline>
+(function demoDemoPlayer() {
+  var npBar = document.getElementById('now-playing');
+  var npTitle = document.getElementById('np-title');
+  var npIndex = document.getElementById('np-index');
+  document.querySelectorAll('.track').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      npTitle.textContent = btn.dataset.title;
+      npIndex.textContent = 'трек ' + btn.dataset.i;
+      npBar.style.display = 'flex';
+    });
+  });
+  document.getElementById('np-close').addEventListener('click', function () {
+    npBar.style.display = 'none';
+  });
+})();
+</script>
+
+<style>
+  .tracks-section {
+    position: relative;
+    z-index: 2;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 50px 40px 120px;
+  }
+
+  .tracks-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 40px;
+  }
+
+  .tracks-title {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(24px, 3.4vw, 38px);
+    margin: 0;
+    letter-spacing: 0.3px;
+    color: var(--color-text);
+  }
+
+  .tracks-links {
+    display: flex;
+    gap: 22px;
+    flex-wrap: wrap;
+  }
+
+  .tracks-link {
+    text-decoration: none;
+    color: var(--color-text-muted);
+    font-size: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    padding-bottom: 3px;
+    transition: color 0.25s;
+  }
+
+  .tracks-link:hover {
+    color: var(--color-text);
+  }
+
+  .tracks-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* .track base: layout only — hover transitions live in global.css */
+  .track {
+    all: unset;
+    cursor: pointer;
+    display: grid;
+    grid-template-columns: 60px 1fr auto auto;
+    align-items: center;
+    gap: 20px;
+    padding: 22px 16px;
+    border-top: 1px solid var(--color-border);
+    border-radius: 3px;
+  }
+
+  .track:last-child {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .track-num {
+    font-family: var(--font-serif);
+    font-size: 24px;
+    color: var(--color-text-dimmer);
+  }
+
+  .track-info {
+    font-family: var(--font-serif);
+    font-size: 23px;
+    color: var(--color-text);
+  }
+
+  .track-sub {
+    font-size: 12px;
+    color: var(--color-text-dim);
+    font-family: var(--font-sans);
+  }
+
+  .track-play {
+    font-size: 12.5px;
+    color: var(--color-accent);
+    letter-spacing: 1px;
+  }
+
+  .track-time {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--color-text-dim);
+  }
+
+  /* Mobile: hide duration, collapse num column — also handled by global.css .track rule */
+  @media (max-width: 860px) {
+    .tracks-section {
+      padding: 40px 20px 80px;
+    }
+
+    .track {
+      grid-template-columns: 40px 1fr auto;
+    }
+
+    .track-time {
+      display: none;
+    }
+  }
+
+  /* NOW PLAYING BAR */
+  .now-playing {
+    display: none;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 60;
+    backdrop-filter: blur(16px);
+    background: rgba(6, 6, 6, 0.92);
+    border-top: 1px solid rgba(243, 169, 189, 0.4);
+    padding: 14px 28px;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .np-eq {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 22px;
+  }
+
+  .np-bar {
+    width: 3px;
+    height: 100%;
+    background: var(--color-accent);
+    border-radius: 2px;
+    transform-origin: bottom;
+    animation: eq 1s ease-in-out infinite;
+  }
+
+  .np-bar-2 {
+    animation-duration: 1.1s;
+    animation-delay: 0.2s;
+  }
+
+  .np-bar-3 {
+    animation-duration: 0.9s;
+    animation-delay: 0.4s;
+  }
+
+  .np-bar-4 {
+    animation-duration: 1.2s;
+    animation-delay: 0.1s;
+  }
+
+  .np-info {
+    flex: 1;
+  }
+
+  .np-label {
+    font-size: 12px;
+    color: var(--color-text-subtle);
+    letter-spacing: 0.5px;
+  }
+
+  .np-title {
+    font-family: var(--font-serif);
+    font-size: 18px;
+    color: var(--color-text);
+  }
+
+  .np-index {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--color-text-dim);
+  }
+
+  .np-close {
+    all: unset;
+    cursor: pointer;
+    color: var(--color-text-muted);
+    font-size: 20px;
+    padding: 4px 10px;
+    line-height: 1;
+  }
+</style>

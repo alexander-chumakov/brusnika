@@ -1,0 +1,197 @@
+---
+/**
+ * ShowsSection.astro — «Услышать вживую» upcoming shows section
+ *
+ * Pixel-faithful port of index.html lines 191-226.
+ * Data from getCollection('shows') — the v1→v2 CMS seam (FND-05, D-07).
+ * SHOW-01: date, city, venue per show row.
+ * SHOW-02: «билеты» link from schema ticketUrl (placeholder '#' per D-03; Phase 4 fills real URLs).
+ * Mobile: show-row columns collapse (96px 1fr auto) via global.css.
+ */
+import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
+import liveCrowdImg from '../assets/images/live-crowd2.jpg';
+
+const shows = await getCollection('shows');
+---
+
+<section id="shows" class="shows-section">
+  <div data-reveal class="shows-intro">
+    <div class="shows-eyebrow">концерты</div>
+    <h2 class="shows-title">Услышать <span class="shows-accent">вживую</span></h2>
+  </div>
+
+  <div data-reveal class="shows-banner">
+    <Image
+      src={liveCrowdImg}
+      alt="концерт внимание брусника!"
+      widths={[860, 1180]}
+      sizes="(max-width: 860px) 100vw, 1180px"
+      format="webp"
+      quality={85}
+      loading="lazy"
+      class="shows-banner-img"
+    />
+    <div class="shows-banner-gradient"></div>
+    <div class="shows-banner-caption">живой звук в маленьких залах, где слышно дыхание</div>
+  </div>
+
+  <div data-reveal class="shows-list">
+    {shows.map((s) => (
+      <div class="show-row">
+        <div class="show-date">
+          <div class="show-date-primary">{s.data.dateDisplay}</div>
+          <div class="show-year">{s.data.year}</div>
+        </div>
+        <div class="show-venue">
+          <div class="show-city">{s.data.city}</div>
+          <div class="show-venue-name">{s.data.venue}</div>
+        </div>
+        <a
+          href={s.data.ticketUrl}
+          class="ticket-link"
+          target={s.data.ticketUrl !== '#' ? '_blank' : undefined}
+          rel={s.data.ticketUrl !== '#' ? 'noopener noreferrer' : undefined}
+        >билеты</a>
+      </div>
+    ))}
+  </div>
+</section>
+
+<style>
+  .shows-section {
+    position: relative;
+    z-index: 2;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 130px 40px 110px;
+    scroll-margin-top: 70px;
+  }
+
+  .shows-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    margin-bottom: 16px;
+  }
+
+  .shows-title {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(32px, 5vw, 62px);
+    line-height: 1.02;
+    margin: 0 0 50px;
+    letter-spacing: 0.3px;
+    color: var(--color-text);
+  }
+
+  .shows-accent {
+    color: var(--color-accent);
+  }
+
+  .shows-banner {
+    position: relative;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 48px;
+  }
+
+  .shows-banner-img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 21 / 9;
+    object-fit: cover;
+    object-position: center 30%;
+  }
+
+  .shows-banner-gradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.55));
+  }
+
+  .shows-banner-caption {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    padding: 28px 32px;
+    font-family: var(--font-serif);
+    font-size: clamp(20px, 2.4vw, 30px);
+    color: #fff;
+  }
+
+  .shows-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* .show-row base layout — hover on .ticket-link lives in global.css */
+  .show-row {
+    display: grid;
+    grid-template-columns: 140px 1fr auto;
+    gap: 28px;
+    align-items: center;
+    padding: 26px 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .show-row:last-child {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .show-date-primary {
+    font-family: var(--font-serif);
+    font-size: 30px;
+    line-height: 1;
+    color: var(--color-text);
+  }
+
+  .show-year {
+    font-size: 13px;
+    color: var(--color-text-dim);
+    margin-top: 4px;
+  }
+
+  .show-city {
+    font-size: 20px;
+    color: var(--color-text);
+  }
+
+  .show-venue-name {
+    font-size: 14px;
+    color: var(--color-text-dim);
+    margin-top: 3px;
+  }
+
+  /* .ticket-link base — hover transitions in global.css */
+  .ticket-link {
+    text-decoration: none;
+    color: var(--color-accent);
+    border: 1px solid rgba(243, 169, 189, 0.6);
+    background: rgba(243, 169, 189, 0.08);
+    font-size: 13.5px;
+    padding: 10px 24px;
+    border-radius: 2px;
+  }
+
+  @media (max-width: 860px) {
+    .shows-section {
+      padding: 80px 20px 70px;
+    }
+
+    .show-row {
+      grid-template-columns: 96px 1fr auto;
+      gap: 16px;
+    }
+
+    .show-date-primary {
+      font-size: 22px;
+    }
+
+    .show-city {
+      font-size: 16px;
+    }
+  }
+</style>

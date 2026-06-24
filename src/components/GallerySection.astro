@@ -1,0 +1,146 @@
+---
+/**
+ * GallerySection.astro — «Между песнями» photo gallery
+ *
+ * Pixel-faithful port of index.html lines 228-241.
+ * Data from getCollection('gallery') — the v1→v2 CMS seam (FND-05, D-07).
+ *
+ * Dynamic image loading approach (RESEARCH assumption resolved):
+ *   - Use import.meta.glob with { eager: true } to load all gallery images at build time
+ *   - Look up by photo.data.filename key — Astro processes them as ImageMetadata
+ *   - This satisfies Astro <Image> strict typing (requires ImageMetadata, not raw paths)
+ *
+ * Lightbox: NOT wired (Phase 2, GAL-01..03). Static grid only.
+ * Mobile: .gallery-grid → 1fr 1fr; first item grid-row auto (global.css handles this).
+ */
+import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
+
+const photos = (await getCollection('gallery')).sort((a, b) => a.data.order - b.data.order);
+
+// Eagerly import all gallery images so Astro can process them as ImageMetadata
+// The glob key is the import path relative to this file
+const galleryImages = import.meta.glob<{ default: ImageMetadata }>(
+  '../assets/images/*.jpg',
+  { eager: true }
+);
+---
+
+<section class="gallery-section">
+  <div data-reveal class="gallery-intro">
+    <div class="gallery-eyebrow">кадры</div>
+    <h2 class="gallery-title">Между <span class="gallery-accent">песнями</span></h2>
+  </div>
+
+  <div class="gallery-grid" data-reveal>
+    {photos.map((photo) => {
+      const imgPath = `../assets/images/${photo.data.filename}`;
+      const imgModule = galleryImages[imgPath];
+      const imgSrc = imgModule?.default;
+      return (
+        <div
+          class={`gallery-item${photo.data.gridSpan === 'tall' ? ' gallery-item--tall' : ''}`}
+        >
+          {imgSrc && (
+            <Image
+              src={imgSrc}
+              alt={photo.data.alt}
+              widths={[400, 800]}
+              sizes="(max-width: 860px) 50vw, 33vw"
+              format="webp"
+              quality={80}
+              loading="lazy"
+              class="gallery-img"
+            />
+          )}
+        </div>
+      );
+    })}
+  </div>
+</section>
+
+<style>
+  .gallery-section {
+    position: relative;
+    z-index: 2;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 20px 40px 120px;
+  }
+
+  .gallery-intro {
+    margin-bottom: 40px;
+  }
+
+  .gallery-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    margin-bottom: 16px;
+  }
+
+  .gallery-title {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(32px, 5vw, 62px);
+    line-height: 1.02;
+    margin: 0;
+    letter-spacing: 0.3px;
+    color: var(--color-text);
+  }
+
+  .gallery-accent {
+    color: var(--color-accent);
+  }
+
+  /* .gallery-grid: matching draft grid-template — 1.4fr 1fr 1fr / 210px 210px */
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr;
+    grid-template-rows: 210px 210px;
+    gap: 12px;
+  }
+
+  /* .gallery-item base — hover transitions in global.css */
+  .gallery-item {
+    position: relative;
+    border-radius: 4px;
+    overflow: hidden;
+    background: repeating-linear-gradient(
+      45deg,
+      #141414 0 12px,
+      #0a0a0a 12px 24px
+    );
+  }
+
+  /* First item (gridSpan: 'tall') spans 2 rows — matches index.html style="grid-row:span 2" */
+  .gallery-item--tall {
+    grid-row: span 2;
+  }
+
+  .gallery-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Mobile: 2-column grid, no row spans (global.css also handles .gallery-grid) */
+  @media (max-width: 860px) {
+    .gallery-section {
+      padding: 20px 20px 80px;
+    }
+
+    .gallery-grid {
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto;
+    }
+
+    .gallery-item--tall {
+      grid-row: auto;
+    }
+  }
+</style>
