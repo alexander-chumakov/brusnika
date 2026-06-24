@@ -43,7 +43,7 @@ Declared values (multiples of 4). Existing project uses these exact values throu
 | 3xl | 64px | — |
 
 Exceptions:
-- Now-playing bar height: not fixed, content-driven — `padding: 14px 28px` (matches existing demo bar exactly)
+- Now-playing bar height: not fixed, content-driven — `padding: 12px 28px` (12px vertical = 3 × 4px grid; ~2px tighter than the original demo bar, visually near-identical)
 - Touch targets for now-playing bar controls (▶/⏸/→ next/×): minimum 44px tap area (invisible padding wrapper), actual icon visible at 20–24px
 - Video poster play button: 64px × 64px centered circle — large enough for thumb tap
 - Gallery grid gap: 12px (matches existing `GallerySection.astro` — do NOT change)
@@ -52,21 +52,24 @@ Exceptions:
 
 ## Typography
 
-All sizes carry over from Phase 1 global tokens and established component styles. No new type sizes introduced.
+Phase 2 declares exactly **4 type sizes**. Track-list sizes (23px/24px) are inherited Phase 1 tokens, listed separately and unchanged — they are NOT new Phase 2 declarations.
+
+### Declared Phase 2 sizes (max 4)
 
 | Role | Font | Size | Weight | Line Height | Usage |
 |------|------|------|--------|-------------|-------|
+| Micro label | `--font-sans` (Golos Text) | 12px | 400 | 1.4 | Now-playing label ("сейчас играет"/"загружается…"/"на паузе"), section eyebrow labels ("клипы") |
+| Caption / counter / minor title | `--font-mono` (counters) or `--font-sans` (titles/captions) | 13px | 400 | 1.4 | Now-playing index ("трек 03 / 06"), lightbox counter ("3 / 12"), lightbox caption, video clip title label — **merges old 13px and 14px into one token** |
 | Now-playing track title | `--font-serif` (Prata) | 18px | 400 | 1.2 | `#np-title` in now-playing bar |
-| Now-playing label | `--font-sans` (Golos Text) | 12px | 400 | 1.4 | "сейчас играет", buffering label |
-| Now-playing index / track count | `--font-mono` | 13px | 400 | 1.0 | "трек 03 / 06", position counter |
-| Track list title | `--font-serif` (Prata) | 23px | 400 | 1.3 | Existing `.track-info` — do not change |
-| Track number | `--font-serif` (Prata) | 24px | 400 | 1.0 | Existing `.track-num` — do not change |
-| Video clip section heading | `--font-serif` (Prata) | clamp(32px, 5vw, 62px) | 400 | 1.02 | Matches gallery/about heading scale |
-| Video clip title label | `--font-sans` (Golos Text) | 14px | 400 | 1.4 | Clip card overlay label |
-| Lightbox counter | `--font-mono` | 13px | 400 | 1.0 | "3 / 12" position indicator |
-| Lightbox caption | `--font-sans` (Golos Text) | 13px | 400 | 1.5 | Optional per-photo caption — only shown when present |
+| Section heading | `--font-serif` (Prata) | clamp(32px, 5vw, 62px) | 400 | 1.02 | Video clip section heading; matches gallery/about heading scale |
 
-Rule: exactly 2 weights in use across all Phase 2 UI — weight 400 (regular) only. No semibold introduced. Matches the dream-pop minimal aesthetic.
+### Inherited Phase 1 tokens — unchanged (not Phase 2 declarations)
+
+| Role | Font | Size | Notes |
+|------|------|------|-------|
+| Track list — single existing size | `--font-serif` (Prata) | 24px | Existing `.track-num` value; treat as the single track-list size token. `.track-info` is 23px in current CSS — align to 24px during implementation where practical, otherwise leave the existing values untouched. Do NOT introduce 23px and 24px as two separate new Phase 2 sizes. |
+
+Rule: exactly 1 weight in use across all Phase 2 UI — weight 400 (regular). No semibold introduced. Matches the dream-pop minimal aesthetic.
 
 ---
 
@@ -113,13 +116,14 @@ Replaces the throwaway `demo-player.js` IIFE and `<script is:inline>` block in `
 ```
 [ EQ bars ] [ track label / title ] [ spacer ] [ track index ] [ ⏸/▶ ] [ → next ] [ × ]
 ```
+- Bar padding: `12px 28px` (12px vertical on the 4px grid)
 - EQ bars: 4 animated pink bars, `@keyframes eq` (already in global.css), animate only when playing, pause when audio is paused
 - Track label: 12px Golos Text, `--color-text-subtle`, text "сейчас играет"
 - Track title: 18px Prata, `--color-text`
 - Track index: 13px monospace, `--color-text-dim`, format "трек 02 / 06"
-- Play/pause button: ▶ / ⏸ Unicode, 20px, `--color-text-muted`, 44px tap target
-- Next button: "→" Unicode, 20px, `--color-text-muted`, 44px tap target; hidden (opacity: 0, pointer-events: none) when on last track
-- Close button: × Unicode, 20px, `--color-text-muted`, 44px tap target; stops playback and hides bar
+- Play/pause button: ▶ / ⏸ Unicode, 20px, `--color-text-muted`, 44px tap target, `aria-label="Воспроизвести"` / `aria-label="Пауза"`
+- Next button: "→" Unicode, 20px, `--color-text-muted`, 44px tap target, `aria-label="Следующий трек"`; hidden (opacity: 0, pointer-events: none) when on last track
+- Close button: × Unicode, 20px, `--color-text-muted`, 44px tap target, `aria-label="Закрыть плеер"`; stops playback and hides bar
 
 **Buffering/loading state:**
 - EQ bars switch to a slow pulse (opacity 0.3 ↔ 0.7, no height animation) while audio is loading
@@ -146,14 +150,14 @@ New component. Phase 3 will add a share button to each card — design hooks mus
 
 **Section heading:**
 - Eyebrow: 12px Golos Text monospace style, 2.5px letter-spacing, uppercase, `--color-accent`, text "клипы"
-- Title: clamp(32px, 5vw, 62px) Prata weight 400, `--color-text`, e.g. "В эфире" or "На экране" (copywriting locked below)
+- Title: clamp(32px, 5vw, 62px) Prata weight 400, `--color-text`, e.g. "На экране" (copywriting locked below)
 
 **Clip card layout (carousel or grid — see D-14):**
 - Each card: aspect-ratio 16/9, `border-radius: 8px`, `overflow: hidden`
 - Poster image: fills card, `object-fit: cover`
 - Overlay gradient: `linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 50%)` — always visible, covers bottom third
-- Clip title: 14px Golos Text, `--color-text`, bottom-left of card, inside the overlay area, padding `12px 16px`
-- Play button: centered circle, 64px × 64px, `border: 2px solid --color-accent`, `background: rgba(0,0,0,0.4)`, `backdrop-filter: blur(4px)`, ▶ symbol 24px `--color-accent`
+- Clip title: 13px Golos Text, `--color-text`, bottom-left of card, inside the overlay area, padding `12px 16px`
+- Play button: centered circle, 64px × 64px, `border: 2px solid --color-accent`, `background: rgba(0,0,0,0.4)`, `backdrop-filter: blur(4px)`, ▶ symbol 24px `--color-accent`, `aria-label="Смотреть клип"` (or "Воспроизвести {clip title}")
 - On hover: play button scales to 1.08 over 0.25s; poster image scales to 1.02 over 0.5s (same scale transform as `.gallery-item:hover`)
 
 **Playback state (D-15):**
@@ -220,17 +224,21 @@ All PhotoSwipe CSS variables overridden in a `<style is:global>` block to match 
 | Now-playing label (paused) | "на паузе" |
 | Track play indicator | "▶ слушать" (existing — do not change) |
 | Track currently playing indicator | "▶ играет" (replaces "▶ слушать" on the active track row) |
+| Now-playing play button aria-label | "Воспроизвести" |
+| Now-playing pause button aria-label | "Пауза" |
+| Now-playing next button aria-label | "Следующий трек" |
+| Now-playing close button aria-label | "Закрыть плеер" |
 | Video section eyebrow | "клипы" |
 | Video section heading | "На экране" |
-| Video play button | (no text — icon only) |
+| Video play button | (no text — icon only) — aria-label="Смотреть клип" (or "Воспроизвести {clip title}") |
 | Gallery section heading | "Между песнями" (existing — do not change) |
 | Gallery eyebrow | "кадры" (existing — do not change) |
 | Lightbox counter format | "N / M" (e.g. "3 / 12") |
-| Lightbox close button label | "×" (screen-reader accessible: `aria-label="Закрыть"`) |
+| Lightbox close button label | "×" (aria-label="Закрыть") |
 | Lightbox prev button label | aria-label="Предыдущее фото" |
 | Lightbox next button label | aria-label="Следующее фото" |
 | Audio error state | "Не удалось загрузить трек. Попробуйте ещё раз." |
-| Video error state | "Видео недоступно." |
+| Video error state | "Видео временно недоступно. Попробуйте обновить страницу." |
 | Empty state (no tracks in collection) | Not applicable — tracks are always present; curated set is hardcoded |
 
 **Destructive actions:** none in Phase 2. Dismissing the now-playing bar (× button) stops playback — this is reversible (click a track again), so no confirmation dialog is needed.
@@ -305,9 +313,12 @@ No third-party registries. No shadcn blocks. Registry vetting gate: not required
 | Requirement | Implementation |
 |-------------|---------------|
 | Audio controls keyboard accessible | Now-playing bar buttons are `<button>` elements; tab order: ⏸/▶ → next → × |
+| Audio control aria-labels | Play button `aria-label="Воспроизвести"`, pause `aria-label="Пауза"`, next `aria-label="Следующий трек"`, close `aria-label="Закрыть плеер"` |
+| Video play button aria-label | 64px play button `aria-label="Смотреть клип"` (or "Воспроизвести {clip title}") — icon-only button needs accessible name |
 | Lightbox keyboard navigation | PhotoSwipe 5 handles Escape, left/right arrows natively |
-| Lightbox ARIA | PhotoSwipe 5 sets `role="dialog"` and `aria-modal="true"` on the lightbox container |
+| Lightbox ARIA | PhotoSwipe 5 sets `role="dialog"` and `aria-modal="true"` on the lightbox container; close `aria-label="Закрыть"`, prev/next labelled |
 | Video controls accessible | Native `<video controls>` provides accessible controls; `playsinline` does not affect accessibility |
+| Video error has solution path | Error copy "Видео временно недоступно. Попробуйте обновить страницу." gives the user a recovery action |
 | EQ animation respects motion preference | `@media (prefers-reduced-motion: reduce)` stops `@keyframes eq` animation; EQ bars remain visible at static height |
 | Touch targets | All now-playing controls ≥ 44px tap area; video play button 64px |
 | Image alt text | Already defined in gallery collection `alt` field; passed through to PhotoSwipe |
@@ -329,4 +340,5 @@ No third-party registries. No shadcn blocks. Registry vetting gate: not required
 
 *Phase: 2-media-islands*
 *UI-SPEC created: 2026-06-24*
+*Revised: 2026-06-24 — typography consolidated to 4 declared sizes (Block 1), now-playing bar padding moved to 4px grid 12px/28px (Block 2), accessibility aria-labels and video error recovery path added*
 *Source artifacts: 02-CONTEXT.md (17 decisions pre-populated), REQUIREMENTS.md (AUD-01..05, VID-01..03, GAL-01..03), global.css (design tokens), TracksSection.astro (now-playing bar markup/CSS), GallerySection.astro (gallery grid)*
