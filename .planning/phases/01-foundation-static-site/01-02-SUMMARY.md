@@ -98,6 +98,28 @@ Both comments are live in `src/pages/index.astro` between the appropriate compon
 
 No other deviations — plan executed as written.
 
+## Post-checkpoint fixes
+
+**[Rule 1 - Bug] Gate scroll-reveal hidden state behind `.js-reveal` (sections visible without JS)**
+- **Found during:** Vercel preview verification (checkpoint) — Featured, About, and Sing sections rendered as a black screen; only the marquee (no `data-reveal`) was visible.
+- **Root cause:** `src/styles/global.css` hid every `[data-reveal]` element at `opacity: 0` by default. The `.in` class that reveals them is only added by the scroll-reveal script (`src/scripts/global-animations.js`), which does not exist until Plan 04. So all `data-reveal` elements (Featured card, About columns, Sing image + content) were stuck invisible on this wave's deploy. Each wave's deploy must be independently viewable, so this is a defect.
+- **Fix:** Made reveal a progressive enhancement — scoped the hidden state and delay helpers under a JS-set root class:
+  - `.js-reveal [data-reveal] { opacity: 0; transform: translateY(36px); transition: ... }`
+  - `.js-reveal [data-reveal].in { opacity: 1; transform: none; }`
+  - `.js-reveal [data-reveal-d1|d2|d3] { transition-delay: ... }`
+  The `.js-reveal` class is **not** added anywhere in this plan — so without JS (this wave) every section is fully visible immediately, which is the desired behavior. Mirrors the 01-01 progressive-enhancement lesson (gradient-clip `@supports` fallback).
+- **Files modified:** src/styles/global.css
+- **Verification:** `NOINDEX=true npm run build` exits 0; built CSS confirms the only `opacity:0` reveal rule is `.js-reveal [data-reveal]{opacity:0;...}` (gated), no unconditional hide rule remains.
+- **Committed in:** see `fix(01-02)` commit below.
+
+### Plan 04 handoff (MUST ship together or the gate misbehaves)
+
+`src/scripts/global-animations.js` in Plan 04 MUST:
+1. Add `document.documentElement.classList.add('js-reveal')` **as early as possible** — ideally an inline render-blocking `<head>` script in `Layout.astro` — to avoid a flash-then-hide of content before the script runs.
+2. Wire the `IntersectionObserver` that toggles the `.in` class on `[data-reveal]` elements as they scroll into view.
+
+If only step 1 ships (class added, no observer) sections flash-then-hide permanently. If only step 2 ships (observer, no class) the gate stays inert and sections simply never animate (harmless — they stay visible). Both must land together. A note to this effect is also embedded as a comment in `src/styles/global.css` above the `.js-reveal` rules.
+
 ## Known Stubs
 
 None. All five sections render real band content from the design draft. No placeholder text, no empty data sources. The «пойте с нами» pill and «записаться» button correctly carry data-open-lessons — they do not open a modal yet (that JS lands in Plan 04), which is documented behavior, not a stub.

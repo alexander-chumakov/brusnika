@@ -103,6 +103,7 @@ None currently.
 - Confirm real media files are available from band before starting Phase 2
 - Obtain Telegram bot credentials from Соня before starting Phase 3
 - Collect real URLs for all # placeholder links before Phase 4
+- **Plan 04 reveal script (`src/scripts/global-animations.js`) MUST:** (1) add `document.documentElement.classList.add('js-reveal')` as early as possible — ideally an inline render-blocking `<head>` script in Layout.astro to avoid flash-then-hide — AND (2) wire the IntersectionObserver toggling `.in` on `[data-reveal]`. Both must ship together (01-02 gated reveal behind `.js-reveal` so sections stay visible pre-Plan-04). See 01-02-SUMMARY.md Plan 04 handoff + global.css comment.
 
 ---
 
