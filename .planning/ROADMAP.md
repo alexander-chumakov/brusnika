@@ -9,7 +9,7 @@
 
 ## Phases
 
-- [ ] **Phase 1: Foundation & Static Site** — Astro scaffold, self-hosted fonts, all static sections, shows data, real links, noindex gate, deployed to Vercel
+- [x] **Phase 1: Foundation & Static Site** — Astro scaffold, self-hosted fonts, all static sections, shows data, real links, noindex gate, deployed to Vercel (completed 2026-06-24)
 - [ ] **Phase 2: Media Islands** — Working audio player (CDN-backed), video player, photo lightbox gallery
 - [ ] **Phase 3: Sharing & Booking** — Social share button with mobile/desktop paths; booking form wired to Соня's Telegram bot
 - [ ] **Phase 4: Pre-Launch Verification** — Noindex confirmed correct, no Google Fonts, iOS audio seekable, all links real, booking tested end-to-end, launch-time toggle documented
@@ -32,7 +32,7 @@
   4. Streaming links (Yandex Music and VK Music first, then Spotify, Apple Music, YouTube) and footer social/contact links (Telegram, VK, email) resolve to real destination pages
   5. Loading the Vercel preview URL with `NOINDEX=true` env var set causes `<meta name="robots" content="noindex">` to appear in page source; no crawler can index the page until the env var is removed
 
-**Plans:** 3/4 plans executed
+**Plans:** 4/4 plans complete
 Plans:
 **Wave 1**
 
@@ -48,7 +48,7 @@ Plans:
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] 01-04-PLAN.md — Links-as-data + footer + lessons modal (fake submit) + animations + final pixel pass (LINK-01/02, FND-03)
+- [x] 01-04-PLAN.md — Links-as-data + footer + lessons modal (fake submit) + animations + final pixel pass (LINK-01/02, FND-03)
 
 **UI hint**: yes
 
@@ -107,7 +107,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Static Site | 3/4 | In Progress|  |
+| 1. Foundation & Static Site | 4/4 | Complete   | 2026-06-24 |
 | 2. Media Islands | 0/? | Not started | - |
 | 3. Sharing & Booking | 0/? | Not started | - |
 | 4. Pre-Launch Verification | 0/? | Not started | - |

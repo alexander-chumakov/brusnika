@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-06-24T16:53:37.779Z"
+last_updated: "2026-06-24T17:06:30.774Z"
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 4
-  completed_plans: 3
-  percent: 0
+  completed_plans: 4
+  percent: 25
 ---
 
 # Project State: внимание брусника! — Band Website
@@ -29,12 +29,12 @@ progress:
 
 ## Current Position
 
-Phase: 01 (foundation-static-site) — EXECUTING
-Plan: 3 of 4
+Phase: 01 (foundation-static-site) — COMPLETE (checkpoint: Vercel visual verify pending for Plan 04)
+Plan: 4 of 4
 **Phase:** 1 — Foundation & Static Site
-**Plan:** Plan 03 complete (checkpoint: Vercel visual verify pending)
-**Status:** Executing Phase 01 — Plans 01-01, 01-02, and 01-03 done; awaiting Vercel deploy for visual checkpoint
-**Progress:** [███████░░░] 75%
+**Plan:** Plan 04 complete — footer, lessons modal, scroll-reveal + cursor-glow, site.ts data layer done; awaiting Vercel deploy for final visual verification checkpoint
+**Status:** Phase 01 fully executed — all 4 plans committed; Vercel preview deploy needed for human visual checkpoint
+**Progress:** [██████████] 100% (Phase 01)
 
 ---
 
@@ -77,6 +77,10 @@ Plan: 3 of 4
 | import z from 'astro/zod' (not 'zod') confirmed | Astro 7 bundles Zod 4; direct zod import risks version conflict (Pitfall 5) |
 | is:inline on <script> BLOCK inlines content; is:inline on <script src=> does NOT | is:inline with src emits broken relative-path src= tag; content must be in the <script> block (A2 resolved) |
 | Gallery dynamic images via import.meta.glob({ eager: true }) + default export | Only way to satisfy Astro <Image> ImageMetadata type requirement for filenames from JSON |
+| lessons.jpg imported as Astro asset (not copied to public/) | Fingerprinted asset pipeline URL; no manual public/ management needed |
+| .js-reveal added via render-blocking inline <script> in <head> | Prevents flash-then-hide — class must be set BEFORE first paint; prefers-reduced-motion skips it entirely |
+| site.ts typed singletons drive all outbound links (LINK-01/02) | Single source of truth for Phase 4 placeholder fill-in; streamingLinks ordered Яндекс/VK first per LINK-01 |
+| LessonsModal placed in Layout.astro (not index.astro) | Available globally on any Layout-using page; keeps IIFEs co-located with markup |
 
 ### External Prerequisites
 
@@ -103,10 +107,10 @@ None currently.
 
 ### Todos
 
+- Deploy Phase 01 to Vercel preview for human visual verification (Plan 04 checkpoint)
 - Confirm real media files are available from band before starting Phase 2
 - Obtain Telegram bot credentials from Соня before starting Phase 3
-- Collect real URLs for all # placeholder links before Phase 4
-- **Plan 04 reveal script (`src/scripts/global-animations.js`) MUST:** (1) add `document.documentElement.classList.add('js-reveal')` as early as possible — ideally an inline render-blocking `<head>` script in Layout.astro to avoid flash-then-hide — AND (2) wire the IntersectionObserver toggling `.in` on `[data-reveal]`. Both must ship together (01-02 gated reveal behind `.js-reveal` so sections stay visible pre-Plan-04). See 01-02-SUMMARY.md Plan 04 handoff + global.css comment.
+- Collect real URLs for all # placeholder links before Phase 4 (full tracker in 01-04-SUMMARY.md)
 
 ---
 
