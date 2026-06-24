@@ -23,13 +23,13 @@ Requirements for the initial private (noindex) release. v1 = the complete final 
 - [ ] **AUD-02**: A sticky now-playing bar shows the active track (title, number, animated EQ) and persists while scrolling
 - [ ] **AUD-03**: Visitor can pause/resume the active track; clicking a different track switches playback (only one plays at a time)
 - [ ] **AUD-04**: Visitor can dismiss the now-playing bar to stop playback
-- [ ] **AUD-05**: Audio files are served from CDN (Vercel Blob), never from the repo or a serverless function, and support seeking on iOS
+- [x] **AUD-05**: Audio files are served from CDN (Vercel Blob), never from the repo or a serverless function, and support seeking on iOS
 
 ### Video
 
 - [ ] **VID-01**: Visitor can play concert/live video on-site via a poster image + play button
 - [ ] **VID-02**: Video plays inline on iOS (playsinline), with controls and no forced autoplay
-- [ ] **VID-03**: Video file is served from CDN (Vercel Blob)
+- [x] **VID-03**: Video file is served from CDN (Vercel Blob)
 
 ### Gallery
 
@@ -113,10 +113,10 @@ Which phases cover which requirements. Populated during roadmap creation.
 | AUD-02 | Phase 2 | Pending |
 | AUD-03 | Phase 2 | Pending |
 | AUD-04 | Phase 2 | Pending |
-| AUD-05 | Phase 2 | Pending |
+| AUD-05 | Phase 2 | Complete |
 | VID-01 | Phase 2 | Pending |
 | VID-02 | Phase 2 | Pending |
-| VID-03 | Phase 2 | Pending |
+| VID-03 | Phase 2 | Complete |
 | GAL-01 | Phase 2 | Pending |
 | GAL-02 | Phase 2 | Pending |
 | GAL-03 | Phase 2 | Pending |
