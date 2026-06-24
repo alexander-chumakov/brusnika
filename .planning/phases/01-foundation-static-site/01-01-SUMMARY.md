@@ -161,6 +161,10 @@ None. Plan introduces no new network endpoints, auth paths, or trust boundaries 
 - Vercel preview URL pending checkpoint below — deploy needed to confirm A1 (Sharp WebP serving from Vercel CDN) and A2 (is:inline directive behavior)
 - No blockers for Plan 01-02 — can proceed locally while Vercel deploy is arranged
 
+## Post-checkpoint fixes
+
+- **[Rule 1 - Bug] `f7aa253`** — Hero title `.hero-title-line` showed as "two pink bars" (invisible text) on some tablet browsers where `background-clip:text` does not paint. Added a solid `#f3a9bd` fallback color and gated the gradient text-clip behind `@supports`, with `-webkit-text-fill-color:transparent` for correct WebKit clipping. Build green; name now always readable. (Deploy handled by orchestrator.)
+
 ## Self-Check
 
 ### Verified Files Exist
@@ -178,6 +182,7 @@ None. Plan introduces no new network endpoints, auth paths, or trust boundaries 
 
 - 77b1389: Task 1 scaffold
 - 849acd7: Task 2 design tokens + hero
+- f7aa253: Post-checkpoint fix (hero title tablet readability)
 
 ## Self-Check: PASSED
 
