@@ -554,7 +554,15 @@
     }
   }
 
-  /* FEATURE: calm brusnika bloom — non-intrusive overlay, never blocks clicks */
+</style>
+
+<!--
+  FEATURE: calm brusnika bloom — MUST be global. Berries are created with
+  document.createElement and appended to document.body, so they never receive
+  Astro's component scope hash. Scoped selectors would not match → invisible.
+  This block is :global so the JS-created nodes are styled and animated.
+-->
+<style is:global>
   .bloom-layer {
     position: fixed;
     inset: 0;
