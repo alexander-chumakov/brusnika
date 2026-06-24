@@ -10,32 +10,37 @@
  * Mobile: track-time column hidden; grid-template-columns overridden by global.css.
  */
 import { getCollection } from 'astro:content';
+import { streamingLinks } from '../data/site.ts';
 
 const tracks = (await getCollection('tracks')).sort((a, b) =>
   a.data.number.localeCompare(b.data.number)
 );
+
+// TracksSection header subset: Spotify, Яндекс Музыка, YouTube (draft lines 136-138)
+const headerStreamingLabels = ['Spotify', 'Яндекс Музыка', 'YouTube'];
+const headerStreaming = headerStreamingLabels
+  .map((label) => streamingLinks.find((l) => l.label === label))
+  .filter(Boolean);
 ---
 
 <section class="tracks-section">
   <div data-reveal class="tracks-header">
     <h3 class="tracks-title">Синглы и любимое</h3>
     <div class="tracks-links">
-      <a
-        href="https://open.spotify.com/artist/11epkfgLUMWmXsTbgfPu4B"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="tracks-link"
-      >Spotify ↗</a>
-      <a
-        href="#"
-        class="tracks-link"
-      >Яндекс Музыка ↗</a>
-      <a
-        href="https://www.youtube.com/@vnimaniebrusnika"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="tracks-link"
-      >YouTube ↗</a>
+      {headerStreaming.map((link) => (
+        link!.url !== '#'
+          ? (
+            <a
+              href={link!.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="tracks-link"
+            >{link!.label} ↗</a>
+          )
+          : (
+            <a href={link!.url} class="tracks-link">{link!.label} ↗</a>
+          )
+      ))}
     </div>
   </div>
 

@@ -1,0 +1,188 @@
+---
+/**
+ * FooterSection.astro — Site footer
+ *
+ * Pixel-faithful port of index.html lines 278-310.
+ * - Brand block: pink dot + Prata wordmark + descriptor paragraph
+ * - «слушать» column: Spotify, Яндекс Музыка, Apple Music, YouTube (draft 4-item subset, no VK Музыка)
+ * - «связь» column: Telegram, VK, Instagram, hello@brusnika.ru
+ * - Bottom bar: «© 2026» + «сделано с любовью к тихой музыке»
+ * - Links sourced from src/data/site.ts (LINK-01/02)
+ * - All target="_blank" links carry rel="noopener noreferrer" (T-04-02)
+ * - Placeholder '#' links do NOT get target="_blank" (no rel needed on same-page hrefs)
+ * - Mobile: .footer-grid → single column at 860px (FND-04; global.css handles this)
+ */
+import { streamingLinks, socialLinks } from '../data/site.ts';
+
+// Footer «слушать» subset: Spotify, Яндекс Музыка, Apple Music, YouTube (draft order)
+// Excludes VK Музыка per design draft footer (4-item list, not 5)
+const footerStreamingLabels = ['Spotify', 'Яндекс Музыка', 'Apple Music', 'YouTube'];
+const footerStreaming = footerStreamingLabels
+  .map((label) => streamingLinks.find((l) => l.label === label))
+  .filter(Boolean);
+---
+
+<footer>
+  <div class="footer-grid">
+    <!-- Brand block -->
+    <div>
+      <div class="footer-brand">
+        <span class="footer-dot"></span>
+        <span class="footer-wordmark">внимание брусника!</span>
+      </div>
+      <p class="footer-desc">Dream-pop группа. Пишем песни, играем живьём и учим петь. Релизы — на МТС Лейбл.</p>
+    </div>
+
+    <!-- «слушать» column -->
+    <div>
+      <div class="footer-col-heading">слушать</div>
+      <div class="footer-col-links">
+        {footerStreaming.map((link) => (
+          link!.url !== '#'
+            ? (
+              <a
+                href={link!.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="nav-link footer-link"
+              >{link!.label}</a>
+            )
+            : (
+              <a href={link!.url} class="nav-link footer-link">{link!.label}</a>
+            )
+        ))}
+      </div>
+    </div>
+
+    <!-- «связь» column -->
+    <div>
+      <div class="footer-col-heading">связь</div>
+      <div class="footer-col-links">
+        {socialLinks.map((link) => (
+          link.url.startsWith('http')
+            ? (
+              <a
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="nav-link footer-link"
+              >{link.label}</a>
+            )
+            : link.url.startsWith('mailto:')
+            ? (
+              <a href={link.url} class="nav-link footer-link">{link.label}</a>
+            )
+            : (
+              <a href={link.url} class="nav-link footer-link">{link.label}</a>
+            )
+        ))}
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom bar -->
+  <div class="footer-bottom">
+    <span class="footer-copy">© 2026 внимание брусника!</span>
+    <span class="footer-tagline">сделано с любовью к тихой музыке</span>
+  </div>
+</footer>
+
+<style>
+  footer {
+    position: relative;
+    z-index: 2;
+  }
+
+  .footer-grid {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 80px 40px 50px;
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr;
+    gap: 40px;
+  }
+
+  .footer-brand {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    margin-bottom: 16px;
+  }
+
+  .footer-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    display: inline-block;
+    box-shadow: 0 0 12px rgba(243, 169, 189, 0.9);
+    flex-shrink: 0;
+  }
+
+  .footer-wordmark {
+    font-family: var(--font-serif);
+    font-size: 19px;
+  }
+
+  .footer-desc {
+    font-size: 14.5px;
+    color: var(--color-text-dim);
+    line-height: 1.6;
+    max-width: 300px;
+    margin: 0;
+  }
+
+  .footer-col-heading {
+    font-size: 12px;
+    color: var(--color-text-dim);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .footer-col-links {
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+  }
+
+  .footer-link {
+    text-decoration: none;
+    font-size: 14.5px;
+  }
+
+  .footer-bottom {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 24px 40px 50px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .footer-copy {
+    font-size: 13px;
+    color: var(--color-text-dimmer);
+  }
+
+  .footer-tagline {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--color-text-dimmer);
+  }
+
+  /* Mobile single-column — also handled by global.css .footer-grid rule */
+  @media (max-width: 860px) {
+    .footer-grid {
+      padding: 60px 20px 40px;
+      grid-template-columns: 1fr;
+      gap: 30px;
+    }
+
+    .footer-bottom {
+      padding: 20px 20px 40px;
+    }
+  }
+</style>
