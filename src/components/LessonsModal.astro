@@ -1,0 +1,316 @@
+---
+/**
+ * LessonsModal.astro — Vocal lessons / хоротерапия booking modal
+ *
+ * Pixel-faithful port of index.html lines 329-385.
+ * - Overlay: #lessons-overlay (display:none, fixed, blurred backdrop)
+ * - Dialog: .lessons-modal two-column layout
+ * - Left panel: lessons.jpg background with gradient overlay + хоротерапия Timepad link
+ * - Right panel: #lessons-form (формат, имя, telegram/email, опыт, submit) + #lessons-thanks
+ *
+ * lessons.jpg approach: imported as Astro asset (ImageMetadata) then using .src property
+ * in an inline style for the background-image. This keeps the file through Astro's asset
+ * pipeline (fingerprinted path) without needing to copy to public/.
+ *
+ * Script (demo-modal.js IIFE) lives in src/scripts/demo-modal.js and is inlined
+ * via <script is:inline> in Layout.astro alongside global-animations.js.
+ * (D-05: Phase 3 replaces ONLY the submit handler with fetch('/api/book'))
+ *
+ * horoterapiyaUrl sourced from site.ts (real Timepad event link).
+ */
+import lessonsImg from '../assets/images/lessons.jpg';
+import { horoterapiyaUrl } from '../data/site.ts';
+---
+
+<div
+  id="lessons-overlay"
+  style="display:none;position:fixed;inset:0;z-index:90;background:rgba(0,0,0,0.72);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:24px;"
+>
+  <div
+    class="lessons-modal"
+    id="lessons-dialog"
+  >
+    <button class="lessons-close icon-btn" aria-label="закрыть">×</button>
+
+    <!-- Left info panel with lessons.jpg background -->
+    <div
+      class="lessons-panel-left"
+      style={`background: linear-gradient(180deg, rgba(10,8,9,0.82), rgba(10,8,9,0.9)), url('${lessonsImg.src}') center/cover;`}
+    >
+      <div class="lessons-eyebrow">пойте с нами · с Соней</div>
+      <h3 class="lessons-title">Найдите свой голос</h3>
+      <p class="lessons-copy">Соня — вокалистка «внимание брусника!» — учит петь бережно и без страха. «Красивый голос есть у каждого — нужно лишь перестать его прятать».</p>
+      <div class="lessons-blocks">
+        <div class="lessons-block">
+          <div class="lessons-block-title">Индивидуальный вокал</div>
+          <p class="lessons-block-desc">Занятия один на один, онлайн и офлайн. Дыхание, свобода, поиск своего тембра. Первый урок — пробный.</p>
+        </div>
+        <div class="lessons-block">
+          <div class="lessons-block-title">Хоротерапия</div>
+          <p class="lessons-block-desc">
+            Совместное пение в кругу — без нот, опыта и оценок. Про голос, дыхание и состояние, а не про «правильно».{' '}
+            <a
+              href={horoterapiyaUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="lessons-timepad-link"
+            >ближайшая встреча ↗</a>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right panel: form + thanks state -->
+    <div class="lessons-panel-right">
+      <form id="lessons-form">
+        <h4 class="lessons-form-title">Записаться</h4>
+        <label class="lessons-label">
+          <span class="lessons-label-text">формат</span>
+          <select class="field lessons-select">
+            <option>индивидуальный вокал</option>
+            <option>хоротерапия (групповая встреча)</option>
+          </select>
+        </label>
+        <label class="lessons-label">
+          <span class="lessons-label-text">имя</span>
+          <input
+            required
+            type="text"
+            placeholder="как вас зовут"
+            class="field lessons-input"
+          />
+        </label>
+        <label class="lessons-label">
+          <span class="lessons-label-text">telegram или email</span>
+          <input
+            required
+            type="text"
+            placeholder="@username или почта"
+            class="field lessons-input"
+          />
+        </label>
+        <label class="lessons-label">
+          <span class="lessons-label-text">опыт</span>
+          <select class="field lessons-select">
+            <option>никогда не пел(а), но очень хочу</option>
+            <option>пою для себя</option>
+            <option>занимался(ась) раньше</option>
+            <option>пою или выступаю</option>
+          </select>
+        </label>
+        <button type="submit" class="btn-pink lessons-submit">отправить заявку</button>
+      </form>
+      <div id="lessons-thanks">
+        <div class="thanks-icon-wrap">
+          <span class="thanks-icon">♥</span>
+        </div>
+        <h4 class="thanks-title">Спасибо!</h4>
+        <p class="thanks-desc">Заявка отправлена — мы скоро напишем вам, чтобы договориться о времени.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .lessons-modal {
+    position: relative;
+    width: 100%;
+    max-width: 860px;
+    max-height: 90vh;
+    overflow: auto;
+    background: var(--color-bg-modal);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    box-shadow: 0 40px 120px rgba(0, 0, 0, 0.7);
+  }
+
+  .lessons-close {
+    all: unset;
+    cursor: pointer;
+    position: absolute;
+    top: 16px;
+    right: 18px;
+    color: var(--color-text-muted);
+    font-size: 24px;
+    line-height: 1;
+    z-index: 2;
+  }
+
+  .lessons-close:hover {
+    color: #fff;
+  }
+
+  /* Left info panel */
+  .lessons-panel-left {
+    padding: 44px 38px;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .lessons-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    margin-bottom: 16px;
+  }
+
+  .lessons-title {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: 30px;
+    line-height: 1.1;
+    margin: 0 0 16px;
+  }
+
+  .lessons-copy {
+    font-size: 15.5px;
+    line-height: 1.7;
+    color: var(--color-text-muted);
+    margin: 0 0 26px;
+  }
+
+  .lessons-blocks {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .lessons-block-title {
+    font-family: var(--font-serif);
+    font-size: 19px;
+    color: var(--color-text);
+    margin-bottom: 7px;
+  }
+
+  .lessons-block-desc {
+    font-size: 14.5px;
+    line-height: 1.6;
+    color: var(--color-text-subtle);
+    margin: 0;
+  }
+
+  .lessons-timepad-link {
+    color: var(--color-accent);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(243, 169, 189, 0.5);
+  }
+
+  .lessons-timepad-link:hover {
+    border-bottom-color: var(--color-accent);
+  }
+
+  /* Right panel */
+  .lessons-panel-right {
+    padding: 44px 38px;
+  }
+
+  #lessons-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .lessons-form-title {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: 21px;
+    margin: 0 0 4px;
+  }
+
+  .lessons-label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .lessons-label-text {
+    font-size: 12.5px;
+    color: var(--color-text-muted);
+  }
+
+  .lessons-select,
+  .lessons-input {
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 3px;
+    padding: 12px 14px;
+    font-size: 15px;
+    color: var(--color-text);
+    outline: none;
+    background: #070506;
+  }
+
+  .lessons-select option {
+    background: var(--color-bg-modal);
+  }
+
+  .lessons-submit {
+    margin-top: 6px;
+    background: var(--color-accent);
+    color: #000;
+    border: none;
+    font-weight: 600;
+    font-size: 15px;
+    padding: 14px;
+    border-radius: 3px;
+    cursor: pointer;
+    letter-spacing: 0.3px;
+    width: 100%;
+  }
+
+  /* Thanks state — hidden by default; shown by demo-modal.js after fake submit */
+  #lessons-thanks {
+    display: none;
+    text-align: center;
+    padding: 50px 6px;
+  }
+
+  .thanks-icon-wrap {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: rgba(243, 169, 189, 0.14);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 18px;
+  }
+
+  .thanks-icon {
+    font-size: 23px;
+    color: var(--color-accent);
+  }
+
+  .thanks-title {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: 24px;
+    margin: 0 0 10px;
+  }
+
+  .thanks-desc {
+    font-size: 15px;
+    color: var(--color-text-muted);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* Mobile single-column — also handled by global.css .lessons-modal rule */
+  @media (max-width: 860px) {
+    .lessons-modal {
+      grid-template-columns: 1fr;
+    }
+
+    .lessons-panel-left {
+      border-right: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 32px 24px;
+    }
+
+    .lessons-panel-right {
+      padding: 32px 24px;
+    }
+  }
+</style>

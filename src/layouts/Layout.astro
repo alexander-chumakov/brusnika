@@ -5,7 +5,11 @@
  * - Self-hosted fonts via @fontsource (no Google Fonts)
  * - Env-gated noindex meta tag (RESEARCH Pattern 4)
  * - Global CSS design tokens import
- * - Cursor-glow markup (JS added in Plan 04)
+ * - Cursor-glow markup + JS activation (Plan 04: FND-03)
+ * - .js-reveal inline head script (Plan 04: prevents flash-then-hide, 01-02 SUMMARY handoff)
+ * - LessonsModal rendered at end of body (Plan 04: D-05)
+ * - global-animations.js IIFE inlined (Plan 04: D-06)
+ * - demo-modal.js IIFE inlined (Plan 04: D-05)
  *
  * See: RESEARCH.md Pattern 6 (font self-hosting), Pattern 4 (noindex)
  */
@@ -21,6 +25,9 @@ import '@fontsource/golos-text/700.css';
 
 // Global design tokens, resets, keyframes, interactive states
 import '../styles/global.css';
+
+// Lessons modal (D-05 throwaway demo; Phase 3 replaces submit handler)
+import LessonsModal from '../components/LessonsModal.astro';
 
 // Env-gated noindex (read at build time — static pages bake this into HTML)
 const noindex = import.meta.env.NOINDEX === 'true';
@@ -40,11 +47,29 @@ const noindex = import.meta.env.NOINDEX === 'true';
     <link rel="icon" href="/favicon.ico" />
     <meta name="generator" content={Astro.generator} />
     {noindex && <meta name="robots" content="noindex, nofollow" />}
+
+    <!--
+      .js-reveal inline render-blocking script (01-02 SUMMARY handoff, Plan 04)
+      MUST run BEFORE first paint to avoid flash-then-hide of content:
+        (1) Mark document root with .js-reveal so global.css hides [data-reveal] elements
+        (2) Respect prefers-reduced-motion: if reduced motion preferred, skip — content stays visible
+      This script is render-blocking by design (no defer/async/module) so the class is set
+      before any [data-reveal] content is painted.
+    -->
+    <script is:inline>
+      (function () {
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          // Reduced motion: skip .js-reveal entirely — content remains visible, no animation
+          return;
+        }
+        document.documentElement.classList.add('js-reveal');
+      })();
+    </script>
   </head>
   <body>
     <!-- Root wrapper — matches index.html line 58 exactly -->
     <div style="position:relative;overflow-x:hidden;background:#000;">
-      <!-- Cursor-follow glow (JS activation added in Plan 04) -->
+      <!-- Cursor-follow glow (FND-03; activated by global-animations.js inline script below) -->
       <div
         id="cursor-glow"
         style="position:fixed;top:0;left:0;width:520px;height:520px;margin:-260px 0 0 -260px;border-radius:50%;pointer-events:none;z-index:1;background:radial-gradient(circle, rgba(243,169,189,0.16), transparent 62%);transition:transform .35s cubic-bezier(.2,.7,.2,1);will-change:transform;"
@@ -55,6 +80,116 @@ const noindex = import.meta.env.NOINDEX === 'true';
 
       <!-- Page content from child components -->
       <slot />
+
+      <!-- Lessons modal (D-05 throwaway demo; Phase 3 replaces submit handler with fetch('/api/book')) -->
+      <LessonsModal />
     </div>
+
+    <!--
+      global-animations.js — Scroll-reveal (IntersectionObserver) + cursor-glow (FND-03, D-06)
+      is:inline on <script> BLOCK inlines content verbatim (A2 resolved in Plan 03 SUMMARY).
+      Source file: src/scripts/global-animations.js
+    -->
+    <script is:inline>
+      (function globalAnimations() {
+        // Scroll reveal — IntersectionObserver adds .in to [data-reveal] elements (threshold 0.12)
+        var reveals = document.querySelectorAll('[data-reveal]');
+        if ('IntersectionObserver' in window) {
+          var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (e) {
+              if (e.isIntersecting) {
+                e.target.classList.add('in');
+                io.unobserve(e.target);
+              }
+            });
+          }, { threshold: 0.12 });
+          reveals.forEach(function (el) { io.observe(el); });
+        } else {
+          // Fallback: immediately reveal all (no IntersectionObserver support)
+          reveals.forEach(function (el) { el.classList.add('in'); });
+        }
+
+        // Cursor-follow glow — fine pointer devices only (D-06)
+        var glow = document.getElementById('cursor-glow');
+        if (glow && window.matchMedia && window.matchMedia('(pointer:fine)').matches) {
+          window.addEventListener('mousemove', function (ev) {
+            glow.style.transform = 'translate(' + ev.clientX + 'px, ' + ev.clientY + 'px)';
+          }, { passive: true });
+        }
+      })();
+    </script>
+
+    <!--
+      demo-modal.js — Lessons modal IIFE (D-05 throwaway demo)
+      Phase 3 replaces ONLY the submit handler with fetch('/api/book').
+      Source file: src/scripts/demo-modal.js
+    -->
+    <script is:inline>
+      (function demoModal() {
+        var overlay = document.getElementById('lessons-overlay');
+        var dialog = document.getElementById('lessons-dialog');
+        var form = document.getElementById('lessons-form');
+        var thanks = document.getElementById('lessons-thanks');
+
+        function openLessons() {
+          if (!overlay || !form || !thanks) return;
+          form.style.display = 'flex';
+          thanks.style.display = 'none';
+          form.reset();
+          overlay.style.display = 'flex';
+          document.body.style.overflow = 'hidden';
+        }
+
+        function closeLessons() {
+          if (!overlay) return;
+          overlay.style.display = 'none';
+          document.body.style.overflow = '';
+        }
+
+        // Open modal from any [data-open-lessons] trigger (Nav pill + SingSection button)
+        document.querySelectorAll('[data-open-lessons]').forEach(function (el) {
+          el.addEventListener('click', function (e) {
+            e.preventDefault();
+            openLessons();
+          });
+        });
+
+        // Close with × button
+        document.querySelectorAll('.lessons-close').forEach(function (el) {
+          el.addEventListener('click', closeLessons);
+        });
+
+        // Close on click-outside (click on overlay, not dialog)
+        if (overlay) {
+          overlay.addEventListener('click', function (e) {
+            if (e.target === overlay) closeLessons();
+          });
+        }
+
+        // Prevent clicks inside dialog from bubbling to overlay
+        if (dialog) {
+          dialog.addEventListener('click', function (e) {
+            e.stopPropagation();
+          });
+        }
+
+        // Close on Escape key
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape' && overlay && overlay.style.display === 'flex') {
+            closeLessons();
+          }
+        });
+
+        // Fake submit — D-05: e.preventDefault() + show thanks, NO fetch/XHR
+        // Phase 3 replaces ONLY this handler with: fetch('/api/book', { method: 'POST', body: new FormData(form) })
+        if (form) {
+          form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            form.style.display = 'none';
+            if (thanks) thanks.style.display = 'block';
+          });
+        }
+      })();
+    </script>
   </body>
 </html>
