@@ -82,7 +82,7 @@ const galleryImages = import.meta.glob<{ default: ImageMetadata }>(
   });
 
   lightbox.on('uiRegister', function () {
-    lightbox.pswp.ui.registerElement({
+    lightbox.pswp?.ui?.registerElement({
       name: 'custom-caption',
       order: 9,
       isButton: false,
@@ -90,7 +90,7 @@ const galleryImages = import.meta.glob<{ default: ImageMetadata }>(
       html: '',
       onInit: (el, pswp) => {
         pswp.on('change', () => {
-          const curr = pswp.currSlide.data.element;
+          const curr = pswp.currSlide?.data.element;
           const caption = curr?.querySelector('.hidden-caption-content');
           el.innerHTML = caption ? caption.innerHTML : '';
         });
