@@ -221,6 +221,18 @@
   trackBtns.forEach((btn, idx) => {
     btn.addEventListener('click', () => playTrack(idx));
   });
+
+  // FIX A: Hero «слушать» CTA starts the first track through the same code
+  // path as the track list (same fade-in, now-playing bar appears, index
+  // shows "трек 01 / 06"). Prevent the default #music jump. Bind once the
+  // island hydrates; robust if hero rendered before the island.
+  const heroCta = document.querySelector<HTMLAnchorElement>('[data-play-first]');
+  if (heroCta && TOTAL > 0) {
+    heroCta.addEventListener('click', (e) => {
+      e.preventDefault();
+      playTrack(0);
+    });
+  }
 </script>
 
 <style>
