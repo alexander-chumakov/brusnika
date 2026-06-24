@@ -1,0 +1,368 @@
+---
+/**
+ * AudioPlayer.astro — Real audio island (AUD-01..05)
+ *
+ * Single <audio> element with src swapped on track change.
+ * Consumes data-audio-url from .track buttons rendered by TracksSection.astro.
+ * Rendered in index.astro with client:idle after TracksSection.
+ *
+ * Implements:
+ *   D-07 — auto-advance to next track on ended; stop after last (no loop)
+ *   D-08 — ~1.5–2s gap + 0.4s fade-out between auto-advanced tracks
+ *   D-09 — click playing track = pause/resume; click different = switch immediately
+ *   D-10 — play/pause + next controls inside the now-playing bar
+ *   D-11 — buffering state: "загружается…" + pulsing EQ while loading
+ *   D-12 — × dismiss stops playback and hides bar
+ */
+---
+
+<!-- NOW PLAYING BAR — real island markup (moved from TracksSection.astro) -->
+<div id="now-playing" class="now-playing" aria-live="polite" aria-label="Плеер">
+  <div class="np-eq" aria-hidden="true">
+    <span class="np-bar"></span>
+    <span class="np-bar np-bar-2"></span>
+    <span class="np-bar np-bar-3"></span>
+    <span class="np-bar np-bar-4"></span>
+  </div>
+  <div class="np-info">
+    <div id="np-label" class="np-label">сейчас играет</div>
+    <div id="np-title" class="np-title"></div>
+  </div>
+  <div id="np-index" class="np-index"></div>
+  <button id="np-play" class="icon-btn" aria-label="Воспроизвести">▶</button>
+  <button id="np-next" class="icon-btn" aria-label="Следующий трек">→</button>
+  <button id="np-close" class="icon-btn np-close" aria-label="Закрыть плеер">×</button>
+</div>
+
+<script>
+  // Single <audio> element; src swapped on track change (Pattern 2 — no is:inline)
+  const audio = new Audio();
+  let currentIdx = -1;
+  const FADE_MS = 400;
+  const GAP_MS = 1500;
+
+  // Collect only buttons that have a real CDN URL
+  const trackBtns = Array.from(
+    document.querySelectorAll<HTMLButtonElement>('.track[data-audio-url]')
+  ).filter((btn) => !!btn.dataset.audioUrl);
+
+  const bar = document.getElementById('now-playing') as HTMLElement;
+  const npLabel = document.getElementById('np-label') as HTMLElement;
+  const npTitle = document.getElementById('np-title') as HTMLElement;
+  const npIndex = document.getElementById('np-index') as HTMLElement;
+  const npPlay = document.getElementById('np-play') as HTMLButtonElement;
+  const npNext = document.getElementById('np-next') as HTMLButtonElement;
+  const npClose = document.getElementById('np-close') as HTMLButtonElement;
+
+  const TOTAL = trackBtns.length;
+
+  type BarState = 'loading' | 'playing' | 'paused' | 'error';
+
+  function updateBarState(state: BarState) {
+    // Remove loading modifier first
+    bar.classList.remove('now-playing--loading');
+
+    if (state === 'loading') {
+      npLabel.textContent = 'загружается…';
+      bar.classList.add('now-playing--loading');
+      npPlay.textContent = '▶';
+      npPlay.setAttribute('aria-label', 'Воспроизвести');
+    } else if (state === 'playing') {
+      npLabel.textContent = 'сейчас играет';
+      npPlay.textContent = '⏸';
+      npPlay.setAttribute('aria-label', 'Пауза');
+    } else if (state === 'paused') {
+      npLabel.textContent = 'на паузе';
+      npPlay.textContent = '▶';
+      npPlay.setAttribute('aria-label', 'Воспроизвести');
+    } else if (state === 'error') {
+      npLabel.textContent = 'Не удалось загрузить трек. Попробуйте ещё раз.';
+      npPlay.textContent = '▶';
+      npPlay.setAttribute('aria-label', 'Воспроизвести');
+    }
+
+    // Show/hide next button — hidden when on last track
+    if (currentIdx >= TOTAL - 1) {
+      npNext.style.opacity = '0';
+      npNext.style.pointerEvents = 'none';
+    } else {
+      npNext.style.opacity = '1';
+      npNext.style.pointerEvents = '';
+    }
+
+    // Update active row visual
+    trackBtns.forEach((btn, i) => {
+      if (i === currentIdx && (state === 'playing' || state === 'loading')) {
+        btn.classList.add('track--playing');
+        const playLabel = btn.querySelector('.track-play');
+        if (playLabel) playLabel.textContent = '▶ играет';
+      } else {
+        btn.classList.remove('track--playing');
+        const playLabel = btn.querySelector('.track-play');
+        if (playLabel) playLabel.textContent = '▶ слушать';
+      }
+    });
+  }
+
+  function showBar(idx: number) {
+    npTitle.textContent = trackBtns[idx].dataset.title ?? '';
+    npIndex.textContent = `трек ${String(idx + 1).padStart(2, '0')} / ${String(TOTAL).padStart(2, '0')}`;
+    bar.style.display = 'flex';
+  }
+
+  function hideBar() {
+    bar.style.display = 'none';
+    trackBtns.forEach((btn) => {
+      btn.classList.remove('track--playing');
+      const playLabel = btn.querySelector('.track-play');
+      if (playLabel) playLabel.textContent = '▶ слушать';
+    });
+    currentIdx = -1;
+  }
+
+  function fadeOut(onComplete: () => void) {
+    if (audio.paused || audio.volume === 0) {
+      onComplete();
+      return;
+    }
+    const step = audio.volume / (FADE_MS / 50);
+    const timer = setInterval(() => {
+      audio.volume = Math.max(0, audio.volume - step);
+      if (audio.volume <= 0) {
+        clearInterval(timer);
+        setTimeout(onComplete, GAP_MS);
+      }
+    }, 50);
+  }
+
+  function playTrack(idx: number) {
+    if (idx < 0 || idx >= TOTAL) return;
+
+    // D-09: same track while playing → pause
+    if (idx === currentIdx && !audio.paused) {
+      audio.pause();
+      updateBarState('paused');
+      return;
+    }
+
+    // D-09: same track while paused → resume from current position
+    if (idx === currentIdx && audio.paused) {
+      audio.volume = 1;
+      audio.play().catch(() => updateBarState('error'));
+      updateBarState('playing');
+      return;
+    }
+
+    // Different track: fade out current, then load new
+    fadeOut(() => {
+      currentIdx = idx;
+      audio.src = trackBtns[idx].dataset.audioUrl!;
+      audio.load(); // Pitfall 6: load before play
+      audio.volume = 1;
+      showBar(idx);
+      updateBarState('loading');
+      audio.play().catch(() => updateBarState('error'));
+    });
+  }
+
+  // D-07/D-08: auto-advance on track end
+  audio.addEventListener('ended', () => {
+    if (currentIdx < TOTAL - 1) {
+      setTimeout(() => playTrack(currentIdx + 1), GAP_MS);
+    } else {
+      hideBar();
+    }
+  });
+
+  // D-11: buffering state
+  audio.addEventListener('waiting', () => updateBarState('loading'));
+
+  // Restore volume and update state when audio actually starts playing
+  audio.addEventListener('playing', () => {
+    audio.volume = 1;
+    updateBarState('playing');
+  });
+
+  // Pause state from external sources (e.g. another tab taking audio)
+  audio.addEventListener('pause', () => {
+    // Only update if not loading a new track (which triggers pause internally)
+    if (audio.src && currentIdx !== -1 && !bar.classList.contains('now-playing--loading')) {
+      updateBarState('paused');
+    }
+  });
+
+  // D-10: bar play/pause button
+  npPlay.addEventListener('click', () => {
+    if (currentIdx === -1) return;
+    if (audio.paused) {
+      audio.volume = 1;
+      audio.play().catch(() => updateBarState('error'));
+    } else {
+      audio.pause();
+      updateBarState('paused');
+    }
+  });
+
+  // D-10: bar next button
+  npNext.addEventListener('click', () => {
+    if (currentIdx < TOTAL - 1) {
+      playTrack(currentIdx + 1);
+    }
+  });
+
+  // D-12: dismiss — pause BEFORE clearing src (Anti-pattern: src='' without pause causes AbortError)
+  npClose.addEventListener('click', () => {
+    audio.pause();
+    audio.src = '';
+    hideBar();
+  });
+
+  // Wire track buttons
+  trackBtns.forEach((btn, idx) => {
+    btn.addEventListener('click', () => playTrack(idx));
+  });
+</script>
+
+<style>
+  /* NOW PLAYING BAR — copied verbatim from TracksSection.astro lines 222-298 + icon-btn + loading modifier */
+  .now-playing {
+    display: none;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 60;
+    backdrop-filter: blur(16px);
+    background: rgba(6, 6, 6, 0.92);
+    border-top: 1px solid rgba(243, 169, 189, 0.4);
+    padding: 12px 28px;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .np-eq {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 22px;
+  }
+
+  .np-bar {
+    width: 3px;
+    height: 100%;
+    background: var(--color-accent);
+    border-radius: 2px;
+    transform-origin: bottom;
+    animation: eq 1s ease-in-out infinite;
+  }
+
+  .np-bar-2 {
+    animation-duration: 1.1s;
+    animation-delay: 0.2s;
+  }
+
+  .np-bar-3 {
+    animation-duration: 0.9s;
+    animation-delay: 0.4s;
+  }
+
+  .np-bar-4 {
+    animation-duration: 1.2s;
+    animation-delay: 0.1s;
+  }
+
+  /* D-11: buffering state — slow opacity pulse, no height animation */
+  .now-playing--loading .np-bar {
+    animation: eq-pulse 1.4s ease-in-out infinite;
+  }
+
+  .now-playing--loading .np-bar-2 {
+    animation-duration: 1.6s;
+    animation-delay: 0.3s;
+  }
+
+  .now-playing--loading .np-bar-3 {
+    animation-duration: 1.3s;
+    animation-delay: 0.1s;
+  }
+
+  .now-playing--loading .np-bar-4 {
+    animation-duration: 1.5s;
+    animation-delay: 0.2s;
+  }
+
+  @keyframes eq-pulse {
+    0%, 100% { opacity: 0.3; height: 40%; }
+    50% { opacity: 0.7; height: 50%; }
+  }
+
+  .np-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .np-label {
+    font-size: 12px;
+    color: var(--color-text-subtle);
+    letter-spacing: 0.5px;
+  }
+
+  .np-title {
+    font-family: var(--font-serif);
+    font-size: 18px;
+    color: var(--color-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .np-index {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--color-text-dim);
+    white-space: nowrap;
+  }
+
+  /* 44px touch target for all icon buttons (D-10, UI-SPEC) */
+  .icon-btn {
+    all: unset;
+    cursor: pointer;
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-muted);
+    font-size: 20px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .icon-btn:hover {
+    color: var(--color-text);
+  }
+
+  .np-close {
+    font-size: 22px;
+    padding: 0;
+  }
+
+  /* prefers-reduced-motion: stop EQ height animation, keep opacity */
+  @media (prefers-reduced-motion: reduce) {
+    .np-bar,
+    .np-bar-2,
+    .np-bar-3,
+    .np-bar-4 {
+      animation: none;
+      height: 40%;
+    }
+
+    .now-playing--loading .np-bar,
+    .now-playing--loading .np-bar-2,
+    .now-playing--loading .np-bar-3,
+    .now-playing--loading .np-bar-4 {
+      animation: none;
+      opacity: 0.5;
+    }
+  }
+</style>
