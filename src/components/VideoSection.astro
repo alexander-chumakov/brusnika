@@ -100,6 +100,17 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
   const closeBtn = modal?.querySelector<HTMLButtonElement>('.video-modal-close');
   const backdrop = modal?.querySelector<HTMLElement>('[data-modal-close]');
 
+  // Portal the modal to <body> so it escapes the VideoSection <section>'s low-z
+  // stacking context. Inside the section, the modal's z-index only competes within
+  // that context and paints BELOW the fixed site nav (z-index:50) — covering the
+  // close button. As a direct child of <body> it competes at the ROOT stacking
+  // context (z-index:2000) and sits above nav, the now-playing bar, and the lessons
+  // modal. Astro's scoped data-astro attribute moves with the node, so styling is kept.
+  // Children's event listeners move with the node too.
+  if (modal && modal.parentElement !== document.body) {
+    document.body.appendChild(modal);
+  }
+
   function openModal(url: string, title: string) {
     if (!modal || !modalVideo) return;
     modalVideo.src = url;
@@ -394,7 +405,9 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
   .video-modal {
     position: fixed;
     inset: 0;
-    z-index: 1000;
+    /* Portaled to <body> at runtime; 2000 beats nav (50), now-playing bar (60/61),
+       and the lessons modal (90) at the root stacking context. */
+    z-index: 2000;
     display: flex;
     align-items: center;
     justify-content: center;
