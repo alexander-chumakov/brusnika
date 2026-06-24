@@ -32,11 +32,11 @@
   4. Streaming links (Yandex Music and VK Music first, then Spotify, Apple Music, YouTube) and footer social/contact links (Telegram, VK, email) resolve to real destination pages
   5. Loading the Vercel preview URL with `NOINDEX=true` env var set causes `<meta name="robots" content="noindex">` to appear in page source; no crawler can index the page until the env var is removed
 
-**Plans:** 4 plans (Walking Skeleton first, then 3 vertical slices)
+**Plans:** 1/4 plans executed
 Plans:
 **Wave 1**
 
-- [ ] 01-01-PLAN.md — Walking Skeleton: scaffold Astro + Vercel adapter, move images, global tokens, Layout (fonts + noindex), Hero, deploy (FND-01/02/06/07)
+- [x] 01-01-PLAN.md — Walking Skeleton: scaffold Astro + Vercel adapter, move images, global tokens, Layout (fonts + noindex), Hero, deploy (FND-01/02/06/07)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -107,7 +107,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Static Site | 0/4 | Not started | - |
+| 1. Foundation & Static Site | 1/4 | In Progress|  |
 | 2. Media Islands | 0/? | Not started | - |
 | 3. Sharing & Booking | 0/? | Not started | - |
 | 4. Pre-Launch Verification | 0/? | Not started | - |

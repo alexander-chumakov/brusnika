@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-06-24T15:01:04.275Z"
+last_updated: "2026-06-24T15:16:58.424Z"
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 4
-  completed_plans: 0
+  completed_plans: 1
   percent: 0
 ---
 
@@ -29,10 +29,12 @@ progress:
 
 ## Current Position
 
+Phase: 01 (foundation-static-site) — EXECUTING
+Plan: 1 of 4
 **Phase:** 1 — Foundation & Static Site
-**Plan:** None started
-**Status:** Ready to execute
-**Progress:** ░░░░░░░░░░░░░░░░░░░░ 0%
+**Plan:** Plan 01 complete (checkpoint: Vercel deploy pending)
+**Status:** Executing Phase 01 — Plan 01-01 done, checkpoint at Vercel deploy
+**Progress:** [███░░░░░░░] 25%
 
 ---
 
@@ -62,13 +64,15 @@ progress:
 
 | Decision | Rationale |
 |----------|-----------|
-| Astro + hybrid output on Vercel | Static-first, minimal JS, clean v2 CMS path |
+| Astro 7 + output:static on Vercel (not hybrid — removed in Astro 7) | Static-first, minimal JS, clean v2 CMS path |
 | Vercel Blob for media (audio/video) | Zero-friction for v1 scale; switch to Bunny.net if >5 GB/month egress |
 | Self-hosted fonts via @fontsource | Google Fonts throttled/blocked for Russian ISPs |
 | Env-var-gated noindex (NOINDEX=true) | Launch toggle is a Vercel dashboard action, not a code change |
 | Telegram bot for booking delivery | Instant delivery, Russian-first UX, no inbox monitoring |
 | Web Share API + platform fallbacks | Only realistic web mechanism for sharing to stories/feeds |
 | Content Collections as v1→v2 seam | Loader swap in content.config.ts; zero component code changes for v2 |
+| Use @fontsource/prata/400.css (explicit path) not bare import | Avoids TypeScript ts(2882) strict-mode error; functionally identical |
+| Astro Sharp WebP generation confirmed for static builds (A1) | No extra astro.config.mjs settings needed — verified in build output |
 
 ### External Prerequisites
 
