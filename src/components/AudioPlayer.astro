@@ -307,10 +307,18 @@
     layer.className = 'bloom-layer';
     layer.setAttribute('aria-hidden', 'true');
 
-    // A few brusnika berries: a quick, soft, self-dissolving little shower right
-    // when music starts. Each berry drifts gently down and FADES OUT during its
-    // own fall (no landing/resting on the bar). Plain CSS keyframe per berry.
-    const COUNT = 8 + Math.floor(Math.random() * 5); // 8–12 berries
+    // Berries fall and softly SETTLE on the now-playing bar, then each rests a
+    // beat and fades GENTLY + INDIVIDUALLY. Because landings are staggered, the
+    // fades are naturally staggered too — a soft continuous dissolve, never a
+    // synchronized hold-then-blink. Measure the bar's top edge now; fall back
+    // to (viewport height − ~72px bar height) if not laid out yet.
+    const barRect = bar.getBoundingClientRect();
+    const landY =
+      barRect.height > 0 && barRect.top > 0
+        ? barRect.top
+        : window.innerHeight - 72;
+
+    const COUNT = 20 + Math.floor(Math.random() * 9); // 20–28 berries
     let maxLife = 0;
 
     for (let i = 0; i < COUNT; i++) {
@@ -321,26 +329,38 @@
       berry.alt = '';
       berry.setAttribute('aria-hidden', 'true');
 
-      const size = 36 + Math.random() * 26; // 36–62px, varied for naturalness
-      const scale = 0.8 + Math.random() * 0.5; // 0.8–1.3 slight depth
-      const opacity = 0.6 + Math.random() * 0.4; // 0.6–1 slight depth
+      // NATURAL VARIATION between berries so no two move alike (kills "robotic").
+      const size = 38 + Math.random() * 30; // 38–68px, varied
+      const scale = 0.75 + Math.random() * 0.6; // 0.75–1.35 depth/parallax
+      const opacity = 0.6 + Math.random() * 0.4; // 0.6–1 depth/parallax
       const startX = Math.random() * 100; // full-width random position (%)
-      const sway = (Math.random() - 0.5) * 36; // subtle gentle sway (±18px)
-      const spin = (Math.random() - 0.5) * 18; // very slight tumble (±9deg)
-      // TIGHT stagger so it reads as ONE prompt shower; first berries within
-      // ~80–120ms of the click, all entering within ~0.45s. No long lead-in.
-      const delay = 0.08 + Math.random() * 0.37; // 0.08–0.45s
-      const fall = 1.3 + Math.random() * 0.5; // 1.3–1.8s short, light descent
-      maxLife = Math.max(maxLife, delay + fall);
+      const sway = 28 + Math.random() * 44; // 28–72px buoyant balloon-ish arc
+      const swayDir = Math.random() < 0.5 ? -1 : 1; // swing L or R first
+      const spin = (Math.random() - 0.5) * 28; // slow lazy tumble (±14deg)
+      // START IMMEDIATELY: tight initial stagger so first berries appear at once.
+      const delay = 0.05 + Math.random() * 0.35; // 0.05–0.4s
+      const fall = 2.5 + Math.random() * 1; // 2.5–3.5s unhurried natural descent
+      const rest = 0.25 + Math.random() * 0.4; // brief rest on the bar (0.25–0.65s)
+      const fade = 0.7 + Math.random() * 0.6; // 0.7–1.3s gentle individual fade
+      // berry settles slightly above the bar line (account for its size)
+      const restY = landY - size * scale * 0.5;
+      maxLife = Math.max(maxLife, delay + fall + rest + fade);
 
       berry.style.setProperty('--size', `${size}px`);
       berry.style.setProperty('--scale', String(scale));
       berry.style.setProperty('--berry-opacity', String(opacity));
       berry.style.setProperty('--x', `${startX}%`);
-      berry.style.setProperty('--sway', `${sway}px`);
+      berry.style.setProperty('--sway', `${swayDir * sway}px`);
+      berry.style.setProperty('--sway2', `${-swayDir * sway}px`);
+      berry.style.setProperty('--sway3', `${swayDir * sway * 0.55}px`);
       berry.style.setProperty('--spin', `${spin}deg`);
+      berry.style.setProperty('--rest-y', `${restY}px`);
       berry.style.setProperty('--delay', `${delay}s`);
+      // single timeline duration = fall + rest + fade; phase split as % below
       berry.style.setProperty('--fall', `${fall}s`);
+      berry.style.setProperty('--rest', `${rest}s`);
+      berry.style.setProperty('--fade', `${fade}s`);
+      berry.style.setProperty('--dur', `${fall + rest + fade}s`);
 
       layer.appendChild(berry);
     }
@@ -672,13 +692,20 @@
     overflow: hidden;
   }
 
-  /* Each particle is the real brand berry SVG (public/favicon.svg). Simple,
-     single per-berry CSS keyframe: starts OFF-SCREEN above the top at opacity 0
-     (held during its short delay via fill `both` → no flash on the player),
-     fades in near the top, drifts gently down with a subtle sway + slight
-     tumble, and FADES OUT during the latter part of its own fall — it never
-     lands or rests on the now-playing bar. A quick, soft, self-dissolving
-     shower. depth comes from per-berry scale/opacity; size/x/speed vary. */
+  /* Each particle is the real brand berry SVG (public/favicon.svg). ONE
+     per-berry CSS keyframe timeline (berry-fall), driven by a single animation
+     with one --delay and fill `both`. Because EACH berry has its OWN delay,
+     duration and variation, the landings — and therefore the fades — are
+     naturally STAGGERED: a soft continuous dissolve, never a synchronized
+     hold-then-blink. The 0% keyframe is off-screen above the top at opacity 0,
+     so a delayed berry holds that invisible state during its delay → it can
+     never flash pre-placed on the player.
+       0% → ~10%  : off-screen above top, fade in near the top
+       ~10% → 62% : unhurried buoyant descent, gentle sway + slow lazy tumble
+       62% → 72%  : soft settle onto the bar (tiny cushion, no sharp bounce)
+       72% → 100% : brief rest, then gentle individual fade-out on the bar
+     ease-in-out + per-berry variation is what makes it feel organic. The phase
+     split is fixed % tuned to dur ≈ fall(~62%) + rest(~10%) + fade(~28%). */
   .bloom-berry {
     position: absolute;
     top: 0;
@@ -688,32 +715,55 @@
     opacity: 0;
     will-change: transform, opacity;
     transform-origin: center;
-    animation: berry-fall var(--fall) ease-in var(--delay) both;
+    animation: berry-fall var(--dur) ease-in-out var(--delay) both;
   }
 
   @keyframes berry-fall {
     0% {
       opacity: 0;
       /* off-screen above the top edge — invisible during the pre-fall delay */
-      transform: translate(0, -14vh) rotate(0deg) scale(var(--scale));
+      transform: translate(var(--sway), -14vh) rotate(0deg) scale(var(--scale));
     }
-    18% {
+    10% {
       /* fade in as it enters near the top */
       opacity: var(--berry-opacity);
-      transform: translate(calc(var(--sway) * 0.5), 6vh)
-        rotate(calc(var(--spin) * 0.4)) scale(var(--scale));
     }
-    60% {
-      /* still gently drifting, fully visible */
+    34% {
+      transform: translate(var(--sway2), calc(var(--rest-y) * 0.32))
+        rotate(calc(var(--spin) * 0.35)) scale(var(--scale));
+    }
+    52% {
+      transform: translate(var(--sway), calc(var(--rest-y) * 0.62))
+        rotate(calc(var(--spin) * 0.65)) scale(var(--scale));
+    }
+    62% {
       opacity: var(--berry-opacity);
-      transform: translate(var(--sway), 42vh)
+      /* arrive at the bar line */
+      transform: translate(var(--sway3), var(--rest-y))
         rotate(var(--spin)) scale(var(--scale));
     }
+    68% {
+      /* soft cushion as it settles (no sharp bounce) */
+      transform: translate(calc(var(--sway3) * 0.6), calc(var(--rest-y) + 5px))
+        rotate(calc(var(--spin) * 0.95)) scale(calc(var(--scale) * 0.99));
+    }
+    72% {
+      opacity: var(--berry-opacity);
+      /* come to rest on the bar */
+      transform: translate(calc(var(--sway3) * 0.4), calc(var(--rest-y) + 2px))
+        rotate(calc(var(--spin) * 0.95)) scale(var(--scale));
+    }
+    82% {
+      /* brief rest fully visible on the bar before fading */
+      opacity: var(--berry-opacity);
+      transform: translate(calc(var(--sway3) * 0.4), calc(var(--rest-y) + 2px))
+        rotate(calc(var(--spin) * 0.95)) scale(var(--scale));
+    }
     100% {
-      /* faded out by the mid/lower fall — dissolves on its own */
+      /* gentle individual fade-out, settling a hair lower */
       opacity: 0;
-      transform: translate(calc(var(--sway) * 1.3), 72vh)
-        rotate(calc(var(--spin) * 1.3)) scale(var(--scale));
+      transform: translate(calc(var(--sway3) * 0.4), calc(var(--rest-y) + 6px))
+        rotate(calc(var(--spin) * 0.95)) scale(var(--scale));
     }
   }
 
