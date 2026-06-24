@@ -290,9 +290,10 @@
     hideBar();
   });
 
-  // FEATURE: calm brusnika "bloom" — a few lingonberry particles softly emerge
-  // and gently drift on USER-INITIATED play only (track click / hero CTA).
-  // NOT on auto-advance (would get repetitive). Atmospheric, not a burst.
+  // FEATURE: brusnika berry CASCADE — recognizable lingonberries fall like a
+  // gentle waterfall (водопад) on USER-INITIATED play only (track click /
+  // hero CTA). NOT on auto-advance (would get repetitive). Flowing, staggered,
+  // graceful — not a frantic storm.
   const prefersReducedMotion = window.matchMedia(
     '(prefers-reduced-motion: reduce)'
   );
@@ -305,29 +306,42 @@
     layer.className = 'bloom-layer';
     layer.setAttribute('aria-hidden', 'true');
 
-    const COUNT = 9; // 6–12 berries; calm, not a swarm
-    const palette = ['#a01b32', '#c92f4b', '#f3a9bd']; // brusnika crimson → pink accent
+    // Lingonberries are deep red/crimson (NOT pink). Pink is a rare minor accent.
+    const palette = ['#a01b32', '#c92f4b', '#8f1228', '#b81f3a'];
+    const COUNT = 12 + Math.floor(Math.random() * 7); // 12–18 berries
     let maxLife = 0;
 
     for (let i = 0; i < COUNT; i++) {
       const berry = document.createElement('span');
       berry.className = 'bloom-berry';
 
-      const size = 8 + Math.random() * 8; // 8–16px small round berries
-      const startX = 30 + Math.random() * 40; // cluster near horizontal center (%)
-      const drift = (Math.random() - 0.5) * 90; // gentle horizontal sway (px)
-      const rise = 90 + Math.random() * 90; // soft upward drift (px)
-      const delay = Math.random() * 0.45; // staggered emergence (s)
-      const dur = 1.2 + Math.random() * 0.6; // 1.2–1.8s slow
+      const size = 22 + Math.random() * 18; // 22–40px — clearly readable berries
+      const startX = Math.random() * 100; // spread across the full width (%)
+      const sway = (Math.random() - 0.5) * 70; // slight horizontal sway (px)
+      const spin = (Math.random() - 0.5) * 80; // slow rotation as it falls (deg)
+      const delay = Math.random() * 0.9; // staggered cascade start (s)
+      const dur = 1.8 + Math.random() * 0.8; // 1.8–2.6s slow fall
       maxLife = Math.max(maxLife, delay + dur);
 
       berry.style.setProperty('--size', `${size}px`);
       berry.style.setProperty('--x', `${startX}%`);
-      berry.style.setProperty('--drift', `${drift}px`);
-      berry.style.setProperty('--rise', `-${rise}px`);
+      berry.style.setProperty('--sway', `${sway}px`);
+      berry.style.setProperty('--spin', `${spin}deg`);
       berry.style.setProperty('--delay', `${delay}s`);
       berry.style.setProperty('--dur', `${dur}s`);
       berry.style.setProperty('--berry', palette[i % palette.length]);
+
+      // Blossom-end dark spot at the bottom (characteristic lingonberry mark)
+      const blossom = document.createElement('span');
+      blossom.className = 'bloom-berry-blossom';
+      berry.appendChild(blossom);
+
+      // A couple of berries carry a small green leaf for recognizability
+      if (i % 6 === 0) {
+        const leaf = document.createElement('span');
+        leaf.className = 'bloom-berry-leaf';
+        berry.appendChild(leaf);
+      }
 
       layer.appendChild(berry);
     }
@@ -643,7 +657,7 @@
 </style>
 
 <!--
-  FEATURE: calm brusnika bloom — MUST be global. Berries are created with
+  FEATURE: brusnika berry cascade — MUST be global. Berries are created with
   document.createElement and appended to document.body, so they never receive
   Astro's component scope hash. Scoped selectors would not match → invisible.
   This block is :global so the JS-created nodes are styled and animated.
@@ -657,43 +671,81 @@
     overflow: hidden;
   }
 
+  /* Recognizable lingonberry: round, glossy, deep red, with a bright specular
+     highlight (top-left) and a dark blossom-end dot (bottom). Falls like a
+     waterfall from above the top edge to below the bottom. */
   .bloom-berry {
     position: absolute;
+    top: 0;
     left: var(--x);
-    bottom: 14%;
     width: var(--size);
     height: var(--size);
     border-radius: 50%;
-    background: radial-gradient(
-      circle at 32% 30%,
-      rgba(255, 255, 255, 0.85) 0%,
-      var(--berry) 42%,
-      color-mix(in srgb, var(--berry) 70%, #000) 100%
-    );
+    background:
+      /* bright specular highlight near the top-left */
+      radial-gradient(
+          circle at 30% 26%,
+          rgba(255, 255, 255, 0.9) 0%,
+          rgba(255, 255, 255, 0.35) 9%,
+          transparent 22%
+        ),
+      /* glossy crimson body with darker rim for roundness */
+      radial-gradient(
+        circle at 42% 38%,
+        color-mix(in srgb, var(--berry) 80%, #fff) 0%,
+        var(--berry) 46%,
+        color-mix(in srgb, var(--berry) 62%, #000) 100%
+      );
+    box-shadow: inset -2px -3px 5px rgba(0, 0, 0, 0.35);
     opacity: 0;
-    will-change: transform, opacity, filter;
-    /* slow, ease-out drift; gentle, not frantic */
-    animation: bloom-drift var(--dur) cubic-bezier(0.16, 0.7, 0.2, 1)
+    will-change: transform, opacity;
+    /* slow eased fall; gentle cascade, not a frantic storm */
+    animation: berry-fall var(--dur) cubic-bezier(0.4, 0.05, 0.5, 1)
       var(--delay) both;
   }
 
-  @keyframes bloom-drift {
+  /* characteristic dark blossom-end spot at the bottom of the berry */
+  .bloom-berry-blossom {
+    position: absolute;
+    left: 50%;
+    bottom: 12%;
+    width: 22%;
+    height: 22%;
+    transform: translateX(-50%);
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--berry) 40%, #000);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--berry) 55%, #000);
+  }
+
+  /* small green leaf/stem on a couple of berries for clarity */
+  .bloom-berry-leaf {
+    position: absolute;
+    top: -16%;
+    left: 54%;
+    width: 46%;
+    height: 40%;
+    background: linear-gradient(135deg, #4a7c2f 0%, #2f5a1c 100%);
+    border-radius: 0 80% 0 80%;
+    transform: rotate(-28deg);
+    transform-origin: bottom left;
+  }
+
+  @keyframes berry-fall {
     0% {
       opacity: 0;
-      transform: translate(0, 0) scale(0.4);
-      filter: blur(2px);
+      /* start above the top edge */
+      transform: translate(0, -16vh) rotate(0deg);
     }
-    25% {
-      opacity: 0.85;
-      filter: blur(0);
+    12% {
+      opacity: 1;
     }
-    70% {
-      opacity: 0.7;
+    85% {
+      opacity: 1;
     }
     100% {
       opacity: 0;
-      transform: translate(var(--drift), var(--rise)) scale(1);
-      filter: blur(3px);
+      /* fall past the bottom with slight sway + slow rotation */
+      transform: translate(var(--sway), 116vh) rotate(var(--spin));
     }
   }
 
