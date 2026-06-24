@@ -9,7 +9,7 @@
 # Requires: BLOB_READ_WRITE_TOKEN in environment (pulled via env pull above)
 # Requires: ffmpeg available at /opt/homebrew/bin/ffmpeg (for poster extraction)
 #
-# Uploads all 9 audio + all 9 video + 4 poster JPEGs for displayed clips.
+# Uploads all 9 audio + all 9 video + all 9 poster JPEGs (one per clip).
 # Appends each CDN URL mapping to .planning/phases/02-media-islands/MEDIA-URLS.md
 #
 # Source: https://vercel.com/docs/vercel-blob/manage-blob-storage (VERIFIED: official docs)
@@ -80,11 +80,11 @@ upload() {
 }
 
 # ---------------------------------------------------------------------------
-# 1. Extract poster frames for the 4 displayed clips (ffmpeg)
+# 1. Extract poster frames for all 9 clips (ffmpeg)
 # ---------------------------------------------------------------------------
 
 echo ""
-echo "=== Step 1: Extract poster frames for 4 displayed clips ==="
+echo "=== Step 1: Extract poster frames for all 9 clips ==="
 
 mkdir -p "$POSTERS_DIR"
 
@@ -93,6 +93,11 @@ POSTER_CLIPS=(
   "video/Кажется.MP4:kazhetsya"
   "video/Клуб Неоправданных Надежд.mp4:klub"
   "video/Занавес.MP4:zanaves"
+  "video/Игрок.MP4:igrok"
+  "video/Безнаказанным.MP4:beznakazannym"
+  "video/Ива.MP4:iva"
+  "video/Завтра была зима.mp4:zavtra"
+  "video/Кажется акустика.MP4:kazhetsya-akustika"
 )
 
 for entry in "${POSTER_CLIPS[@]}"; do
@@ -146,17 +151,22 @@ upload "video/Завтра была зима.mp4"            "video/zavtra.mp4" 
 upload "video/Кажется акустика.MP4"            "video/kazhetsya-akustika.mp4" "video"
 
 # ---------------------------------------------------------------------------
-# 4. Upload 4 poster JPEGs
+# 4. Upload 9 poster JPEGs (one per clip)
 # ---------------------------------------------------------------------------
 
 echo ""
-echo "=== Step 4: Upload poster JPEGs (4 displayed clips) ==="
+echo "=== Step 4: Upload poster JPEGs (9 clips) ==="
 printf "\n## Posters\n\n| Local file | Pathname | CDN URL |\n|-----------|----------|--------|\n" >> "$MEDIA_URLS"
 
-upload "$POSTERS_DIR/doorudi-poster.jpg"   "posters/doorudi-poster.jpg"   "poster"
-upload "$POSTERS_DIR/kazhetsya-poster.jpg" "posters/kazhetsya-poster.jpg" "poster"
-upload "$POSTERS_DIR/klub-poster.jpg"      "posters/klub-poster.jpg"      "poster"
-upload "$POSTERS_DIR/zanaves-poster.jpg"   "posters/zanaves-poster.jpg"   "poster"
+upload "$POSTERS_DIR/doorudi-poster.jpg"            "posters/doorudi-poster.jpg"            "poster"
+upload "$POSTERS_DIR/kazhetsya-poster.jpg"          "posters/kazhetsya-poster.jpg"          "poster"
+upload "$POSTERS_DIR/klub-poster.jpg"               "posters/klub-poster.jpg"               "poster"
+upload "$POSTERS_DIR/zanaves-poster.jpg"            "posters/zanaves-poster.jpg"            "poster"
+upload "$POSTERS_DIR/igrok-poster.jpg"              "posters/igrok-poster.jpg"              "poster"
+upload "$POSTERS_DIR/beznakazannym-poster.jpg"      "posters/beznakazannym-poster.jpg"      "poster"
+upload "$POSTERS_DIR/iva-poster.jpg"                "posters/iva-poster.jpg"                "poster"
+upload "$POSTERS_DIR/zavtra-poster.jpg"             "posters/zavtra-poster.jpg"             "poster"
+upload "$POSTERS_DIR/kazhetsya-akustika-poster.jpg" "posters/kazhetsya-akustika-poster.jpg" "poster"
 
 # ---------------------------------------------------------------------------
 # Done
