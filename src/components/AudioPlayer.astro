@@ -29,6 +29,20 @@
     <div id="np-title" class="np-title"></div>
   </div>
   <div id="np-index" class="np-index"></div>
+  <!-- Volume control — desktop only (iOS ignores audio.volume); hidden on mobile via CSS -->
+  <div class="np-volume">
+    <button id="np-mute" class="icon-btn" aria-label="Без звука">🔊</button>
+    <input
+      id="np-volume"
+      class="np-volume-slider"
+      type="range"
+      min="0"
+      max="1"
+      step="0.01"
+      value="1"
+      aria-label="Громкость"
+    />
+  </div>
   <button id="np-play" class="icon-btn" aria-label="Воспроизвести">▶</button>
   <button id="np-next" class="icon-btn" aria-label="Следующий трек">→</button>
   <button id="np-close" class="icon-btn np-close" aria-label="Закрыть плеер">×</button>
@@ -53,8 +67,32 @@
   const npPlay = document.getElementById('np-play') as HTMLButtonElement;
   const npNext = document.getElementById('np-next') as HTMLButtonElement;
   const npClose = document.getElementById('np-close') as HTMLButtonElement;
+  const npMute = document.getElementById('np-mute') as HTMLButtonElement;
+  const npVolume = document.getElementById('np-volume') as HTMLInputElement;
 
   const TOTAL = trackBtns.length;
+
+  // FIX B: user-controlled target volume. Fades and restores ramp toward this
+  // value (not a hardcoded 1). 0 = muted. Persisted across the session.
+  function loadUserVolume(): number {
+    const stored = sessionStorage.getItem('np-user-volume');
+    const parsed = stored !== null ? parseFloat(stored) : NaN;
+    if (!Number.isNaN(parsed) && parsed >= 0 && parsed <= 1) return parsed;
+    return 1;
+  }
+  let userVolume = loadUserVolume();
+  // Volume before mute, so the speaker toggle can restore it
+  let preMuteVolume = userVolume > 0 ? userVolume : 1;
+
+  function updateMuteIcon() {
+    if (userVolume === 0) {
+      npMute.textContent = '🔇';
+      npMute.setAttribute('aria-label', 'Включить звук');
+    } else {
+      npMute.textContent = '🔊';
+      npMute.setAttribute('aria-label', 'Без звука');
+    }
+  }
 
   type BarState = 'loading' | 'playing' | 'paused' | 'error';
 
@@ -147,7 +185,7 @@
 
     // D-09: same track while paused → resume from current position
     if (idx === currentIdx && audio.paused) {
-      audio.volume = 1;
+      audio.volume = userVolume;
       audio.play().catch(() => updateBarState('error'));
       updateBarState('playing');
       return;
@@ -158,7 +196,7 @@
       currentIdx = idx;
       audio.src = trackBtns[idx].dataset.audioUrl!;
       audio.load(); // Pitfall 6: load before play
-      audio.volume = 1;
+      audio.volume = userVolume;
       showBar(idx);
       updateBarState('loading');
       audio.play().catch(() => updateBarState('error'));
@@ -179,7 +217,7 @@
 
   // Restore volume and update state when audio actually starts playing
   audio.addEventListener('playing', () => {
-    audio.volume = 1;
+    audio.volume = userVolume;
     updateBarState('playing');
   });
 
@@ -195,7 +233,7 @@
   npPlay.addEventListener('click', () => {
     if (currentIdx === -1) return;
     if (audio.paused) {
-      audio.volume = 1;
+      audio.volume = userVolume;
       audio.play().catch(() => updateBarState('error'));
     } else {
       audio.pause();
@@ -233,6 +271,37 @@
       playTrack(0);
     });
   }
+
+  // FIX B: volume control wiring (desktop only; hidden on mobile via CSS).
+  // Drives userVolume; live-applies to audio.volume during playback.
+  function applyUserVolume(v: number, persist = true) {
+    userVolume = Math.min(1, Math.max(0, v));
+    npVolume.value = String(userVolume);
+    // Only apply live if not mid-fade (loading state ramps on its own)
+    if (!bar.classList.contains('now-playing--loading')) {
+      audio.volume = userVolume;
+    }
+    if (userVolume > 0) preMuteVolume = userVolume;
+    updateMuteIcon();
+    if (persist) sessionStorage.setItem('np-user-volume', String(userVolume));
+  }
+
+  // Initialize slider + icon from persisted/default value
+  applyUserVolume(userVolume, false);
+
+  npVolume.addEventListener('input', () => {
+    applyUserVolume(parseFloat(npVolume.value));
+  });
+
+  // Speaker icon toggles mute/unmute, restoring the pre-mute level
+  npMute.addEventListener('click', () => {
+    if (userVolume > 0) {
+      preMuteVolume = userVolume;
+      applyUserVolume(0);
+    } else {
+      applyUserVolume(preMuteVolume > 0 ? preMuteVolume : 1);
+    }
+  });
 </script>
 
 <style>
@@ -333,6 +402,62 @@
     font-size: 13px;
     color: var(--color-text-dim);
     white-space: nowrap;
+  }
+
+  /* FIX B: volume control — desktop only (iOS ignores audio.volume) */
+  .np-volume {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .np-volume-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 80px;
+    height: 3px;
+    border-radius: 2px;
+    background: rgba(243, 169, 189, 0.25);
+    cursor: pointer;
+    outline: none;
+  }
+
+  .np-volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .np-volume-slider::-webkit-slider-thumb:hover {
+    background: var(--color-accent-hover);
+  }
+
+  .np-volume-slider::-moz-range-thumb {
+    width: 13px;
+    height: 13px;
+    border: none;
+    border-radius: 50%;
+    background: var(--color-accent);
+    cursor: pointer;
+  }
+
+  .np-volume-slider::-moz-range-track {
+    height: 3px;
+    border-radius: 2px;
+    background: rgba(243, 169, 189, 0.25);
+  }
+
+  /* Hide the volume control on mobile — iOS ignores programmatic audio.volume */
+  @media (max-width: 860px) {
+    .np-volume {
+      display: none;
+    }
   }
 
   /* 44px touch target for all icon buttons (D-10, UI-SPEC) */
