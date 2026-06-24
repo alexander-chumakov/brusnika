@@ -1,0 +1,200 @@
+---
+/**
+ * SingSection.astro — «пойте с нами» section
+ *
+ * Pixel-faithful port of index.html lines 243-275.
+ * - Background #050505
+ * - .sing-grid two-column (0.92fr 1.08fr) — image left, content right
+ * - Astro <Image> for live-carpet.jpg (WebP, object-position center 30%)
+ * - Two numbered lesson blocks: Хоротерапия, Индивидуальные уроки вокала
+ * - «записаться →» button carries data-open-lessons (Plan 04 hook)
+ * - Mobile: .sing-grid → single column at 860px (FND-04; global.css handles this)
+ */
+import { Image } from 'astro:assets';
+import singImg from '../assets/images/live-carpet.jpg';
+---
+
+<section id="sing" class="sing-section">
+  <div class="sing-grid">
+    <div data-reveal class="sing-image-frame">
+      <Image
+        src={singImg}
+        alt="поём вместе"
+        widths={[480, 860]}
+        sizes="(max-width: 860px) 100vw, 560px"
+        format="webp"
+        quality={85}
+        loading="lazy"
+        class="sing-image"
+      />
+      <div class="sing-image-gradient"></div>
+    </div>
+
+    <div data-reveal data-reveal-d1 class="sing-content">
+      <div class="sing-eyebrow">пойте с нами</div>
+      <h2 class="sing-title">Голос есть <span class="sing-accent">у каждого</span></h2>
+      <p class="sing-intro">Соня, вокалистка «внимание брусника!», зовёт петь вместе — без страха, оценок и «правильно». Только ваш голос, дыхание и удовольствие.</p>
+
+      <div class="lesson-blocks">
+        <div class="lesson-block">
+          <span class="lesson-num">01</span>
+          <div class="lesson-body">
+            <div class="lesson-name">Хоротерапия</div>
+            <p class="lesson-desc">Групповые встречи — совместное пение в кругу, где не нужен опыт и слух. Про голос, тело и состояние.</p>
+          </div>
+        </div>
+        <div class="lesson-block lesson-block--last">
+          <span class="lesson-num">02</span>
+          <div class="lesson-body">
+            <div class="lesson-name">Индивидуальные уроки вокала</div>
+            <p class="lesson-desc">Занятия один на один, онлайн и офлайн. Дыхание, свобода, поиск своего тембра. Первый урок — пробный.</p>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-pink sing-btn" data-open-lessons>записаться →</button>
+    </div>
+  </div>
+</section>
+
+<style>
+  .sing-section {
+    position: relative;
+    z-index: 2;
+    background: #050505;
+    scroll-margin-top: 70px;
+  }
+
+  .sing-grid {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 120px 40px;
+    display: grid;
+    grid-template-columns: 0.92fr 1.08fr;
+    gap: 64px;
+    align-items: center;
+  }
+
+  .sing-image-frame {
+    position: relative;
+    border-radius: 5px;
+    overflow: hidden;
+    aspect-ratio: 4 / 5;
+  }
+
+  .sing-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 30%;
+  }
+
+  .sing-image-gradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.45));
+  }
+
+  .sing-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    margin-bottom: 18px;
+  }
+
+  .sing-title {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(32px, 4.6vw, 54px);
+    line-height: 1.06;
+    margin: 0 0 22px;
+    letter-spacing: 0.3px;
+    color: var(--color-text);
+  }
+
+  .sing-accent {
+    color: var(--color-accent);
+  }
+
+  .sing-intro {
+    font-size: 17px;
+    line-height: 1.7;
+    color: var(--color-text-muted);
+    margin: 0 0 8px;
+    max-width: 480px;
+  }
+
+  .lesson-blocks {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 30px 0 32px;
+  }
+
+  .lesson-block {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 18px;
+    align-items: start;
+    padding: 20px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .lesson-block--last {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .lesson-num {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--color-text-dimmer);
+    padding-top: 5px;
+  }
+
+  .lesson-name {
+    font-family: var(--font-serif);
+    font-size: 22px;
+    color: var(--color-text);
+    margin-bottom: 6px;
+  }
+
+  .lesson-desc {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--color-text-subtle);
+    margin: 0;
+  }
+
+  .sing-btn {
+    all: unset;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--color-accent);
+    color: #000;
+    font-weight: 600;
+    font-size: 15px;
+    padding: 14px 28px;
+    border-radius: 2px;
+    letter-spacing: 0.3px;
+    transition: background 0.25s;
+  }
+
+  .sing-btn:hover {
+    background: var(--color-accent-hover);
+  }
+
+  /* Mobile single-column — also handled by global.css .sing-grid rule */
+  @media (max-width: 860px) {
+    .sing-grid {
+      grid-template-columns: 1fr;
+      gap: 40px;
+      padding: 80px 20px;
+    }
+  }
+</style>

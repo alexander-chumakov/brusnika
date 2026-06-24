@@ -1,0 +1,112 @@
+---
+/**
+ * AboutSection.astro — «о группе» section
+ *
+ * Pixel-faithful port of index.html lines 176-189.
+ * - Background var(--color-bg-raised) (#070707)
+ * - .about-grid two-column (1.15fr 0.85fr) with data-reveal on both columns
+ * - Portrait via Astro <Image> (WebP derivatives at 480/860px)
+ * - Mobile: .about-grid → single column at 860px (FND-04; global.css handles this)
+ */
+import { Image } from 'astro:assets';
+import aboutImg from '../assets/images/about.jpg';
+---
+
+<section id="about" class="about-section">
+  <div class="about-grid">
+    <div data-reveal class="about-text">
+      <div class="about-eyebrow">о группе</div>
+      <h2 class="about-title">Мы собираем<br>хрупкое <span class="about-accent">в песни</span></h2>
+      <p class="about-body">«внимание брусника!» — камерный dream-pop проект, где негромкий женский вокал встречается с тёплыми гитарами, синтезаторами и шорохом плёнки. Мы поём по-русски — о любви, о памяти и о людях, которых хочется удержать.</p>
+      <p class="about-body">Дебютный альбом «Неоднозначное» вышел в 2024-м, за ним — синглы и живые сессии. Концерты мы играем в небольших залах, где слышно дыхание.</p>
+    </div>
+    <div data-reveal data-reveal-d1 class="about-portrait-frame">
+      <Image
+        src={aboutImg}
+        alt="Соня — внимание брусника!"
+        widths={[480, 860]}
+        sizes="(max-width: 860px) 100vw, 480px"
+        format="webp"
+        quality={85}
+        loading="lazy"
+        class="about-portrait"
+      />
+    </div>
+  </div>
+</section>
+
+<style>
+  .about-section {
+    position: relative;
+    z-index: 2;
+    background: var(--color-bg-raised);
+    scroll-margin-top: 70px;
+  }
+
+  .about-grid {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 130px 40px;
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 70px;
+    align-items: center;
+  }
+
+  .about-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    margin-bottom: 20px;
+  }
+
+  .about-title {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(32px, 5vw, 62px);
+    line-height: 1.06;
+    margin: 0 0 30px;
+    letter-spacing: 0.3px;
+    color: var(--color-text);
+  }
+
+  .about-accent {
+    color: var(--color-accent);
+  }
+
+  .about-body {
+    font-size: 17.5px;
+    line-height: 1.75;
+    color: var(--color-text-muted);
+    margin: 0 0 20px;
+    max-width: 540px;
+  }
+
+  .about-body:last-child {
+    margin-bottom: 0;
+  }
+
+  .about-portrait-frame {
+    position: relative;
+    aspect-ratio: 3 / 4;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .about-portrait {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Mobile single-column — also handled by global.css .about-grid rule */
+  @media (max-width: 860px) {
+    .about-grid {
+      grid-template-columns: 1fr;
+      gap: 40px;
+      padding: 80px 20px;
+    }
+  }
+</style>

@@ -1,15 +1,34 @@
 ---
 /**
- * index.astro — Home page (Walking Skeleton: hero only)
+ * index.astro — Home page
  *
- * Prerendered by default in static mode.
- * Remaining sections (marquee, album, tracks, about, shows, gallery,
- * sing, footer) are added in plans 01-02 through 01-04.
+ * Document order matches index.html exactly:
+ *   Nav → Hero → Marquee → FeaturedAlbum
+ *   → [Plan 03: TracksSection, ShowsSection, GallerySection]
+ *   → About → Sing
+ *   → [Plan 04: Footer + BookingModal markup]
+ *
+ * Prerendered by default (output: static in astro.config.mjs).
  */
 import Layout from '../layouts/Layout.astro';
+import Nav from '../components/Nav.astro';
 import HeroSection from '../components/HeroSection.astro';
+import MarqueeSection from '../components/MarqueeSection.astro';
+import FeaturedAlbumSection from '../components/FeaturedAlbumSection.astro';
+import AboutSection from '../components/AboutSection.astro';
+import SingSection from '../components/SingSection.astro';
 ---
 
 <Layout>
+  <Nav />
   <HeroSection />
+  <MarqueeSection />
+  <FeaturedAlbumSection />
+
+  {/* Plan 03 inserts here: TracksSection, ShowsSection, GallerySection */}
+
+  <AboutSection />
+  <SingSection />
+
+  {/* Plan 04 inserts here: Footer + BookingModal markup */}
 </Layout>
