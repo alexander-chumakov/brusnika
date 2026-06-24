@@ -32,7 +32,7 @@
   4. Streaming links (Yandex Music and VK Music first, then Spotify, Apple Music, YouTube) and footer social/contact links (Telegram, VK, email) resolve to real destination pages
   5. Loading the Vercel preview URL with `NOINDEX=true` env var set causes `<meta name="robots" content="noindex">` to appear in page source; no crawler can index the page until the env var is removed
 
-**Plans:** 2/4 plans executed
+**Plans:** 3/4 plans executed
 Plans:
 **Wave 1**
 
@@ -44,7 +44,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 01-03-PLAN.md — Content Collections seam: tracks/shows/gallery from getCollection() + demo now-playing bar (FND-05, SHOW-01/02)
+- [x] 01-03-PLAN.md — Content Collections seam: tracks/shows/gallery from getCollection() + demo now-playing bar (FND-05, SHOW-01/02)
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
@@ -107,7 +107,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Static Site | 2/4 | In Progress|  |
+| 1. Foundation & Static Site | 3/4 | In Progress|  |
 | 2. Media Islands | 0/? | Not started | - |
 | 3. Sharing & Booking | 0/? | Not started | - |
 | 4. Pre-Launch Verification | 0/? | Not started | - |

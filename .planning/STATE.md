@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-06-24T16:30:28.006Z"
+last_updated: "2026-06-24T16:53:37.779Z"
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 4
-  completed_plans: 2
+  completed_plans: 3
   percent: 0
 ---
 
@@ -30,11 +30,11 @@ progress:
 ## Current Position
 
 Phase: 01 (foundation-static-site) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 **Phase:** 1 — Foundation & Static Site
-**Plan:** Plan 02 complete (checkpoint: Vercel visual verify pending)
-**Status:** Executing Phase 01 — Plans 01-01 and 01-02 done; awaiting Vercel deploy for visual checkpoint
-**Progress:** [█████░░░░░] 50%
+**Plan:** Plan 03 complete (checkpoint: Vercel visual verify pending)
+**Status:** Executing Phase 01 — Plans 01-01, 01-02, and 01-03 done; awaiting Vercel deploy for visual checkpoint
+**Progress:** [███████░░░] 75%
 
 ---
 
@@ -74,6 +74,9 @@ Plan: 2 of 4
 | Use @fontsource/prata/400.css (explicit path) not bare import | Avoids TypeScript ts(2882) strict-mode error; functionally identical |
 | Astro Sharp WebP generation confirmed for static builds (A1) | No extra astro.config.mjs settings needed — verified in build output |
 | @supports gate for -webkit-text-stroke in MarqueeSection | Solid color fallback when browser lacks text-stroke support; extends 01-01 gradient-clip lesson |
+| import z from 'astro/zod' (not 'zod') confirmed | Astro 7 bundles Zod 4; direct zod import risks version conflict (Pitfall 5) |
+| is:inline on <script> BLOCK inlines content; is:inline on <script src=> does NOT | is:inline with src emits broken relative-path src= tag; content must be in the <script> block (A2 resolved) |
+| Gallery dynamic images via import.meta.glob({ eager: true }) + default export | Only way to satisfy Astro <Image> ImageMetadata type requirement for filenames from JSON |
 
 ### External Prerequisites
 

@@ -13,7 +13,7 @@ Requirements for the initial private (noindex) release. v1 = the complete final 
 - [x] **FND-02**: Fonts (Prata, Golos Text) are self-hosted — no Google Fonts dependency (throttled in Russia)
 - [ ] **FND-03**: Scroll-reveal animations and cursor-follow glow from the draft are preserved
 - [x] **FND-04**: Layout is responsive and matches the draft's behavior across mobile and desktop
-- [ ] **FND-05**: Content (tracks, shows, gallery) is modeled as Astro Content Collections backed by local data, so a v2 CMS can be swapped in without touching components
+- [x] **FND-05**: Content (tracks, shows, gallery) is modeled as Astro Content Collections backed by local data, so a v2 CMS can be swapped in without touching components
 - [x] **FND-06**: Site is deployed to Vercel
 - [x] **FND-07**: Search indexing is disabled via an env-gated noindex (robots meta + X-Robots-Tag), toggleable to public at launch without code changes
 
@@ -39,8 +39,8 @@ Requirements for the initial private (noindex) release. v1 = the complete final 
 
 ### Shows
 
-- [ ] **SHOW-01**: Upcoming shows are listed with date, city, and venue
-- [ ] **SHOW-02**: Each show links to a working ticket page (Timepad / Kassir)
+- [x] **SHOW-01**: Upcoming shows are listed with date, city, and venue
+- [x] **SHOW-02**: Each show links to a working ticket page (Timepad / Kassir)
 
 ### Sharing
 
@@ -102,11 +102,11 @@ Which phases cover which requirements. Populated during roadmap creation.
 | FND-02 | Phase 1 | Complete |
 | FND-03 | Phase 1 | Pending |
 | FND-04 | Phase 1 | Complete |
-| FND-05 | Phase 1 | Pending |
+| FND-05 | Phase 1 | Complete |
 | FND-06 | Phase 1 | Complete |
 | FND-07 | Phase 1 | Complete |
-| SHOW-01 | Phase 1 | Pending |
-| SHOW-02 | Phase 1 | Pending |
+| SHOW-01 | Phase 1 | Complete |
+| SHOW-02 | Phase 1 | Complete |
 | LINK-01 | Phase 1 | Pending |
 | LINK-02 | Phase 1 | Pending |
 | AUD-01 | Phase 2 | Pending |
