@@ -92,7 +92,10 @@ const galleryImages = import.meta.glob<{ default: ImageMetadata }>(
         pswp.on('change', () => {
           const curr = pswp.currSlide?.data.element;
           const caption = curr?.querySelector('.hidden-caption-content');
-          el.innerHTML = caption ? caption.innerHTML : '';
+          const text = caption ? caption.innerHTML : '';
+          el.innerHTML = text;
+          // Hide the dark pill entirely when the photo has no caption (D-18)
+          el.style.display = text ? 'block' : 'none';
         });
       },
     });
@@ -201,11 +204,25 @@ const galleryImages = import.meta.glob<{ default: ImageMetadata }>(
     display: none;
   }
 
+  /* Caption: a high-contrast dark pill pinned to the bottom-center of the lightbox,
+     so it's always easy to find and legible over ANY photo (user feedback fix). */
   .pswp__custom-caption {
+    position: absolute;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%);
+    max-width: min(90vw, 640px);
     font-family: var(--font-sans);
-    font-size: 13px;
-    color: var(--color-text-muted);
+    font-size: 14.5px;
+    line-height: 1.35;
+    color: #f2f0ee;
     text-align: center;
-    padding: 8px 16px;
+    padding: 8px 18px;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border-radius: 999px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+    z-index: 10;
   }
 </style>
