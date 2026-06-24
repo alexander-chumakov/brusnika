@@ -1,0 +1,143 @@
+---
+/**
+ * FeaturedAlbumSection.astro — Дебютный альбом «Неоднозначное» banner
+ *
+ * Pixel-faithful port of index.html lines 114-129.
+ * - Astro <Image> for featured.jpg with WebP derivatives (FND-01)
+ * - Left gradient overlay for text legibility
+ * - data-reveal scroll animation wrapper
+ * - «слушать целиком» Spotify CTA with rel="noopener noreferrer" (T-02-01)
+ */
+import { Image } from 'astro:assets';
+import featuredImg from '../assets/images/featured.jpg';
+---
+
+<section id="music" class="featured-section">
+  <div data-reveal class="featured-card">
+    <Image
+      src={featuredImg}
+      alt="внимание брусника! — Неоднозначное"
+      widths={[768, 1180]}
+      sizes="(max-width: 860px) 100vw, 1180px"
+      format="webp"
+      quality={85}
+      loading="lazy"
+      class="featured-image"
+    />
+    <div class="featured-gradient"></div>
+    <div class="featured-content">
+      <div class="featured-eyebrow">дебютный альбом · 2024</div>
+      <h2 class="featured-title">Неоднозначное</h2>
+      <p class="featured-desc">Одиннадцать песен о любви, памяти и взрослении. Тёплые гитары, синтезаторы и шорох плёнки.</p>
+      <div class="featured-cta">
+        <a
+          href="https://open.spotify.com/artist/11epkfgLUMWmXsTbgfPu4B"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="featured-btn"
+        >▶ слушать целиком</a>
+        <span class="featured-meta">11 треков · 38 мин</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .featured-section {
+    position: relative;
+    z-index: 2;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 120px 40px 60px;
+    scroll-margin-top: 70px;
+  }
+
+  .featured-card {
+    position: relative;
+    border-radius: 5px;
+    overflow: hidden;
+    box-shadow: 0 40px 90px rgba(0, 0, 0, 0.6);
+  }
+
+  .featured-image {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+  }
+
+  .featured-gradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.5) 48%, rgba(0, 0, 0, 0.05) 100%);
+  }
+
+  .featured-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: clamp(28px, 5vw, 64px);
+    max-width: 640px;
+  }
+
+  .featured-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    margin-bottom: 16px;
+  }
+
+  .featured-title {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(36px, 6vw, 76px);
+    line-height: 0.98;
+    margin: 0 0 18px;
+    letter-spacing: 0.3px;
+    color: #fff;
+  }
+
+  .featured-desc {
+    font-size: 16.5px;
+    line-height: 1.65;
+    color: #d8d4cf;
+    margin: 0 0 26px;
+    max-width: 420px;
+  }
+
+  .featured-cta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .featured-btn {
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 11px;
+    background: var(--color-accent);
+    color: #000;
+    font-weight: 600;
+    font-size: 15px;
+    padding: 14px 28px;
+    border-radius: 2px;
+    transition: background 0.25s;
+  }
+
+  .featured-btn:hover {
+    background: var(--color-accent-hover);
+  }
+
+  .featured-meta {
+    font-size: 14px;
+    color: #cfcbc6;
+  }
+</style>

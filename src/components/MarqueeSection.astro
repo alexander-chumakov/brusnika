@@ -1,0 +1,53 @@
+---
+/**
+ * MarqueeSection.astro — Scrolling Prata text-stroke marquee strip
+ *
+ * Pixel-faithful port of index.html lines 106-112.
+ * - Two identical Prata uppercase spans for seamless looping
+ * - animation: marquee 24s linear infinite (keyframe defined in global.css)
+ * - Uses var(--font-serif) and rgba(243,169,189,0.45) stroke color
+ * - text-stroke is a decoration trick — pure visual, no content meaning
+ */
+---
+
+<div class="marquee-strip">
+  <div class="marquee-track">
+    <span class="marquee-text">внимание брусника! ✶ dream-pop ✶ внимание брусника! ✶ live ✶&nbsp;</span>
+    <span class="marquee-text">внимание брусника! ✶ dream-pop ✶ внимание брусника! ✶ live ✶&nbsp;</span>
+  </div>
+</div>
+
+<style>
+  .marquee-strip {
+    position: relative;
+    z-index: 2;
+    overflow: hidden;
+    white-space: nowrap;
+    padding: 26px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    background: #040404;
+  }
+
+  .marquee-track {
+    display: inline-flex;
+    animation: marquee 24s linear infinite;
+  }
+
+  .marquee-text {
+    font-family: var(--font-serif);
+    font-size: clamp(40px, 6vw, 84px);
+    text-transform: uppercase;
+    /* text-stroke fallback: color is set to the stroke color for browsers
+       that don't support -webkit-text-stroke, ensuring text is always visible */
+    color: rgba(243, 169, 189, 0.45);
+    padding-right: 50px;
+  }
+
+  @supports (-webkit-text-stroke: 1px #000) {
+    .marquee-text {
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(243, 169, 189, 0.45);
+    }
+  }
+</style>
