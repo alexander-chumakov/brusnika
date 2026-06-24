@@ -330,17 +330,18 @@
       const scale = 0.7 + Math.random() * 0.8; // 0.7–1.5 depth/parallax
       const opacity = 0.55 + Math.random() * 0.45; // 0.55–1 depth/parallax
       const startX = Math.random() * 100; // full-width random position (%)
-      // Smooth snowflake sway: amplitude + direction; waypoints alternate so
-      // the drift is a soft S-curve, eased (never abrupt).
-      const sway = 22 + Math.random() * 36; // sway amplitude (px)
-      const swayDir = Math.random() < 0.5 ? -1 : 1; // start drifting L or R
-      const spin = (Math.random() - 0.5) * 36; // slow gentle rotation (deg, ±18)
-      const delay = Math.random() * 1.8; // staggered start over ~1.8s
-      const fall = 3.5 + Math.random() * 1; // 3.5–4.5s slow floaty fall
-      const fade = 0.9 + Math.random() * 0.8; // 0.9–1.7s rest-and-fade
+      // Balloon-like descent: WIDE, lazy pendulum sway in broad slow arcs, with
+      // varied width + phase so balloons don't swing in unison.
+      const sway = 55 + Math.random() * 65; // 55–120px — broad balloon arcs
+      const swayDir = Math.random() < 0.5 ? -1 : 1; // start swinging L or R
+      const spin = (Math.random() - 0.5) * 24; // slow lazy tumble (deg, ±12)
+      const delay = Math.random() * 2; // staggered release over ~2s
+      const fall = 4.5 + Math.random() * 1.5; // 4.5–6s slow buoyant fall
+      const fade = 1 + Math.random() * 0.8; // 1–1.8s rest-and-fade
       // berry rests on the bar slightly above the line (account for its size)
       const restY = landY - size * scale * 0.5;
-      maxLife = Math.max(maxLife, delay + fall + fade);
+      // lifetime = stagger delay + fall + 0.7s settle + fade
+      maxLife = Math.max(maxLife, delay + fall + 0.7 + fade);
 
       berry.style.setProperty('--size', `${size}px`);
       berry.style.setProperty('--scale', String(scale));
@@ -348,6 +349,8 @@
       berry.style.setProperty('--x', `${startX}%`);
       berry.style.setProperty('--sway', `${swayDir * sway}px`);
       berry.style.setProperty('--sway2', `${-swayDir * sway}px`);
+      // a slightly narrower arc on the third swing so the pendulum decays gently
+      berry.style.setProperty('--sway3', `${swayDir * sway * 0.6}px`);
       berry.style.setProperty('--spin', `${spin}deg`);
       berry.style.setProperty('--rest-y', `${restY}px`);
       berry.style.setProperty('--delay', `${delay}s`);
@@ -688,13 +691,15 @@
 
   /* Each particle is the real brand berry SVG (public/favicon.svg). EVERY berry
      starts ABOVE the top edge (opacity 0) so during its stagger delay it is
-     off-screen/invisible — none appear pre-placed. It then drifts down like a
-     real SNOWFLAKE: a smooth ease-in-out side-to-side sway (soft S-curve, no
-     abrupt direction changes) plus a slow gentle rotation, LANDS on the
-     now-playing bar (--rest-y), and fades out while resting. Two phases:
-       1) berry-fall — snowflake descent to the rest line, holds (both)
-       2) berry-rest-fade — gradual opacity fade after the fall completes
-     depth comes from per-berry scale and opacity. */
+     off-screen/invisible — none appear pre-placed. It then descends like a
+     BALLOON falling to the ground: slow and buoyant, swinging in WIDE lazy
+     pendulum arcs (smooth ease-in-out at the turns), with a slow lazy tumble,
+     then a soft buoyant settle onto the now-playing bar and a gradual fade.
+     Phases:
+       1) berry-fall  — buoyant balloon descent to the rest line, holds (both)
+       2) berry-settle — tiny gentle cushion/bob as it touches down (no bounce)
+       3) berry-rest-fade — gradual opacity fade after settling
+     depth comes from per-berry scale and opacity; sway width/phase/speed vary. */
   .bloom-berry {
     position: absolute;
     top: 0;
@@ -704,16 +709,20 @@
     opacity: 0;
     will-change: transform, opacity;
     transform-origin: center;
-    /* ease-in-out across sway waypoints = gentle, floaty snowflake drift */
+    /* ease-in-out across broad sway waypoints = lazy buoyant balloon swing.
+       The fall ends with a soft settle, then a gradual fade. */
     animation:
       berry-fall var(--fall) ease-in-out var(--delay) both,
-      berry-rest-fade var(--fade) ease-out calc(var(--delay) + var(--fall)) both;
+      berry-settle 0.7s ease-out calc(var(--delay) + var(--fall)) both,
+      berry-rest-fade var(--fade)
+        ease-out calc(var(--delay) + var(--fall) + 0.7s) both;
   }
 
-  /* Phase 1: smooth snowflake descent. Y goes from off-screen top to the bar
-     line via fractions of --rest-y; X sways gently L↔R; slow rotation. The 0%
-     keyframe is off-screen + opacity 0, so delayed berries stay invisible
-     until they actually start falling in. */
+  /* Phase 1: buoyant balloon descent. Y goes from off-screen top to the bar
+     line via fractions of --rest-y, eased so it floats (slower near the end
+     like air resistance); X swings in WIDE lazy arcs L↔R with a decaying
+     amplitude; slow lazy tumble. The 0% keyframe is off-screen + opacity 0,
+     so delayed berries stay invisible until they actually fall in. */
   @keyframes berry-fall {
     0% {
       opacity: 0;
@@ -722,34 +731,56 @@
     10% {
       opacity: var(--berry-opacity);
     }
-    33% {
-      transform: translate(var(--sway2), calc(var(--rest-y) * 0.34))
-        rotate(calc(var(--spin) * 0.4)) scale(var(--scale));
+    30% {
+      transform: translate(var(--sway2), calc(var(--rest-y) * 0.3))
+        rotate(calc(var(--spin) * 0.3)) scale(var(--scale));
     }
-    66% {
-      transform: translate(var(--sway), calc(var(--rest-y) * 0.68))
-        rotate(calc(var(--spin) * 0.8)) scale(var(--scale));
+    55% {
+      transform: translate(var(--sway), calc(var(--rest-y) * 0.58))
+        rotate(calc(var(--spin) * 0.6)) scale(var(--scale));
+    }
+    80% {
+      transform: translate(var(--sway3), calc(var(--rest-y) * 0.84))
+        rotate(calc(var(--spin) * 0.85)) scale(var(--scale));
     }
     100% {
       opacity: var(--berry-opacity);
-      /* land softly on the bar's top edge */
+      /* arrive just above the bar, centered swing settling out */
       transform: translate(var(--sway2), var(--rest-y))
         rotate(var(--spin)) scale(var(--scale));
     }
   }
 
-  /* Phase 2: berry rests on the bar and gradually dissolves (no bounce). */
+  /* Phase 2: soft buoyant touch-down — a tiny gentle cushion/bob, NO sharp
+     bounce, like a balloon settling onto the bar. */
+  @keyframes berry-settle {
+    0% {
+      transform: translate(var(--sway2), var(--rest-y))
+        rotate(var(--spin)) scale(var(--scale));
+    }
+    55% {
+      /* gentle cushion: dip a touch + ease the swing toward center */
+      transform: translate(calc(var(--sway2) * 0.4), calc(var(--rest-y) + 5px))
+        rotate(calc(var(--spin) * 0.9)) scale(calc(var(--scale) * 0.99));
+    }
+    100% {
+      transform: translate(calc(var(--sway2) * 0.25), calc(var(--rest-y) + 2px))
+        rotate(calc(var(--spin) * 0.92)) scale(var(--scale));
+    }
+  }
+
+  /* Phase 3: berry rests on the bar and gradually dissolves (no bounce). */
   @keyframes berry-rest-fade {
     0% {
       opacity: var(--berry-opacity);
-      transform: translate(var(--sway2), var(--rest-y))
-        rotate(var(--spin)) scale(var(--scale));
+      transform: translate(calc(var(--sway2) * 0.25), calc(var(--rest-y) + 2px))
+        rotate(calc(var(--spin) * 0.92)) scale(var(--scale));
     }
     100% {
       opacity: 0;
       /* settle a hair lower as it fades, for a soft "resting" feel */
-      transform: translate(var(--sway2), calc(var(--rest-y) + 4px))
-        rotate(var(--spin)) scale(var(--scale));
+      transform: translate(calc(var(--sway2) * 0.25), calc(var(--rest-y) + 6px))
+        rotate(calc(var(--spin) * 0.92)) scale(var(--scale));
     }
   }
 
