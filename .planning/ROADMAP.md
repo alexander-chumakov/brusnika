@@ -10,7 +10,7 @@
 ## Phases
 
 - [x] **Phase 1: Foundation & Static Site** — Astro scaffold, self-hosted fonts, all static sections, shows data, real links, noindex gate, deployed to Vercel (completed 2026-06-24)
-- [ ] **Phase 2: Media Islands** — Working audio player (CDN-backed), video player, photo lightbox gallery
+- [x] **Phase 2: Media Islands** — Working audio player (CDN-backed), video player, photo lightbox gallery (completed 2026-06-24)
 - [ ] **Phase 3: Sharing & Booking** — Social share button with mobile/desktop paths; booking form wired to Соня's Telegram bot
 - [ ] **Phase 4: Pre-Launch Verification** — Noindex confirmed correct, no Google Fonts, iOS audio seekable, all links real, booking tested end-to-end, launch-time toggle documented
 
@@ -65,7 +65,7 @@ Plans:
   3. Clicking the video poster opens inline playback with browser controls; video plays `playsinline` on iOS without forced fullscreen; video does not autoplay on page load
   4. Clicking a gallery photo opens it fullscreen in a lightbox; visitor can advance and go back using arrow buttons, keyboard left/right, and mobile swipe; an image counter shows position (e.g. "3 / 12"); pressing Escape, clicking ×, or tapping outside closes the lightbox
 
-**Plans:** 3/4 plans executed
+**Plans:** 4/4 plans complete
 Plans:
 **Wave 1**
 
@@ -78,7 +78,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 — shares index.astro with 02-02)*
 
-- [ ] 02-04-PLAN.md — Video section: poster + play, inline playsinline native video (no autoplay), CSS carousel/grid, Phase 3 share hooks (VID-01/02/03)
+- [x] 02-04-PLAN.md — Video section: poster + play, inline playsinline native video (no autoplay), CSS carousel/grid, Phase 3 share hooks (VID-01/02/03)
 
 **UI hint**: yes
 
@@ -122,7 +122,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Static Site | 4/4 | Complete   | 2026-06-24 |
-| 2. Media Islands | 3/4 | In Progress|  |
+| 2. Media Islands | 4/4 | Complete   | 2026-06-24 |
 | 3. Sharing & Booking | 0/? | Not started | - |
 | 4. Pre-Launch Verification | 0/? | Not started | - |
 
