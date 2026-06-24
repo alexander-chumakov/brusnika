@@ -1,0 +1,254 @@
+/* ============================================================
+   global.css — Design tokens, resets, shared keyframes, and
+   global interactive-state classes for внимание брусника!
+   See: .planning/phases/01-foundation-static-site/01-RESEARCH.md
+        Pattern 3 (Design Token CSS Architecture, D-10)
+   ============================================================ */
+
+/* -------------------------------------------------------
+   Design Tokens — CSS Custom Properties
+   ------------------------------------------------------- */
+:root {
+  /* Palette */
+  --color-bg: #000;
+  --color-bg-raised: #070707;
+  --color-bg-modal: #0c0a0b;
+  --color-accent: #f3a9bd;
+  --color-accent-hover: #ffc0d0;
+  --color-text: #f2f0ee;
+  --color-text-muted: #bdb9b4;
+  --color-text-subtle: #9a9691;
+  --color-text-dim: #7d7974;
+  --color-text-dimmer: #5f5b56;
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-subtle: rgba(255, 255, 255, 0.06);
+
+  /* Typography */
+  --font-serif: 'Prata', serif;
+  --font-sans: 'Golos Text', system-ui, sans-serif;
+  --font-mono: ui-monospace, monospace;
+}
+
+/* -------------------------------------------------------
+   Global Resets
+   ------------------------------------------------------- */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  cursor: default;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: #000;
+}
+
+input,
+textarea,
+select,
+button {
+  font-family: inherit;
+}
+
+/* -------------------------------------------------------
+   Keyframe Animations — shared across components
+   Ported verbatim from index.html lines 17-20
+   ------------------------------------------------------- */
+@keyframes eq {
+  0%, 100% {
+    transform: scaleY(0.25);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes riseup {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes bobdown {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translateY(8px);
+    opacity: 1;
+  }
+}
+
+/* -------------------------------------------------------
+   Scroll-Reveal Base Classes — MUST be global (not scoped)
+   JS adds/removes .in at runtime; scoped styles would not match.
+   See: RESEARCH.md Pitfall 3
+   Ported verbatim from index.html lines 21-25
+   ------------------------------------------------------- */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(36px);
+  transition: opacity 1s cubic-bezier(.16, .7, .2, 1),
+              transform 1s cubic-bezier(.16, .7, .2, 1);
+}
+
+[data-reveal].in {
+  opacity: 1;
+  transform: none;
+}
+
+[data-reveal-d1] {
+  transition-delay: .08s;
+}
+
+[data-reveal-d2] {
+  transition-delay: .16s;
+}
+
+[data-reveal-d3] {
+  transition-delay: .24s;
+}
+
+/* -------------------------------------------------------
+   Global Interactive State Classes
+   These are applied as class="" on markup and referenced by
+   hover/focus states across multiple components — must be global.
+   Ported from index.html lines 27-41
+   ------------------------------------------------------- */
+.nav-link {
+  color: #b6b2ad;
+  transition: color .25s;
+}
+
+.nav-link:hover {
+  color: var(--color-text);
+}
+
+.track {
+  transition: background .25s, padding .25s;
+}
+
+.track:hover {
+  background: rgba(243, 169, 189, 0.07);
+  padding-left: 24px;
+}
+
+.gallery-item {
+  transition: transform .5s cubic-bezier(.2, .7, .2, 1);
+}
+
+.gallery-item:hover {
+  transform: scale(1.015);
+}
+
+.btn-pink {
+  transition: background .25s;
+}
+
+.btn-pink:hover {
+  background: var(--color-accent-hover);
+}
+
+.field {
+  transition: border-color .2s;
+}
+
+.field:focus {
+  border-color: var(--color-accent);
+}
+
+.icon-btn {
+  transition: color .2s;
+}
+
+.icon-btn:hover {
+  color: #fff;
+}
+
+.ticket-link {
+  transition: background .25s, color .25s;
+}
+
+.ticket-link:hover {
+  background: rgba(243, 169, 189, 0.18);
+  color: #fff;
+}
+
+/* -------------------------------------------------------
+   Cross-Section Responsive Overrides
+   These target multiple components — live here, not scoped.
+   Ported from index.html lines 43-54
+   ------------------------------------------------------- */
+@media (max-width: 860px) {
+  nav {
+    padding: 14px 20px !important;
+  }
+
+  .nav-menu {
+    display: none !important;
+  }
+
+  .about-grid,
+  .sing-grid {
+    grid-template-columns: 1fr !important;
+    gap: 40px !important;
+  }
+
+  .gallery-grid {
+    grid-template-columns: 1fr 1fr !important;
+    grid-template-rows: auto !important;
+  }
+
+  .gallery-grid > div:first-child {
+    grid-row: auto !important;
+  }
+
+  .lessons-modal {
+    grid-template-columns: 1fr !important;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr !important;
+    gap: 30px !important;
+  }
+
+  .track {
+    grid-template-columns: 40px 1fr auto !important;
+  }
+
+  .track .track-time {
+    display: none;
+  }
+
+  .show-row {
+    grid-template-columns: 96px 1fr auto !important;
+    gap: 16px !important;
+  }
+}

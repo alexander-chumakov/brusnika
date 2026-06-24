@@ -1,0 +1,60 @@
+---
+/**
+ * Layout.astro — HTML/head shell for внимание брусника!
+ *
+ * - Self-hosted fonts via @fontsource (no Google Fonts)
+ * - Env-gated noindex meta tag (RESEARCH Pattern 4)
+ * - Global CSS design tokens import
+ * - Cursor-glow markup (JS added in Plan 04)
+ *
+ * See: RESEARCH.md Pattern 6 (font self-hosting), Pattern 4 (noindex)
+ */
+
+// Self-hosted fonts — import CSS files so Astro bundles woff2 files
+// NO <link> to fonts.googleapis.com or fonts.gstatic.com (FND-02)
+// Using explicit .css paths avoids TypeScript side-effect import error
+import '@fontsource/prata/400.css';    // weight 400; includes Cyrillic subset
+import '@fontsource/golos-text/400.css';
+import '@fontsource/golos-text/500.css';
+import '@fontsource/golos-text/600.css';
+import '@fontsource/golos-text/700.css';
+
+// Global design tokens, resets, keyframes, interactive states
+import '../styles/global.css';
+
+// Env-gated noindex (read at build time — static pages bake this into HTML)
+const noindex = import.meta.env.NOINDEX === 'true';
+---
+
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>внимание брусника! — dream-pop</title>
+    <meta
+      name="description"
+      content="внимание брусника! — камерный dream-pop проект. Негромкие песни о любви и о том, что трудно сказать вслух."
+    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="generator" content={Astro.generator} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+  </head>
+  <body>
+    <!-- Root wrapper — matches index.html line 58 exactly -->
+    <div style="position:relative;overflow-x:hidden;background:#000;">
+      <!-- Cursor-follow glow (JS activation added in Plan 04) -->
+      <div
+        id="cursor-glow"
+        style="position:fixed;top:0;left:0;width:520px;height:520px;margin:-260px 0 0 -260px;border-radius:50%;pointer-events:none;z-index:1;background:radial-gradient(circle, rgba(243,169,189,0.16), transparent 62%);transition:transform .35s cubic-bezier(.2,.7,.2,1);will-change:transform;"
+      ></div>
+      <div
+        style="position:fixed;inset:0;pointer-events:none;z-index:1;background:radial-gradient(70% 45% at 50% -8%, rgba(243,169,189,0.12), transparent 60%);"
+      ></div>
+
+      <!-- Page content from child components -->
+      <slot />
+    </div>
+  </body>
+</html>
