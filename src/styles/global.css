@@ -110,29 +110,43 @@ button {
    Scroll-Reveal Base Classes — MUST be global (not scoped)
    JS adds/removes .in at runtime; scoped styles would not match.
    See: RESEARCH.md Pitfall 3
-   Ported verbatim from index.html lines 21-25
+
+   Progressive enhancement: reveal elements are visible by default.
+   They are only hidden (to animate in) once the reveal script marks
+   the document root with .js-reveal. Without JS — or before the script
+   runs — content stays fully visible. (Fixes sections rendering blank
+   when the Plan 04 reveal script is absent.)
+
+   PLAN 04 HANDOFF: src/scripts/global-animations.js MUST (1) add
+   `document.documentElement.classList.add('js-reveal')` as early as
+   possible — ideally an inline render-blocking <head> script in
+   Layout.astro to avoid a flash-then-hide — and (2) wire the
+   IntersectionObserver that toggles `.in` on `[data-reveal]` elements.
+   Both must ship together or the gate stays inert (sections stay visible,
+   harmless) or sections flash-then-hide if .js-reveal is added without
+   the observer.
    ------------------------------------------------------- */
-[data-reveal] {
+.js-reveal [data-reveal] {
   opacity: 0;
   transform: translateY(36px);
   transition: opacity 1s cubic-bezier(.16, .7, .2, 1),
               transform 1s cubic-bezier(.16, .7, .2, 1);
 }
 
-[data-reveal].in {
+.js-reveal [data-reveal].in {
   opacity: 1;
   transform: none;
 }
 
-[data-reveal-d1] {
+.js-reveal [data-reveal-d1] {
   transition-delay: .08s;
 }
 
-[data-reveal-d2] {
+.js-reveal [data-reveal-d2] {
   transition-delay: .16s;
 }
 
-[data-reveal-d3] {
+.js-reveal [data-reveal-d3] {
   transition-delay: .24s;
 }
 
