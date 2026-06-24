@@ -385,6 +385,11 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
   }
 
   /* ── Shorts-style enlarge modal ──────────────────────────── */
+  /* Closed state MUST be fully inert: this overlay is position:fixed covering the
+     whole viewport, so when closed it must neither intercept clicks nor be focusable.
+     Driven entirely off [data-open] — NOT the `hidden` attribute, which display:flex
+     would override. opacity alone is insufficient (opacity:0 still captures clicks),
+     so we also gate pointer-events + visibility. */
   .video-modal {
     position: fixed;
     inset: 0;
@@ -393,11 +398,15 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
     align-items: center;
     justify-content: center;
     opacity: 0;
-    transition: opacity 0.2s ease;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
   }
 
   .video-modal[data-open='true'] {
     opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
   }
 
   .video-modal-backdrop {
