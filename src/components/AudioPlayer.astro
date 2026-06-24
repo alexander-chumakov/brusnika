@@ -31,7 +31,42 @@
   <div id="np-index" class="np-index"></div>
   <!-- Volume control — desktop only (iOS ignores audio.volume); hidden on mobile via CSS -->
   <div class="np-volume">
-    <button id="np-mute" class="icon-btn" aria-label="Без звука">🔊</button>
+    <button id="np-mute" class="icon-btn np-mute" aria-label="Без звука">
+      <!-- Speaker icon (unmuted) — currentColor inherits the player palette -->
+      <svg
+        class="np-icon-volume"
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.6"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M11 5 6 9H3v6h3l5 4V5z" fill="currentColor" stroke="none"></path>
+        <path d="M15.5 8.5a5 5 0 0 1 0 7"></path>
+        <path d="M18.5 6a8 8 0 0 1 0 12"></path>
+      </svg>
+      <!-- Muted icon (hidden by default; JS toggles) -->
+      <svg
+        class="np-icon-muted"
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.6"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M11 5 6 9H3v6h3l5 4V5z" fill="currentColor" stroke="none"></path>
+        <line x1="16" y1="9" x2="21" y2="15"></line>
+        <line x1="21" y1="9" x2="16" y2="15"></line>
+      </svg>
+    </button>
     <input
       id="np-volume"
       class="np-volume-slider"
@@ -86,10 +121,10 @@
 
   function updateMuteIcon() {
     if (userVolume === 0) {
-      npMute.textContent = '🔇';
+      npMute.classList.add('np-mute--muted');
       npMute.setAttribute('aria-label', 'Включить звук');
     } else {
-      npMute.textContent = '🔊';
+      npMute.classList.remove('np-mute--muted');
       npMute.setAttribute('aria-label', 'Без звука');
     }
   }
@@ -459,49 +494,100 @@
   .np-volume {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     flex-shrink: 0;
+  }
+
+  /* Mute button — inline SVG (no system emoji); inherits palette via currentColor */
+  .np-mute {
+    color: var(--color-text-muted);
+    transition: color 0.2s;
+  }
+
+  .np-mute:hover {
+    color: var(--color-accent);
+  }
+
+  .np-mute svg {
+    display: block;
+  }
+
+  /* Toggle which SVG shows; default = unmuted speaker */
+  .np-mute .np-icon-muted {
+    display: none;
+  }
+
+  .np-mute--muted .np-icon-volume {
+    display: none;
+  }
+
+  .np-mute--muted .np-icon-muted {
+    display: block;
+  }
+
+  .np-mute--muted {
+    color: var(--color-text-dim);
   }
 
   .np-volume-slider {
     -webkit-appearance: none;
     appearance: none;
-    width: 80px;
-    height: 3px;
+    width: 78px;
+    height: 4px;
     border-radius: 2px;
-    background: rgba(243, 169, 189, 0.25);
+    background: rgba(243, 169, 189, 0.22);
     cursor: pointer;
     outline: none;
+  }
+
+  .np-volume-slider:focus-visible {
+    outline: 1px solid var(--color-accent);
+    outline-offset: 4px;
+  }
+
+  .np-volume-slider::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(243, 169, 189, 0.22);
   }
 
   .np-volume-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 13px;
-    height: 13px;
+    margin-top: -4px; /* center 12px thumb on the 4px track */
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
     background: var(--color-accent);
+    box-shadow: 0 0 0 3px rgba(243, 169, 189, 0.18);
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s;
+  }
+
+  .np-volume-slider:hover::-webkit-slider-thumb {
+    background: var(--color-accent-hover);
+    box-shadow: 0 0 0 4px rgba(243, 169, 189, 0.24);
+  }
+
+  .np-volume-slider::-moz-range-track {
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(243, 169, 189, 0.22);
+  }
+
+  .np-volume-slider::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border: none;
+    border-radius: 50%;
+    background: var(--color-accent);
+    box-shadow: 0 0 0 3px rgba(243, 169, 189, 0.18);
     cursor: pointer;
     transition: background 0.2s;
   }
 
-  .np-volume-slider::-webkit-slider-thumb:hover {
+  .np-volume-slider:hover::-moz-range-thumb {
     background: var(--color-accent-hover);
-  }
-
-  .np-volume-slider::-moz-range-thumb {
-    width: 13px;
-    height: 13px;
-    border: none;
-    border-radius: 50%;
-    background: var(--color-accent);
-    cursor: pointer;
-  }
-
-  .np-volume-slider::-moz-range-track {
-    height: 3px;
-    border-radius: 2px;
-    background: rgba(243, 169, 189, 0.25);
   }
 
   /* Hide the volume control on mobile — iOS ignores programmatic audio.volume */
