@@ -10,7 +10,10 @@
  *   - Look up by photo.data.filename key — Astro processes them as ImageMetadata
  *   - This satisfies Astro <Image> strict typing (requires ImageMetadata, not raw paths)
  *
- * Lightbox: NOT wired (Phase 2, GAL-01..03). Static grid only.
+ * Lightbox: PhotoSwipe 5 (GAL-01..03). Anchor-wrapped grid initialized via bundled <script>.
+ *   - Standard <script> block (NOT is:inline) so Vite bundles photoswipe/style.css correctly.
+ *   - Each gallery item is an <a> with data-pswp-width/height from full-res ImageMetadata.
+ *   - Optional D-18 caption wired via data-pswp-caption + hidden span + uiRegister.
  * Mobile: .gallery-grid → 1fr 1fr; first item grid-row auto (global.css handles this).
  */
 import { getCollection } from 'astro:content';
@@ -32,13 +35,17 @@ const galleryImages = import.meta.glob<{ default: ImageMetadata }>(
     <h2 class="gallery-title">Между <span class="gallery-accent">песнями</span></h2>
   </div>
 
-  <div class="gallery-grid" data-reveal>
+  <div id="gallery-grid" class="gallery-grid" data-reveal>
     {photos.map((photo) => {
       const imgPath = `../assets/images/${photo.data.filename}`;
       const imgModule = galleryImages[imgPath];
       const imgSrc = imgModule?.default;
       return (
-        <div
+        <a
+          href={imgSrc?.src ?? '#'}
+          data-pswp-width={imgSrc?.width}
+          data-pswp-height={imgSrc?.height}
+          data-pswp-caption={photo.data.caption}
           class={`gallery-item${photo.data.gridSpan === 'tall' ? ' gallery-item--tall' : ''}`}
         >
           {imgSrc && (
@@ -53,11 +60,46 @@ const galleryImages = import.meta.glob<{ default: ImageMetadata }>(
               class="gallery-img"
             />
           )}
-        </div>
+          {photo.data.caption && (
+            <span class="hidden-caption-content">{photo.data.caption}</span>
+          )}
+        </a>
       );
     })}
   </div>
 </section>
+
+<script>
+  import PhotoSwipeLightbox from 'photoswipe/lightbox';
+  import 'photoswipe/style.css';
+
+  const lightbox = new PhotoSwipeLightbox({
+    gallery: '#gallery-grid',
+    children: 'a',
+    pswpModule: () => import('photoswipe'),
+    arrowKeys: true,
+    escKey: true,
+  });
+
+  lightbox.on('uiRegister', function () {
+    lightbox.pswp.ui.registerElement({
+      name: 'custom-caption',
+      order: 9,
+      isButton: false,
+      appendTo: 'root',
+      html: '',
+      onInit: (el, pswp) => {
+        pswp.on('change', () => {
+          const curr = pswp.currSlide.data.element;
+          const caption = curr?.querySelector('.hidden-caption-content');
+          el.innerHTML = caption ? caption.innerHTML : '';
+        });
+      },
+    });
+  });
+
+  lightbox.init();
+</script>
 
 <style>
   .gallery-section {
@@ -113,6 +155,8 @@ const galleryImages = import.meta.glob<{ default: ImageMetadata }>(
       #141414 0 12px,
       #0a0a0a 12px 24px
     );
+    text-decoration: none;
+    display: block;
   }
 
   /* First item (gridSpan: 'tall') spans 2 rows — matches index.html style="grid-row:span 2" */
@@ -142,5 +186,26 @@ const galleryImages = import.meta.glob<{ default: ImageMetadata }>(
     .gallery-item--tall {
       grid-row: auto;
     }
+  }
+</style>
+
+<style is:global>
+  .pswp {
+    --pswp-bg: #000;
+    --pswp-icon-color: #f2f0ee;
+    --pswp-icon-color-secondary: #9a9691;
+    --pswp-error-text-color: #f3a9bd;
+  }
+
+  .hidden-caption-content {
+    display: none;
+  }
+
+  .pswp__custom-caption {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: var(--color-text-muted);
+    text-align: center;
+    padding: 8px 16px;
   }
 </style>
