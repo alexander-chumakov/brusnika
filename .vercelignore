@@ -1,0 +1,8 @@
+# Raw media — served from the CDN (Vercel Blob), never needed in the deploy
+music/
+video/
+posters/
+
+# Planning + scratch artifacts
+.planning/
+scratchpad/
