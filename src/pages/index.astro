@@ -8,6 +8,10 @@
  *   → About → Sing
  *   → [Plan 04: Footer + BookingModal markup]
  *
+ * Islands:
+ *   AudioPlayer  client:idle    — real audio playback (02-02)
+ *   VideoSection client:visible — below-fold clip carousel/grid (02-04)
+ *
  * Prerendered by default (output: static in astro.config.mjs).
  */
 import Layout from '../layouts/Layout.astro';
@@ -17,6 +21,7 @@ import MarqueeSection from '../components/MarqueeSection.astro';
 import FeaturedAlbumSection from '../components/FeaturedAlbumSection.astro';
 import TracksSection from '../components/TracksSection.astro';
 import AudioPlayer from '../components/AudioPlayer.astro';
+import VideoSection from '../components/VideoSection.astro';
 import AboutSection from '../components/AboutSection.astro';
 import ShowsSection from '../components/ShowsSection.astro';
 import GallerySection from '../components/GallerySection.astro';
@@ -31,6 +36,7 @@ import FooterSection from '../components/FooterSection.astro';
   <FeaturedAlbumSection />
   <TracksSection />
   <AudioPlayer client:idle />
+  <VideoSection client:visible />
 
   <AboutSection />
   <ShowsSection />
