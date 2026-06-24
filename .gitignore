@@ -17,3 +17,8 @@ dist/
 .DS_Store
 Thumbs.db
 .vercel
+
+# Raw media — never commit (host on Bunny/Blob in Phase 2)
+video/
+*.mp4
+*.MP4
