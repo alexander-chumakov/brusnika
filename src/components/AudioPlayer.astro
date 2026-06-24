@@ -255,9 +255,59 @@
     hideBar();
   });
 
-  // Wire track buttons
+  // FEATURE: calm brusnika "bloom" — a few lingonberry particles softly emerge
+  // and gently drift on USER-INITIATED play only (track click / hero CTA).
+  // NOT on auto-advance (would get repetitive). Atmospheric, not a burst.
+  const prefersReducedMotion = window.matchMedia(
+    '(prefers-reduced-motion: reduce)'
+  );
+
+  function bloom() {
+    // Accessibility: skip entirely when reduced motion is requested
+    if (prefersReducedMotion.matches) return;
+
+    const layer = document.createElement('div');
+    layer.className = 'bloom-layer';
+    layer.setAttribute('aria-hidden', 'true');
+
+    const COUNT = 9; // 6–12 berries; calm, not a swarm
+    const palette = ['#a01b32', '#c92f4b', '#f3a9bd']; // brusnika crimson → pink accent
+    let maxLife = 0;
+
+    for (let i = 0; i < COUNT; i++) {
+      const berry = document.createElement('span');
+      berry.className = 'bloom-berry';
+
+      const size = 8 + Math.random() * 8; // 8–16px small round berries
+      const startX = 30 + Math.random() * 40; // cluster near horizontal center (%)
+      const drift = (Math.random() - 0.5) * 90; // gentle horizontal sway (px)
+      const rise = 90 + Math.random() * 90; // soft upward drift (px)
+      const delay = Math.random() * 0.45; // staggered emergence (s)
+      const dur = 1.2 + Math.random() * 0.6; // 1.2–1.8s slow
+      maxLife = Math.max(maxLife, delay + dur);
+
+      berry.style.setProperty('--size', `${size}px`);
+      berry.style.setProperty('--x', `${startX}%`);
+      berry.style.setProperty('--drift', `${drift}px`);
+      berry.style.setProperty('--rise', `-${rise}px`);
+      berry.style.setProperty('--delay', `${delay}s`);
+      berry.style.setProperty('--dur', `${dur}s`);
+      berry.style.setProperty('--berry', palette[i % palette.length]);
+
+      layer.appendChild(berry);
+    }
+
+    document.body.appendChild(layer);
+    // Auto-remove after the last berry finishes (no DOM buildup on repeat clicks)
+    setTimeout(() => layer.remove(), Math.ceil(maxLife * 1000) + 200);
+  }
+
+  // Wire track buttons — user-initiated → bloom
   trackBtns.forEach((btn, idx) => {
-    btn.addEventListener('click', () => playTrack(idx));
+    btn.addEventListener('click', () => {
+      bloom();
+      playTrack(idx);
+    });
   });
 
   // FIX A: Hero «слушать» CTA starts the first track through the same code
@@ -268,6 +318,7 @@
   if (heroCta && TOTAL > 0) {
     heroCta.addEventListener('click', (e) => {
       e.preventDefault();
+      bloom();
       playTrack(0);
     });
   }
@@ -500,6 +551,62 @@
     .now-playing--loading .np-bar-4 {
       animation: none;
       opacity: 0.5;
+    }
+  }
+
+  /* FEATURE: calm brusnika bloom — non-intrusive overlay, never blocks clicks */
+  .bloom-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 55; /* below the now-playing bar (z 60); above page content */
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .bloom-berry {
+    position: absolute;
+    left: var(--x);
+    bottom: 14%;
+    width: var(--size);
+    height: var(--size);
+    border-radius: 50%;
+    background: radial-gradient(
+      circle at 32% 30%,
+      rgba(255, 255, 255, 0.85) 0%,
+      var(--berry) 42%,
+      color-mix(in srgb, var(--berry) 70%, #000) 100%
+    );
+    opacity: 0;
+    will-change: transform, opacity, filter;
+    /* slow, ease-out drift; gentle, not frantic */
+    animation: bloom-drift var(--dur) cubic-bezier(0.16, 0.7, 0.2, 1)
+      var(--delay) both;
+  }
+
+  @keyframes bloom-drift {
+    0% {
+      opacity: 0;
+      transform: translate(0, 0) scale(0.4);
+      filter: blur(2px);
+    }
+    25% {
+      opacity: 0.85;
+      filter: blur(0);
+    }
+    70% {
+      opacity: 0.7;
+    }
+    100% {
+      opacity: 0;
+      transform: translate(var(--drift), var(--rise)) scale(1);
+      filter: blur(3px);
+    }
+  }
+
+  /* Accessibility belt-and-braces: even if a node slips through, no motion */
+  @media (prefers-reduced-motion: reduce) {
+    .bloom-layer {
+      display: none;
     }
   }
 </style>
