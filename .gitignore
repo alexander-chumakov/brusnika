@@ -28,3 +28,7 @@ music/
 *.flac
 *.m4a
 *.aac
+.env*
+
+# Generated poster frames — extracted locally, served from the CDN (like music/ video/)
+posters/

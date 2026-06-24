@@ -16,6 +16,15 @@
 
 set -euo pipefail
 
+# Load local env (BLOB_READ_WRITE_TOKEN) if present. `vercel env pull` also writes
+# VERCEL_OIDC_TOKEN; when it is set but BLOB_STORE_ID is not, the Vercel CLI refuses
+# to upload ("VERCEL_OIDC_TOKEN and BLOB_STORE_ID must both be set, or both be unset").
+# Unset it so the CLI authenticates via the read-write token.
+if [ -f .env.local ]; then
+  set -a; source .env.local; set +a
+fi
+unset VERCEL_OIDC_TOKEN
+
 FFMPEG=/opt/homebrew/bin/ffmpeg
 MEDIA_URLS=".planning/phases/02-media-islands/MEDIA-URLS.md"
 POSTERS_DIR="posters"
@@ -45,14 +54,22 @@ upload() {
   echo ""
   echo ">>> Uploading: $LOCAL → $PATHNAME"
 
-  URL=$(npx vercel@latest blob put "$LOCAL" \
+  local OUT
+  OUT=$(npx vercel@latest blob put "$LOCAL" \
     --pathname "$PATHNAME" \
     --access public \
-    --allow-overwrite \
-    2>&1 | grep -E 'https://' | tail -1)
+    --allow-overwrite 2>&1) || {
+      echo "ERROR: upload failed for $LOCAL:"
+      echo "$OUT"
+      exit 1
+    }
+
+  # Extract the URL separately so a no-match grep cannot trip `set -e`/pipefail.
+  URL=$(printf '%s\n' "$OUT" | grep -Eo 'https://[^ ]+' | tail -1 || true)
 
   if [ -z "$URL" ]; then
-    echo "ERROR: No URL returned for $LOCAL. Check BLOB_READ_WRITE_TOKEN and Blob store."
+    echo "ERROR: No URL in upload output for $LOCAL:"
+    echo "$OUT"
     exit 1
   fi
 
