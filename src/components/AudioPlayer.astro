@@ -318,7 +318,7 @@
         ? barRect.top
         : window.innerHeight - 72;
 
-    const COUNT = 20 + Math.floor(Math.random() * 9); // 20–28 berries
+    const COUNT = 18 + Math.floor(Math.random() * 7); // 18–24 berries
     let maxLife = 0;
 
     for (let i = 0; i < COUNT; i++) {
@@ -337,8 +337,13 @@
       const sway = 28 + Math.random() * 44; // 28–72px buoyant balloon-ish arc
       const swayDir = Math.random() < 0.5 ? -1 : 1; // swing L or R first
       const spin = (Math.random() - 0.5) * 28; // slow lazy tumble (±14deg)
-      // START IMMEDIATELY: tight initial stagger so first berries appear at once.
-      const delay = 0.05 + Math.random() * 0.35; // 0.05–0.4s
+      // SCATTER the emergence so they don't fall in one rank:
+      //  • WIDER time stagger over ~1.2s, but starting at ~0s so the very first
+      //    berries still appear the instant of click (no click→appear lag).
+      const delay = (i === 0 ? 0 : Math.random() * 1.2); // 0–1.2s, first at 0
+      //  • VARIED vertical start above the top edge so even same-moment berries
+      //    are NOT aligned on one horizontal line.
+      const startY = -10 - Math.random() * 25; // −10vh … −35vh
       const fall = 2.5 + Math.random() * 1; // 2.5–3.5s unhurried natural descent
       const rest = 0.25 + Math.random() * 0.4; // brief rest on the bar (0.25–0.65s)
       const fade = 0.7 + Math.random() * 0.6; // 0.7–1.3s gentle individual fade
@@ -350,6 +355,7 @@
       berry.style.setProperty('--scale', String(scale));
       berry.style.setProperty('--berry-opacity', String(opacity));
       berry.style.setProperty('--x', `${startX}%`);
+      berry.style.setProperty('--start-y', `${startY}vh`);
       berry.style.setProperty('--sway', `${swayDir * sway}px`);
       berry.style.setProperty('--sway2', `${-swayDir * sway}px`);
       berry.style.setProperty('--sway3', `${swayDir * sway * 0.55}px`);
@@ -721,8 +727,10 @@
   @keyframes berry-fall {
     0% {
       opacity: 0;
-      /* off-screen above the top edge — invisible during the pre-fall delay */
-      transform: translate(var(--sway), -14vh) rotate(0deg) scale(var(--scale));
+      /* off-screen above the top edge at a VARIED height (--start-y) so berries
+         don't enter on one horizontal line; invisible during the pre-fall delay */
+      transform: translate(var(--sway), var(--start-y)) rotate(0deg)
+        scale(var(--scale));
     }
     10% {
       /* fade in as it enters near the top */
