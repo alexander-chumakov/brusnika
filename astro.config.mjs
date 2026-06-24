@@ -1,0 +1,15 @@
+// @ts-check
+import { defineConfig } from 'astro/config';
+import vercel from '@astrojs/vercel';
+
+// https://astro.build/config
+export default defineConfig({
+  output: 'static',
+  adapter: vercel({
+    staticHeaders: true,
+  }),
+  image: {
+    // Astro uses Sharp by default for build-time image optimization.
+    // No additional config needed for Vercel static deployment.
+  },
+});
