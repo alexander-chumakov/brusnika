@@ -391,9 +391,13 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
     letter-spacing: 0.3px;
     line-height: 1.4;
     color: var(--color-text);
-    white-space: nowrap;
+    /* Wrap long titles (e.g. «Клуб Неоправданных Надежд») onto up to 2 lines
+       instead of truncating with an ellipsis. */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    white-space: normal;
     overflow: hidden;
-    text-overflow: ellipsis;
   }
 
   /* ── Phase 3 share slot (reserved — empty in Phase 2) ────── */
