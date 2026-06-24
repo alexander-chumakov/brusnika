@@ -290,10 +290,10 @@
     hideBar();
   });
 
-  // FEATURE: brusnika berry CASCADE — recognizable lingonberries fall like a
-  // gentle waterfall (водопад) on USER-INITIATED play only (track click /
-  // hero CTA). NOT on auto-advance (would get repetitive). Flowing, staggered,
-  // graceful — not a frantic storm.
+  // FEATURE: brusnika SNOWFALL — the real brand berry SVG (public/favicon.svg)
+  // drifts down like gentle snow on USER-INITIATED play only (track click /
+  // hero CTA). NOT on auto-advance (would get repetitive). Slow, abundant,
+  // festive — a soft snowfall, not a fast cascade.
   const prefersReducedMotion = window.matchMedia(
     '(prefers-reduced-motion: reduce)'
   );
@@ -306,49 +306,44 @@
     layer.className = 'bloom-layer';
     layer.setAttribute('aria-hidden', 'true');
 
-    // Lingonberries are deep red/crimson (NOT pink). Pink is a rare minor accent.
-    const palette = ['#a01b32', '#c92f4b', '#8f1228', '#b81f3a'];
-    const COUNT = 12 + Math.floor(Math.random() * 7); // 12–18 berries
+    const COUNT = 16 + Math.floor(Math.random() * 11); // 16–26 berries
     let maxLife = 0;
 
     for (let i = 0; i < COUNT; i++) {
-      const berry = document.createElement('span');
+      // Real brand asset — unmistakably brusnika. Decorative → aria-hidden.
+      const berry = document.createElement('img');
       berry.className = 'bloom-berry';
+      berry.src = '/favicon.svg';
+      berry.alt = '';
+      berry.setAttribute('aria-hidden', 'true');
 
-      const size = 22 + Math.random() * 18; // 22–40px — clearly readable berries
-      const startX = Math.random() * 100; // spread across the full width (%)
-      const sway = (Math.random() - 0.5) * 70; // slight horizontal sway (px)
-      const spin = (Math.random() - 0.5) * 80; // slow rotation as it falls (deg)
-      const delay = Math.random() * 0.9; // staggered cascade start (s)
-      const dur = 1.8 + Math.random() * 0.8; // 1.8–2.6s slow fall
+      const size = 26 + Math.random() * 22; // 26–48px base — favicon detail visible
+      const scale = 0.5 + Math.random() * 0.9; // 0.5–1.4 depth/parallax
+      const opacity = 0.5 + Math.random() * 0.5; // 0.5–1 depth/parallax
+      const startX = Math.random() * 100; // full-width random position (%)
+      const sway = 18 + Math.random() * 34; // horizontal drift amplitude (px)
+      const swayDir = Math.random() < 0.5 ? -1 : 1; // drift left or right first
+      const spin = (Math.random() - 0.5) * 70; // slow wobble/rotation (deg)
+      const delay = Math.random() * 1.8; // staggered start over ~1.8s
+      const dur = 3 + Math.random() * 1; // 3–4s slow fall
       maxLife = Math.max(maxLife, delay + dur);
 
       berry.style.setProperty('--size', `${size}px`);
+      berry.style.setProperty('--scale', String(scale));
+      berry.style.setProperty('--berry-opacity', String(opacity));
       berry.style.setProperty('--x', `${startX}%`);
-      berry.style.setProperty('--sway', `${sway}px`);
+      berry.style.setProperty('--sway', `${swayDir * sway}px`);
+      berry.style.setProperty('--sway2', `${-swayDir * sway}px`);
       berry.style.setProperty('--spin', `${spin}deg`);
       berry.style.setProperty('--delay', `${delay}s`);
       berry.style.setProperty('--dur', `${dur}s`);
-      berry.style.setProperty('--berry', palette[i % palette.length]);
-
-      // Blossom-end dark spot at the bottom (characteristic lingonberry mark)
-      const blossom = document.createElement('span');
-      blossom.className = 'bloom-berry-blossom';
-      berry.appendChild(blossom);
-
-      // A couple of berries carry a small green leaf for recognizability
-      if (i % 6 === 0) {
-        const leaf = document.createElement('span');
-        leaf.className = 'bloom-berry-leaf';
-        berry.appendChild(leaf);
-      }
 
       layer.appendChild(berry);
     }
 
     document.body.appendChild(layer);
-    // Auto-remove after the last berry finishes (no DOM buildup on repeat clicks)
-    setTimeout(() => layer.remove(), Math.ceil(maxLife * 1000) + 200);
+    // Auto-remove after the last berry lands (no DOM buildup on repeat clicks)
+    setTimeout(() => layer.remove(), Math.ceil(maxLife * 1000) + 300);
   }
 
   // Wire track buttons — user-initiated → bloom
@@ -657,10 +652,10 @@
 </style>
 
 <!--
-  FEATURE: brusnika berry cascade — MUST be global. Berries are created with
-  document.createElement and appended to document.body, so they never receive
-  Astro's component scope hash. Scoped selectors would not match → invisible.
-  This block is :global so the JS-created nodes are styled and animated.
+  FEATURE: brusnika snowfall — MUST be global. Berry <img> nodes are created
+  with document.createElement and appended to document.body, so they never
+  receive Astro's component scope hash. Scoped selectors would not match →
+  invisible. This block is :global so the JS-created nodes are styled/animated.
 -->
 <style is:global>
   .bloom-layer {
@@ -671,81 +666,51 @@
     overflow: hidden;
   }
 
-  /* Recognizable lingonberry: round, glossy, deep red, with a bright specular
-     highlight (top-left) and a dark blossom-end dot (bottom). Falls like a
-     waterfall from above the top edge to below the bottom. */
+  /* Each particle is the real brand berry SVG (public/favicon.svg) drifting
+     down like gentle snow. Vertical fall + horizontal sway + slow rotation
+     all animate on transform; depth comes from per-berry scale and opacity. */
   .bloom-berry {
     position: absolute;
     top: 0;
     left: var(--x);
     width: var(--size);
     height: var(--size);
-    border-radius: 50%;
-    background:
-      /* bright specular highlight near the top-left */
-      radial-gradient(
-          circle at 30% 26%,
-          rgba(255, 255, 255, 0.9) 0%,
-          rgba(255, 255, 255, 0.35) 9%,
-          transparent 22%
-        ),
-      /* glossy crimson body with darker rim for roundness */
-      radial-gradient(
-        circle at 42% 38%,
-        color-mix(in srgb, var(--berry) 80%, #fff) 0%,
-        var(--berry) 46%,
-        color-mix(in srgb, var(--berry) 62%, #000) 100%
-      );
-    box-shadow: inset -2px -3px 5px rgba(0, 0, 0, 0.35);
     opacity: 0;
     will-change: transform, opacity;
-    /* slow eased fall; gentle cascade, not a frantic storm */
-    animation: berry-fall var(--dur) cubic-bezier(0.4, 0.05, 0.5, 1)
-      var(--delay) both;
+    transform-origin: center;
+    /* slow gentle snowfall — long, eased, continuous */
+    animation: berry-snow var(--dur) ease-in-out var(--delay) both;
   }
 
-  /* characteristic dark blossom-end spot at the bottom of the berry */
-  .bloom-berry-blossom {
-    position: absolute;
-    left: 50%;
-    bottom: 12%;
-    width: 22%;
-    height: 22%;
-    transform: translateX(-50%);
-    border-radius: 50%;
-    background: color-mix(in srgb, var(--berry) 40%, #000);
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--berry) 55%, #000);
-  }
-
-  /* small green leaf/stem on a couple of berries for clarity */
-  .bloom-berry-leaf {
-    position: absolute;
-    top: -16%;
-    left: 54%;
-    width: 46%;
-    height: 40%;
-    background: linear-gradient(135deg, #4a7c2f 0%, #2f5a1c 100%);
-    border-radius: 0 80% 0 80%;
-    transform: rotate(-28deg);
-    transform-origin: bottom left;
-  }
-
-  @keyframes berry-fall {
+  @keyframes berry-snow {
     0% {
       opacity: 0;
       /* start above the top edge */
-      transform: translate(0, -16vh) rotate(0deg);
+      transform: translate(0, -16vh) rotate(0deg) scale(var(--scale));
     }
-    12% {
-      opacity: 1;
+    10% {
+      opacity: var(--berry-opacity);
     }
-    85% {
-      opacity: 1;
+    25% {
+      transform: translate(var(--sway), 16vh)
+        rotate(calc(var(--spin) * 0.4)) scale(var(--scale));
+    }
+    50% {
+      transform: translate(var(--sway2), 48vh)
+        rotate(calc(var(--spin) * 0.7)) scale(var(--scale));
+    }
+    75% {
+      transform: translate(var(--sway), 80vh)
+        rotate(var(--spin)) scale(var(--scale));
+    }
+    90% {
+      opacity: var(--berry-opacity);
     }
     100% {
       opacity: 0;
-      /* fall past the bottom with slight sway + slow rotation */
-      transform: translate(var(--sway), 116vh) rotate(var(--spin));
+      /* drift past the bottom edge */
+      transform: translate(var(--sway2), 116vh)
+        rotate(calc(var(--spin) * 1.2)) scale(var(--scale));
     }
   }
 
