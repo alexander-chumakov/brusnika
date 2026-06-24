@@ -315,7 +315,7 @@
         ? barRect.top
         : window.innerHeight - 72;
 
-    const COUNT = 14 + Math.floor(Math.random() * 9); // 14–22 berries
+    const COUNT = 14 + Math.floor(Math.random() * 7); // 14–20 berries
     let maxLife = 0;
 
     for (let i = 0; i < COUNT; i++) {
@@ -326,15 +326,18 @@
       berry.alt = '';
       berry.setAttribute('aria-hidden', 'true');
 
-      const size = 26 + Math.random() * 22; // 26–48px base — favicon detail visible
-      const scale = 0.5 + Math.random() * 0.9; // 0.5–1.4 depth/parallax
-      const opacity = 0.5 + Math.random() * 0.5; // 0.5–1 depth/parallax
+      const size = 40 + Math.random() * 32; // 40–72px base — clearly large
+      const scale = 0.7 + Math.random() * 0.8; // 0.7–1.5 depth/parallax
+      const opacity = 0.55 + Math.random() * 0.45; // 0.55–1 depth/parallax
       const startX = Math.random() * 100; // full-width random position (%)
-      const drift = (Math.random() - 0.5) * 50; // one gentle diagonal lean (px)
-      const tilt = (Math.random() - 0.5) * 10; // very slight slow tilt (deg, max ±5)
+      // Smooth snowflake sway: amplitude + direction; waypoints alternate so
+      // the drift is a soft S-curve, eased (never abrupt).
+      const sway = 22 + Math.random() * 36; // sway amplitude (px)
+      const swayDir = Math.random() < 0.5 ? -1 : 1; // start drifting L or R
+      const spin = (Math.random() - 0.5) * 36; // slow gentle rotation (deg, ±18)
       const delay = Math.random() * 1.8; // staggered start over ~1.8s
-      const fall = 3 + Math.random() * 1; // 3–4s slow smooth fall
-      const fade = 0.8 + Math.random() * 0.7; // 0.8–1.5s rest-and-fade
+      const fall = 3.5 + Math.random() * 1; // 3.5–4.5s slow floaty fall
+      const fade = 0.9 + Math.random() * 0.8; // 0.9–1.7s rest-and-fade
       // berry rests on the bar slightly above the line (account for its size)
       const restY = landY - size * scale * 0.5;
       maxLife = Math.max(maxLife, delay + fall + fade);
@@ -343,8 +346,9 @@
       berry.style.setProperty('--scale', String(scale));
       berry.style.setProperty('--berry-opacity', String(opacity));
       berry.style.setProperty('--x', `${startX}%`);
-      berry.style.setProperty('--drift', `${drift}px`);
-      berry.style.setProperty('--tilt', `${tilt}deg`);
+      berry.style.setProperty('--sway', `${swayDir * sway}px`);
+      berry.style.setProperty('--sway2', `${-swayDir * sway}px`);
+      berry.style.setProperty('--spin', `${spin}deg`);
       berry.style.setProperty('--rest-y', `${restY}px`);
       berry.style.setProperty('--delay', `${delay}s`);
       berry.style.setProperty('--fall', `${fall}s`);
@@ -367,12 +371,16 @@
   // path as the track list (same fade-in, now-playing bar appears, index
   // shows "трек 01 / 06"). Prevent the default #music jump. Bind once the
   // island hydrates; robust if hero rendered before the island.
-  // CHANGE 1: the brusnika snowfall fires ONLY here (hero «слушать»).
+  // CHANGE 1: the brusnika snowfall fires ONLY here (hero «слушать»), AND only
+  // when this click STARTS playback (off→on) — never when it pauses/stops.
   const heroCta = document.querySelector<HTMLAnchorElement>('[data-play-first]');
   if (heroCta && TOTAL > 0) {
     heroCta.addEventListener('click', (e) => {
       e.preventDefault();
-      bloom();
+      // playTrack(0) pauses only when track 0 is already the current, playing
+      // track (D-09 toggle). Any other state results in playback STARTING.
+      const willStart = !(currentIdx === 0 && !audio.paused);
+      if (willStart) bloom();
       playTrack(0);
     });
   }
@@ -678,11 +686,13 @@
     overflow: hidden;
   }
 
-  /* Each particle is the real brand berry SVG (public/favicon.svg). It falls
-     SMOOTHLY (no jitter) from above the top edge, gently leaning along one
-     diagonal with a few degrees of slow tilt, LANDS on the now-playing bar
-     (--rest-y), then fades out while resting. Two phases:
-       1) berry-fall  — smooth descent to the rest line, holds (both)
+  /* Each particle is the real brand berry SVG (public/favicon.svg). EVERY berry
+     starts ABOVE the top edge (opacity 0) so during its stagger delay it is
+     off-screen/invisible — none appear pre-placed. It then drifts down like a
+     real SNOWFLAKE: a smooth ease-in-out side-to-side sway (soft S-curve, no
+     abrupt direction changes) plus a slow gentle rotation, LANDS on the
+     now-playing bar (--rest-y), and fades out while resting. Two phases:
+       1) berry-fall — snowflake descent to the rest line, holds (both)
        2) berry-rest-fade — gradual opacity fade after the fall completes
      depth comes from per-berry scale and opacity. */
   .bloom-berry {
@@ -694,27 +704,37 @@
     opacity: 0;
     will-change: transform, opacity;
     transform-origin: center;
-    /* smooth ease-out fall, then a gentle fade once settled */
+    /* ease-in-out across sway waypoints = gentle, floaty snowflake drift */
     animation:
-      berry-fall var(--fall) cubic-bezier(0.33, 0, 0.3, 1) var(--delay) both,
+      berry-fall var(--fall) ease-in-out var(--delay) both,
       berry-rest-fade var(--fade) ease-out calc(var(--delay) + var(--fall)) both;
   }
 
-  /* Phase 1: smooth descent to the bar with a single gentle diagonal lean
-     and a tiny slow tilt — calm, not oscillating. */
+  /* Phase 1: smooth snowflake descent. Y goes from off-screen top to the bar
+     line via fractions of --rest-y; X sways gently L↔R; slow rotation. The 0%
+     keyframe is off-screen + opacity 0, so delayed berries stay invisible
+     until they actually start falling in. */
   @keyframes berry-fall {
     0% {
       opacity: 0;
-      transform: translate(0, -16vh) rotate(0deg) scale(var(--scale));
+      transform: translate(var(--sway), -15vh) rotate(0deg) scale(var(--scale));
     }
-    12% {
+    10% {
       opacity: var(--berry-opacity);
+    }
+    33% {
+      transform: translate(var(--sway2), calc(var(--rest-y) * 0.34))
+        rotate(calc(var(--spin) * 0.4)) scale(var(--scale));
+    }
+    66% {
+      transform: translate(var(--sway), calc(var(--rest-y) * 0.68))
+        rotate(calc(var(--spin) * 0.8)) scale(var(--scale));
     }
     100% {
       opacity: var(--berry-opacity);
-      /* land at the bar's top edge, slightly drifted with a slight tilt */
-      transform: translate(var(--drift), var(--rest-y))
-        rotate(var(--tilt)) scale(var(--scale));
+      /* land softly on the bar's top edge */
+      transform: translate(var(--sway2), var(--rest-y))
+        rotate(var(--spin)) scale(var(--scale));
     }
   }
 
@@ -722,14 +742,14 @@
   @keyframes berry-rest-fade {
     0% {
       opacity: var(--berry-opacity);
-      transform: translate(var(--drift), var(--rest-y))
-        rotate(var(--tilt)) scale(var(--scale));
+      transform: translate(var(--sway2), var(--rest-y))
+        rotate(var(--spin)) scale(var(--scale));
     }
     100% {
       opacity: 0;
       /* settle a hair lower as it fades, for a soft "resting" feel */
-      transform: translate(var(--drift), calc(var(--rest-y) + 4px))
-        rotate(var(--tilt)) scale(var(--scale));
+      transform: translate(var(--sway2), calc(var(--rest-y) + 4px))
+        rotate(var(--spin)) scale(var(--scale));
     }
   }
 
