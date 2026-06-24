@@ -153,10 +153,20 @@ import heroImg from '../assets/images/hero.jpg';
   /* Gradient text clip applied to each span */
   .hero-title-line {
     display: block;
-    background: linear-gradient(176deg, #ffe7ed 4%, #f3a9bd 58%, #dd7791 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    /* Solid fallback — guarantees the name is readable if gradient-clip
+       is unsupported or fails to paint (e.g. some tablet browsers). */
+    color: #f3a9bd;
+  }
+
+  /* Apply the gradient clip only where the browser actually supports it. */
+  @supports ((-webkit-background-clip: text) or (background-clip: text)) {
+    .hero-title-line {
+      background: linear-gradient(176deg, #ffe7ed 4%, #f3a9bd 58%, #dd7791 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+    }
   }
 
   .hero-title-line--1 {
