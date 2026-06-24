@@ -29,7 +29,12 @@
   3. Shows section lists real upcoming concert dates, cities, venues, and each links to a real Timepad/Kassir ticket page (no `#` placeholder)
   4. Streaming links (Yandex Music and VK Music first, then Spotify, Apple Music, YouTube) and footer social/contact links (Telegram, VK, email) resolve to real destination pages
   5. Loading the Vercel preview URL with `NOINDEX=true` env var set causes `<meta name="robots" content="noindex">` to appear in page source; no crawler can index the page until the env var is removed
-**Plans:** TBD
+**Plans:** 4 plans (Walking Skeleton first, then 3 vertical slices)
+Plans:
+- [ ] 01-01-PLAN.md — Walking Skeleton: scaffold Astro + Vercel adapter, move images, global tokens, Layout (fonts + noindex), Hero, deploy (FND-01/02/06/07)
+- [ ] 01-02-PLAN.md — Static prose sections: nav, marquee, featured album, about, sing-with-us (FND-01/04)
+- [ ] 01-03-PLAN.md — Content Collections seam: tracks/shows/gallery from getCollection() + demo now-playing bar (FND-05, SHOW-01/02)
+- [ ] 01-04-PLAN.md — Links-as-data + footer + lessons modal (fake submit) + animations + final pixel pass (LINK-01/02, FND-03)
 **UI hint**: yes
 
 ### Phase 2: Media Islands
@@ -78,7 +83,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Static Site | 0/? | Not started | - |
+| 1. Foundation & Static Site | 0/4 | Not started | - |
 | 2. Media Islands | 0/? | Not started | - |
 | 3. Sharing & Booking | 0/? | Not started | - |
 | 4. Pre-Launch Verification | 0/? | Not started | - |
