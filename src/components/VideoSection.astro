@@ -1,0 +1,299 @@
+---
+/**
+ * VideoSection.astro — «На экране» video clip section
+ *
+ * Reads the `videos` content collection (4 CDN-backed clips created in 02-01).
+ * Renders a horizontal scroll carousel on mobile (≤860px) and a 3-column grid
+ * on desktop — pure CSS scroll-snap, no JS carousel library (D-14).
+ *
+ * Each card:
+ *   - Shows a CDN poster image with a centered 64px play button (C-02, VID-01)
+ *   - On click: hides the poster overlay and shows the native <video controls playsinline>
+ *     sourced from the CDN — never autoplays (VID-02, D-15)
+ *   - preload="none" so 4 clips don't all fetch on page load (T-02-09)
+ *   - Phase 3 share hooks: data-clip-url + data-clip-title on the wrapper,
+ *     reserved 44×44px bottom-right slot .video-share-slot (D-16)
+ *
+ * client:visible — below the fold; Astro hydrates only when scrolled into view.
+ */
+import { getCollection } from 'astro:content';
+
+const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.data.order);
+---
+
+<section id="clips" class="video-section">
+  <div data-reveal class="video-intro">
+    <div class="video-eyebrow">клипы</div>
+    <h2 class="video-heading">На <span class="video-accent">экране</span></h2>
+  </div>
+
+  <div data-reveal class="video-carousel">
+    {videos.map((v) => (
+      <div
+        class="video-card"
+        data-clip-url={v.data.videoUrl}
+        data-clip-title={v.data.title}
+      >
+        <!-- Poster overlay — hidden once user clicks play -->
+        <div class="video-poster-wrap">
+          <img
+            class="video-poster"
+            src={v.data.posterUrl}
+            alt={v.data.title}
+            loading="lazy"
+          />
+          <!-- Bottom gradient for readability of the title label -->
+          <div class="video-gradient" aria-hidden="true"></div>
+          <button
+            class="video-play-btn"
+            aria-label={`Воспроизвести ${v.data.title}`}
+          >▶</button>
+          <p class="video-title-label">{v.data.title}</p>
+        </div>
+
+        <!-- Native video — hidden until user clicks play (VID-02: no autoplay) -->
+        <video
+          class="video-el"
+          src={v.data.videoUrl}
+          poster={v.data.posterUrl}
+          controls
+          playsinline
+          preload="none"
+          hidden
+        ></video>
+
+        <!-- Phase 3 share slot — reserved 44×44px bottom-right (D-16); do NOT fill here -->
+        <div class="video-share-slot" aria-hidden="true"></div>
+      </div>
+    ))}
+  </div>
+</section>
+
+<script>
+  // Reveal inline video on click of poster or play button.
+  // Never autoplay — only triggered by explicit user gesture (VID-02).
+  document.querySelectorAll<HTMLElement>('.video-card').forEach((card) => {
+    const posterWrap = card.querySelector<HTMLElement>('.video-poster-wrap');
+    const playBtn = card.querySelector<HTMLButtonElement>('.video-play-btn');
+    const videoEl = card.querySelector<HTMLVideoElement>('.video-el');
+
+    if (!posterWrap || !videoEl) return;
+
+    function revealAndPlay() {
+      if (!posterWrap || !videoEl) return;
+      posterWrap.hidden = true;
+      videoEl.hidden = false;
+      videoEl.play().catch(() => {
+        // play() promise may reject if browser blocks — user tapped, so this is rare
+      });
+    }
+
+    posterWrap.addEventListener('click', revealAndPlay);
+    if (playBtn) {
+      playBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); // avoid double-firing with posterWrap click
+        revealAndPlay();
+      });
+    }
+
+    videoEl.addEventListener('error', () => {
+      card.innerHTML =
+        '<p class="video-error">Видео временно недоступно. Попробуйте обновить страницу.</p>';
+    });
+  });
+</script>
+
+<style>
+  /* ── Section container ───────────────────────────────────── */
+  .video-section {
+    position: relative;
+    z-index: 2;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 130px 40px 110px;
+    scroll-margin-top: 70px;
+  }
+
+  /* ── Intro block (eyebrow + heading) ────────────────────── */
+  .video-intro {
+    margin-bottom: 40px;
+  }
+
+  .video-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    margin-bottom: 16px;
+  }
+
+  .video-heading {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(32px, 5vw, 62px);
+    line-height: 1.02;
+    margin: 0;
+    letter-spacing: 0.3px;
+    color: var(--color-text);
+  }
+
+  .video-accent {
+    color: var(--color-accent);
+  }
+
+  /* ── Carousel (mobile) ───────────────────────────────────── */
+  .video-carousel {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox */
+  }
+
+  .video-carousel::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* ── Card ────────────────────────────────────────────────── */
+  .video-card {
+    scroll-snap-align: start;
+    flex: 0 0 280px; /* mobile: shows one card + peek of next */
+    position: relative;
+    aspect-ratio: 16 / 9;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--color-bg-raised);
+  }
+
+  /* ── Desktop: 3-column grid ──────────────────────────────── */
+  @media (min-width: 860px) {
+    .video-carousel {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      overflow-x: unset;
+      scroll-snap-type: unset;
+    }
+
+    .video-card {
+      flex: unset; /* reset mobile flex-basis */
+    }
+  }
+
+  /* ── Poster overlay ──────────────────────────────────────── */
+  .video-poster-wrap {
+    position: absolute;
+    inset: 0;
+    cursor: pointer;
+  }
+
+  .video-poster {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.5s ease;
+  }
+
+  .video-card:hover .video-poster {
+    transform: scale(1.02);
+  }
+
+  /* Bottom gradient — always visible over poster */
+  .video-gradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  /* ── Play button (centered 64×64px circle) ───────────────── */
+  .video-play-btn {
+    all: unset;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: 2px solid var(--color-accent);
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    color: var(--color-accent);
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+    /* nudge the ▶ glyph visually to center */
+    padding-left: 4px;
+  }
+
+  .video-card:hover .video-play-btn {
+    transform: translate(-50%, -50%) scale(1.08);
+    border-color: var(--color-accent-hover);
+    color: var(--color-accent-hover);
+  }
+
+  /* ── Clip title label (bottom-left of card) ──────────────── */
+  .video-title-label {
+    position: absolute;
+    bottom: 12px;
+    left: 16px;
+    right: 60px; /* leave room for Phase 3 share slot (44px + 12px margin) */
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--color-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ── Native video element (shown after click) ────────────── */
+  .video-el {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* ── Phase 3 share slot (reserved — empty in Phase 2) ────── */
+  .video-share-slot {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    width: 44px;
+    height: 44px;
+    /* Empty in Phase 2 — Phase 3 inserts a share button here (D-16) */
+  }
+
+  /* ── Error state ─────────────────────────────────────────── */
+  .video-error {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--color-text-muted);
+    text-align: center;
+    background: var(--color-bg-raised);
+  }
+
+  /* ── Mobile padding ──────────────────────────────────────── */
+  @media (max-width: 860px) {
+    .video-section {
+      padding: 80px 20px 80px;
+    }
+  }
+</style>
