@@ -12,7 +12,7 @@ Requirements for the initial private (noindex) release. v1 = the complete final 
 - [x] **FND-01**: Site is rebuilt in Astro with the existing draft's visual design preserved (dark theme, pink #f3a9bd accent, Prata + Golos Text, all sections and layout)
 - [x] **FND-02**: Fonts (Prata, Golos Text) are self-hosted — no Google Fonts dependency (throttled in Russia)
 - [ ] **FND-03**: Scroll-reveal animations and cursor-follow glow from the draft are preserved
-- [ ] **FND-04**: Layout is responsive and matches the draft's behavior across mobile and desktop
+- [x] **FND-04**: Layout is responsive and matches the draft's behavior across mobile and desktop
 - [ ] **FND-05**: Content (tracks, shows, gallery) is modeled as Astro Content Collections backed by local data, so a v2 CMS can be swapped in without touching components
 - [x] **FND-06**: Site is deployed to Vercel
 - [x] **FND-07**: Search indexing is disabled via an env-gated noindex (robots meta + X-Robots-Tag), toggleable to public at launch without code changes
@@ -101,7 +101,7 @@ Which phases cover which requirements. Populated during roadmap creation.
 | FND-01 | Phase 1 | Complete |
 | FND-02 | Phase 1 | Complete |
 | FND-03 | Phase 1 | Pending |
-| FND-04 | Phase 1 | Pending |
+| FND-04 | Phase 1 | Complete |
 | FND-05 | Phase 1 | Pending |
 | FND-06 | Phase 1 | Complete |
 | FND-07 | Phase 1 | Complete |

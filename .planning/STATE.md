@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-06-24T16:24:49.094Z"
+last_updated: "2026-06-24T16:30:28.006Z"
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 4
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -30,11 +30,11 @@ progress:
 ## Current Position
 
 Phase: 01 (foundation-static-site) — EXECUTING
-Plan: 1 of 4
+Plan: 2 of 4
 **Phase:** 1 — Foundation & Static Site
-**Plan:** Plan 01 complete (checkpoint: Vercel deploy pending)
-**Status:** Executing Phase 01 — Plan 01-01 done, checkpoint at Vercel deploy
-**Progress:** [███░░░░░░░] 25%
+**Plan:** Plan 02 complete (checkpoint: Vercel visual verify pending)
+**Status:** Executing Phase 01 — Plans 01-01 and 01-02 done; awaiting Vercel deploy for visual checkpoint
+**Progress:** [█████░░░░░] 50%
 
 ---
 
@@ -73,6 +73,7 @@ Plan: 1 of 4
 | Content Collections as v1→v2 seam | Loader swap in content.config.ts; zero component code changes for v2 |
 | Use @fontsource/prata/400.css (explicit path) not bare import | Avoids TypeScript ts(2882) strict-mode error; functionally identical |
 | Astro Sharp WebP generation confirmed for static builds (A1) | No extra astro.config.mjs settings needed — verified in build output |
+| @supports gate for -webkit-text-stroke in MarqueeSection | Solid color fallback when browser lacks text-stroke support; extends 01-01 gradient-clip lesson |
 
 ### External Prerequisites
 
