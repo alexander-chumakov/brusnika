@@ -307,133 +307,47 @@
     layer.className = 'bloom-layer';
     layer.setAttribute('aria-hidden', 'true');
 
-    // Land berries on top of the now-playing bar. Measure its top edge now;
-    // fall back to (viewport height − ~72px bar height) if not laid out yet.
-    const barRect = bar.getBoundingClientRect();
-    const landY =
-      barRect.height > 0 && barRect.top > 0
-        ? barRect.top
-        : window.innerHeight - 72;
-
-    const COUNT = 22 + Math.floor(Math.random() * 9); // 22–30 berries
-    const REST_HOLD = 1.5; // s — all berries rest fully visible after the last lands
-    const FADE_DUR = 0.8 + Math.random() * 0.4; // 0.8–1.2s synchronized fade
-
-    // ---- PASS 1: roll each berry's params and find when the LAST one lands.
-    type BerryPlan = {
-      el: HTMLImageElement;
-      opacity: number;
-      scale: number;
-      sway: number; // signed px (first swing)
-      sway3: number; // signed px (decayed third swing, narrower)
-      spin: number; // deg
-      restY: number; // px landing line
-      delay: number; // s — staggered release
-      fall: number; // s — descent duration
-      landTime: number; // s — delay + fall (absolute on the shared clock)
-    };
-    const plans: BerryPlan[] = [];
-    let maxLand = 0;
+    // A few brusnika berries: a quick, soft, self-dissolving little shower right
+    // when music starts. Each berry drifts gently down and FADES OUT during its
+    // own fall (no landing/resting on the bar). Plain CSS keyframe per berry.
+    const COUNT = 8 + Math.floor(Math.random() * 5); // 8–12 berries
+    let maxLife = 0;
 
     for (let i = 0; i < COUNT; i++) {
+      // Real brand asset — unmistakably brusnika. Decorative → aria-hidden.
       const berry = document.createElement('img');
       berry.className = 'bloom-berry';
       berry.src = '/favicon.svg';
       berry.alt = '';
       berry.setAttribute('aria-hidden', 'true');
 
-      const size = 40 + Math.random() * 32; // 40–72px base — clearly large
-      const scale = 0.7 + Math.random() * 0.8; // 0.7–1.5 depth/parallax
-      const opacity = 0.55 + Math.random() * 0.45; // 0.55–1 depth/parallax
+      const size = 36 + Math.random() * 26; // 36–62px, varied for naturalness
+      const scale = 0.8 + Math.random() * 0.5; // 0.8–1.3 slight depth
+      const opacity = 0.6 + Math.random() * 0.4; // 0.6–1 slight depth
       const startX = Math.random() * 100; // full-width random position (%)
-      const sway = 55 + Math.random() * 65; // 55–120px — broad balloon arcs
-      const swayDir = Math.random() < 0.5 ? -1 : 1; // start swinging L or R
-      const spin = (Math.random() - 0.5) * 24; // slow lazy tumble (deg, ±12)
-      const delay = Math.random() * 2.4; // staggered release over ~2.4s
-      const fall = 4.5 + Math.random() * 1.5; // 4.5–6s slow buoyant descent
-      const restY = landY - size * scale * 0.5;
+      const sway = (Math.random() - 0.5) * 36; // subtle gentle sway (±18px)
+      const spin = (Math.random() - 0.5) * 18; // very slight tumble (±9deg)
+      // TIGHT stagger so it reads as ONE prompt shower; first berries within
+      // ~80–120ms of the click, all entering within ~0.45s. No long lead-in.
+      const delay = 0.08 + Math.random() * 0.37; // 0.08–0.45s
+      const fall = 1.3 + Math.random() * 0.5; // 1.3–1.8s short, light descent
+      maxLife = Math.max(maxLife, delay + fall);
 
-      berry.style.left = `${startX}%`;
-      berry.style.width = `${size}px`;
-      berry.style.height = `${size}px`;
+      berry.style.setProperty('--size', `${size}px`);
+      berry.style.setProperty('--scale', String(scale));
+      berry.style.setProperty('--berry-opacity', String(opacity));
+      berry.style.setProperty('--x', `${startX}%`);
+      berry.style.setProperty('--sway', `${sway}px`);
+      berry.style.setProperty('--spin', `${spin}deg`);
+      berry.style.setProperty('--delay', `${delay}s`);
+      berry.style.setProperty('--fall', `${fall}s`);
+
       layer.appendChild(berry);
-
-      const landTime = delay + fall;
-      maxLand = Math.max(maxLand, landTime);
-
-      plans.push({
-        el: berry,
-        opacity,
-        scale,
-        sway: swayDir * sway,
-        sway3: swayDir * sway * 0.6,
-        spin,
-        restY,
-        delay,
-        fall,
-        landTime,
-      });
     }
 
     document.body.appendChild(layer);
-
-    // ---- Shared fade-start: 1.5s AFTER the last berry has landed.
-    const fadeStart = maxLand + REST_HOLD; // s on the shared clock
-    const fadeEnd = fadeStart + FADE_DUR; // s — everything done
-
-    // ---- PASS 2: drive each berry via the Web Animations API. The animation
-    // spans from the berry's own delay to the SHARED fadeEnd, so the fall is
-    // staggered but the fade aligns to one moment for all berries. Keyframe
-    // offsets are computed per berry. The first keyframe is off-screen +
-    // opacity 0 with fill 'both', so during the pre-fall delay the berry holds
-    // that invisible off-screen state — it can NEVER flash on the player.
-    for (const p of plans) {
-      const total = fadeEnd - p.delay; // s — this berry's animation length
-      const k = (t: number) => Math.min(1, Math.max(0, (t - p.delay) / total));
-
-      // phase boundary offsets on this berry's own [0,1] timeline
-      const oFadeIn = k(p.delay + p.fall * 0.08); // visible shortly after release
-      const o30 = k(p.delay + p.fall * 0.3);
-      const o50 = k(p.delay + p.fall * 0.5);
-      const o66 = k(p.delay + p.fall * 0.82);
-      const oLand = k(p.landTime); // arrives at the bar
-      const oSettle = k(p.landTime + 0.25); // soft cushion just after landing
-      const oRest = k(p.landTime + 0.4); // comes to rest
-      const oFadeStart = k(fadeStart); // shared: hold until here, fully visible
-
-      const tf = (x: number | string, y: number | string, rot: number, s: number) =>
-        `translate(${typeof x === 'number' ? x + 'px' : x}, ${
-          typeof y === 'number' ? y + 'px' : y
-        }) rotate(${rot}deg) scale(${s})`;
-
-      p.el.animate(
-        [
-          // held off-screen + invisible during the pre-fall delay (offset 0)
-          { offset: 0, opacity: 0, transform: tf(p.sway, '-15vh', 0, p.scale) },
-          { offset: oFadeIn, opacity: p.opacity, transform: tf(p.sway, '-12vh', 0, p.scale) },
-          { offset: o30, opacity: p.opacity, transform: tf(-p.sway, p.restY * 0.3, p.spin * 0.3, p.scale) },
-          { offset: o50, opacity: p.opacity, transform: tf(p.sway, p.restY * 0.56, p.spin * 0.6, p.scale) },
-          { offset: o66, opacity: p.opacity, transform: tf(p.sway3, p.restY * 0.82, p.spin * 0.85, p.scale) },
-          { offset: oLand, opacity: p.opacity, transform: tf(-p.sway, p.restY, p.spin, p.scale) },
-          // soft buoyant cushion (no sharp bounce)
-          { offset: oSettle, opacity: p.opacity, transform: tf(-p.sway * 0.4, p.restY + 5, p.spin * 0.92, p.scale * 0.99) },
-          // come to rest and HOLD fully visible until the shared fade-start
-          { offset: oRest, opacity: p.opacity, transform: tf(-p.sway * 0.25, p.restY + 2, p.spin * 0.92, p.scale) },
-          { offset: oFadeStart, opacity: p.opacity, transform: tf(-p.sway * 0.25, p.restY + 2, p.spin * 0.92, p.scale) },
-          // synchronized gentle fade-out (all berries together)
-          { offset: 1, opacity: 0, transform: tf(-p.sway * 0.25, p.restY + 6, p.spin * 0.92, p.scale) },
-        ],
-        {
-          duration: total * 1000,
-          delay: p.delay * 1000,
-          easing: 'ease-in-out',
-          fill: 'both',
-        }
-      );
-    }
-
-    // Auto-remove after the synchronized fade completes (no DOM buildup)
-    setTimeout(() => layer.remove(), Math.ceil(fadeEnd * 1000) + 200);
+    // Auto-remove after the last berry has dissolved (no DOM buildup)
+    setTimeout(() => layer.remove(), Math.ceil(maxLife * 1000) + 200);
   }
 
   // Wire track buttons — playback only, NO berries (CHANGE 1: hero-only)
@@ -753,27 +667,54 @@
   .bloom-layer {
     position: fixed;
     inset: 0;
-    /* Above the now-playing bar (z 60) so berries visibly SETTLE on top of it
-       and fade there; pointer-events:none keeps the bar fully clickable. */
-    z-index: 61;
+    z-index: 61; /* above page content; pointer-events:none keeps it click-through */
     pointer-events: none;
     overflow: hidden;
   }
 
-  /* Each particle is the real brand berry SVG (public/favicon.svg). The motion
-     is driven by the Web Animations API in JS (element.animate), NOT CSS
-     keyframes — so the staggered fall and a SHARED, synchronized fade-start
-     (1.5s after the LAST berry lands) can be computed per berry. This base rule
-     only positions/sizes the node and keeps it invisible (opacity 0) until the
-     WAAPI animation's backwards-fill applies its first keyframe (also off-screen
-     + opacity 0). It can therefore never flash on the player before it falls.
-     `left`, `width`, `height` are set inline per berry in JS. */
+  /* Each particle is the real brand berry SVG (public/favicon.svg). Simple,
+     single per-berry CSS keyframe: starts OFF-SCREEN above the top at opacity 0
+     (held during its short delay via fill `both` → no flash on the player),
+     fades in near the top, drifts gently down with a subtle sway + slight
+     tumble, and FADES OUT during the latter part of its own fall — it never
+     lands or rests on the now-playing bar. A quick, soft, self-dissolving
+     shower. depth comes from per-berry scale/opacity; size/x/speed vary. */
   .bloom-berry {
     position: absolute;
     top: 0;
+    left: var(--x);
+    width: var(--size);
+    height: var(--size);
     opacity: 0;
     will-change: transform, opacity;
     transform-origin: center;
+    animation: berry-fall var(--fall) ease-in var(--delay) both;
+  }
+
+  @keyframes berry-fall {
+    0% {
+      opacity: 0;
+      /* off-screen above the top edge — invisible during the pre-fall delay */
+      transform: translate(0, -14vh) rotate(0deg) scale(var(--scale));
+    }
+    18% {
+      /* fade in as it enters near the top */
+      opacity: var(--berry-opacity);
+      transform: translate(calc(var(--sway) * 0.5), 6vh)
+        rotate(calc(var(--spin) * 0.4)) scale(var(--scale));
+    }
+    60% {
+      /* still gently drifting, fully visible */
+      opacity: var(--berry-opacity);
+      transform: translate(var(--sway), 42vh)
+        rotate(var(--spin)) scale(var(--scale));
+    }
+    100% {
+      /* faded out by the mid/lower fall — dissolves on its own */
+      opacity: 0;
+      transform: translate(calc(var(--sway) * 1.3), 72vh)
+        rotate(calc(var(--spin) * 1.3)) scale(var(--scale));
+    }
   }
 
   /* Accessibility belt-and-braces: even if a node slips through, no motion */
