@@ -315,7 +315,7 @@
         ? barRect.top
         : window.innerHeight - 72;
 
-    const COUNT = 14 + Math.floor(Math.random() * 7); // 14–20 berries
+    const COUNT = 22 + Math.floor(Math.random() * 9); // 22–30 berries
     let maxLife = 0;
 
     for (let i = 0; i < COUNT; i++) {
@@ -335,13 +335,17 @@
       const sway = 55 + Math.random() * 65; // 55–120px — broad balloon arcs
       const swayDir = Math.random() < 0.5 ? -1 : 1; // start swinging L or R
       const spin = (Math.random() - 0.5) * 24; // slow lazy tumble (deg, ±12)
-      const delay = Math.random() * 2; // staggered release over ~2s
-      const fall = 4.5 + Math.random() * 1.5; // 4.5–6s slow buoyant fall
-      const fade = 1 + Math.random() * 0.8; // 1–1.8s rest-and-fade
+      const delay = Math.random() * 2.4; // staggered release over ~2.4s
+      // ONE continuous timeline per berry: buoyant descent → soft settle →
+      // fade tail, folded into a SINGLE animation. Both the first and last
+      // keyframes are opacity 0, so a delayed berry is invisible before it
+      // starts AND after it finishes — it can never flash at the player.
+      // dur ≈ fall (~70%) + settle (~10%) + fade (~20%); the CSS timeline uses
+      // fixed % stops tuned to that ratio.
+      const dur = 6.2 + Math.random() * 1.8; // 6.2–8s total (fall+settle+fade)
       // berry rests on the bar slightly above the line (account for its size)
       const restY = landY - size * scale * 0.5;
-      // lifetime = stagger delay + fall + 0.7s settle + fade
-      maxLife = Math.max(maxLife, delay + fall + 0.7 + fade);
+      maxLife = Math.max(maxLife, delay + dur);
 
       berry.style.setProperty('--size', `${size}px`);
       berry.style.setProperty('--scale', String(scale));
@@ -354,8 +358,7 @@
       berry.style.setProperty('--spin', `${spin}deg`);
       berry.style.setProperty('--rest-y', `${restY}px`);
       berry.style.setProperty('--delay', `${delay}s`);
-      berry.style.setProperty('--fall', `${fall}s`);
-      berry.style.setProperty('--fade', `${fade}s`);
+      berry.style.setProperty('--dur', `${dur}s`);
 
       layer.appendChild(berry);
     }
@@ -689,16 +692,16 @@
     overflow: hidden;
   }
 
-  /* Each particle is the real brand berry SVG (public/favicon.svg). EVERY berry
-     starts ABOVE the top edge (opacity 0) so during its stagger delay it is
-     off-screen/invisible — none appear pre-placed. It then descends like a
-     BALLOON falling to the ground: slow and buoyant, swinging in WIDE lazy
-     pendulum arcs (smooth ease-in-out at the turns), with a slow lazy tumble,
-     then a soft buoyant settle onto the now-playing bar and a gradual fade.
-     Phases:
-       1) berry-fall  — buoyant balloon descent to the rest line, holds (both)
-       2) berry-settle — tiny gentle cushion/bob as it touches down (no bounce)
-       3) berry-rest-fade — gradual opacity fade after settling
+  /* Each particle is the real brand berry SVG (public/favicon.svg). The ENTIRE
+     motion is ONE continuous @keyframes timeline driven by a SINGLE animation
+     with one animation-delay and fill-mode: both. Because the FIRST (0%) and
+     LAST (100%) keyframes are BOTH opacity 0 (and 0% is off-screen above the
+     top), a staggered berry is fully invisible before it starts AND after it
+     finishes — it can NEVER flash at the player during its delay.
+       0% → ~8%   : off-screen above top, fade in
+       ~8% → 72%  : buoyant balloon descent, WIDE lazy pendulum sway + tumble
+       72% → 82%  : soft buoyant settle/cushion onto the bar (no sharp bounce)
+       82% → 100% : gradual fade-out while resting on the bar
      depth comes from per-berry scale and opacity; sway width/phase/speed vary. */
   .bloom-berry {
     position: absolute;
@@ -709,76 +712,50 @@
     opacity: 0;
     will-change: transform, opacity;
     transform-origin: center;
-    /* ease-in-out across broad sway waypoints = lazy buoyant balloon swing.
-       The fall ends with a soft settle, then a gradual fade. */
-    animation:
-      berry-fall var(--fall) ease-in-out var(--delay) both,
-      berry-settle 0.7s ease-out calc(var(--delay) + var(--fall)) both,
-      berry-rest-fade var(--fade)
-        ease-out calc(var(--delay) + var(--fall) + 0.7s) both;
+    /* single continuous timeline; ease-in-out = lazy buoyant balloon swing */
+    animation: berry-balloon var(--dur) ease-in-out var(--delay) both;
   }
 
-  /* Phase 1: buoyant balloon descent. Y goes from off-screen top to the bar
-     line via fractions of --rest-y, eased so it floats (slower near the end
-     like air resistance); X swings in WIDE lazy arcs L↔R with a decaying
-     amplitude; slow lazy tumble. The 0% keyframe is off-screen + opacity 0,
-     so delayed berries stay invisible until they actually fall in. */
-  @keyframes berry-fall {
+  @keyframes berry-balloon {
     0% {
       opacity: 0;
       transform: translate(var(--sway), -15vh) rotate(0deg) scale(var(--scale));
     }
-    10% {
+    8% {
       opacity: var(--berry-opacity);
     }
     30% {
       transform: translate(var(--sway2), calc(var(--rest-y) * 0.3))
         rotate(calc(var(--spin) * 0.3)) scale(var(--scale));
     }
-    55% {
-      transform: translate(var(--sway), calc(var(--rest-y) * 0.58))
+    50% {
+      transform: translate(var(--sway), calc(var(--rest-y) * 0.56))
         rotate(calc(var(--spin) * 0.6)) scale(var(--scale));
     }
-    80% {
-      transform: translate(var(--sway3), calc(var(--rest-y) * 0.84))
+    66% {
+      transform: translate(var(--sway3), calc(var(--rest-y) * 0.82))
         rotate(calc(var(--spin) * 0.85)) scale(var(--scale));
     }
-    100% {
+    72% {
       opacity: var(--berry-opacity);
-      /* arrive just above the bar, centered swing settling out */
+      /* arrive at the bar line */
       transform: translate(var(--sway2), var(--rest-y))
         rotate(var(--spin)) scale(var(--scale));
     }
-  }
-
-  /* Phase 2: soft buoyant touch-down — a tiny gentle cushion/bob, NO sharp
-     bounce, like a balloon settling onto the bar. */
-  @keyframes berry-settle {
-    0% {
-      transform: translate(var(--sway2), var(--rest-y))
-        rotate(var(--spin)) scale(var(--scale));
-    }
-    55% {
-      /* gentle cushion: dip a touch + ease the swing toward center */
+    78% {
+      /* gentle cushion: dip a touch as it settles (no sharp bounce) */
       transform: translate(calc(var(--sway2) * 0.4), calc(var(--rest-y) + 5px))
-        rotate(calc(var(--spin) * 0.9)) scale(calc(var(--scale) * 0.99));
+        rotate(calc(var(--spin) * 0.92)) scale(calc(var(--scale) * 0.99));
     }
-    100% {
-      transform: translate(calc(var(--sway2) * 0.25), calc(var(--rest-y) + 2px))
-        rotate(calc(var(--spin) * 0.92)) scale(var(--scale));
-    }
-  }
-
-  /* Phase 3: berry rests on the bar and gradually dissolves (no bounce). */
-  @keyframes berry-rest-fade {
-    0% {
+    82% {
       opacity: var(--berry-opacity);
+      /* come to rest on the bar */
       transform: translate(calc(var(--sway2) * 0.25), calc(var(--rest-y) + 2px))
         rotate(calc(var(--spin) * 0.92)) scale(var(--scale));
     }
     100% {
       opacity: 0;
-      /* settle a hair lower as it fades, for a soft "resting" feel */
+      /* fade out, settling a hair lower for a soft resting feel */
       transform: translate(calc(var(--sway2) * 0.25), calc(var(--rest-y) + 6px))
         rotate(calc(var(--spin) * 0.92)) scale(var(--scale));
     }
