@@ -1,18 +1,27 @@
 ---
 /**
- * VideoSection.astro — «На экране» video clip section
+ * VideoSection.astro — «На экране» social-media clip section
  *
  * Reads the `videos` content collection (4 CDN-backed clips created in 02-01).
- * Renders a horizontal scroll carousel on mobile (≤860px) and a 3-column grid
- * on desktop — pure CSS scroll-snap, no JS carousel library (D-14).
+ * Clips are SOCIAL-MEDIA / Stories style: PORTRAIT 9:16 cards.
+ * Renders a horizontal scroll-snap CAROUSEL on ALL viewports (desktop + mobile) —
+ * pure CSS scroll-snap, no JS carousel library. Desktop adds optional ◂ ▸ scroll arrows.
  *
- * Each card:
- *   - Shows a CDN poster image with a centered 64px play button (C-02, VID-01)
- *   - On click: hides the poster overlay and shows the native <video controls playsinline>
- *     sourced from the CDN — never autoplays (VID-02, D-15)
- *   - preload="none" so 4 clips don't all fetch on page load (T-02-09)
- *   - Phase 3 share hooks: data-clip-url + data-clip-title on the wrapper,
- *     reserved 44×44px bottom-right slot .video-share-slot (D-16)
+ * Interaction (YouTube-Shorts style):
+ *   - The carousel shows PORTRAIT 9:16 poster cards with a 64px play button (C-02, VID-01).
+ *     The cards themselves NEVER play video and NEVER autoplay (VID-02).
+ *   - Clicking a card (poster/play) opens a centered ENLARGE MODAL: a dimmed full-viewport
+ *     backdrop with one tall portrait <video> centered on screen (height ~min(88vh,…) so
+ *     desktop has clear dark side-margins — exactly like a YouTube Short). This is a
+ *     CSS-positioned overlay, NOT the browser Fullscreen API (no requestFullscreen()).
+ *   - The modal video plays on open (the click is the user gesture that permits playback);
+ *     no autoplay occurs anywhere on the page itself (VID-02).
+ *   - Close: × button, Esc key, or clicking the dimmed backdrop — each stops + resets
+ *     playback and restores body scroll.
+ *   - Works on desktop and mobile (on a phone the portrait video naturally fills the screen).
+ *   - preload="none" so clips don't fetch on page load (T-02-09).
+ *   - Phase 3 share hooks: data-clip-url + data-clip-title on each card, reserved 44×44px
+ *     bottom-right slot .video-share-slot (D-16).
  *
  * client:visible — below the fold; Astro hydrates only when scrolled into view.
  */
@@ -27,79 +36,155 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
     <h2 class="video-heading">На <span class="video-accent">экране</span></h2>
   </div>
 
-  <div data-reveal class="video-carousel">
-    {videos.map((v) => (
-      <div
-        class="video-card"
-        data-clip-url={v.data.videoUrl}
-        data-clip-title={v.data.title}
-      >
-        <!-- Poster overlay — hidden once user clicks play -->
-        <div class="video-poster-wrap">
-          <img
-            class="video-poster"
-            src={v.data.posterUrl}
-            alt={v.data.title}
-            loading="lazy"
-          />
-          <!-- Bottom gradient for readability of the title label -->
-          <div class="video-gradient" aria-hidden="true"></div>
-          <button
-            class="video-play-btn"
-            aria-label={`Воспроизвести ${v.data.title}`}
-          >▶</button>
-          <p class="video-title-label">{v.data.title}</p>
+  <div data-reveal class="video-carousel-wrap">
+    <!-- Desktop scroll arrows (shown only on pointer:fine); carousel is swipeable everywhere -->
+    <button class="video-arrow video-arrow-prev" aria-label="Предыдущие клипы" hidden>◂</button>
+
+    <div class="video-carousel">
+      {videos.map((v) => (
+        <div
+          class="video-card"
+          data-clip-url={v.data.videoUrl}
+          data-clip-title={v.data.title}
+        >
+          <!-- Portrait 9:16 media frame -->
+          <div class="video-frame">
+            <button class="video-poster-btn" aria-label={`Воспроизвести ${v.data.title}`}>
+              <img
+                class="video-poster"
+                src={v.data.posterUrl}
+                alt={v.data.title}
+                loading="lazy"
+              />
+              <!-- Bottom gradient for readability of the title label -->
+              <span class="video-gradient" aria-hidden="true"></span>
+              <span class="video-play-btn" aria-hidden="true">▶</span>
+              <span class="video-title-label">{v.data.title}</span>
+            </button>
+
+            <!-- Phase 3 share slot — reserved 44×44px bottom-right (D-16); do NOT fill here -->
+            <div class="video-share-slot" aria-hidden="true"></div>
+          </div>
         </div>
+      ))}
+    </div>
 
-        <!-- Native video — hidden until user clicks play (VID-02: no autoplay) -->
-        <video
-          class="video-el"
-          src={v.data.videoUrl}
-          poster={v.data.posterUrl}
-          controls
-          playsinline
-          preload="none"
-          hidden
-        ></video>
+    <button class="video-arrow video-arrow-next" aria-label="Следующие клипы" hidden>▸</button>
+  </div>
 
-        <!-- Phase 3 share slot — reserved 44×44px bottom-right (D-16); do NOT fill here -->
-        <div class="video-share-slot" aria-hidden="true"></div>
-      </div>
-    ))}
+  <!-- Shorts-style enlarge modal — one shared overlay; src swapped on open.
+       Centered portrait video on a dimmed backdrop; CSS overlay, NOT Fullscreen API. -->
+  <div class="video-modal" data-open="false" hidden>
+    <div class="video-modal-backdrop" data-modal-close></div>
+    <div class="video-modal-stage" role="dialog" aria-modal="true" aria-label="Просмотр клипа">
+      <button class="video-modal-close" aria-label="Закрыть">×</button>
+      <video
+        class="video-modal-video"
+        controls
+        playsinline
+        preload="none"
+      ></video>
+    </div>
   </div>
 </section>
 
 <script>
-  // Reveal inline video on click of poster or play button.
-  // Never autoplay — only triggered by explicit user gesture (VID-02).
-  document.querySelectorAll<HTMLElement>('.video-card').forEach((card) => {
-    const posterWrap = card.querySelector<HTMLElement>('.video-poster-wrap');
-    const playBtn = card.querySelector<HTMLButtonElement>('.video-play-btn');
-    const videoEl = card.querySelector<HTMLVideoElement>('.video-el');
+  // ── Shorts-style enlarge modal ──────────────────────────────
+  // Cards never play inline and never autoplay (VID-02). Clicking a card opens a
+  // centered overlay (CSS-positioned, NOT requestFullscreen) and plays the CDN clip.
+  const modal = document.querySelector<HTMLElement>('.video-modal');
+  const modalVideo = modal?.querySelector<HTMLVideoElement>('.video-modal-video');
+  const closeBtn = modal?.querySelector<HTMLButtonElement>('.video-modal-close');
+  const backdrop = modal?.querySelector<HTMLElement>('[data-modal-close]');
 
-    if (!posterWrap || !videoEl) return;
-
-    function revealAndPlay() {
-      if (!posterWrap || !videoEl) return;
-      posterWrap.hidden = true;
-      videoEl.hidden = false;
-      videoEl.play().catch(() => {
-        // play() promise may reject if browser blocks — user tapped, so this is rare
-      });
-    }
-
-    posterWrap.addEventListener('click', revealAndPlay);
-    if (playBtn) {
-      playBtn.addEventListener('click', (e) => {
-        e.stopPropagation(); // avoid double-firing with posterWrap click
-        revealAndPlay();
-      });
-    }
-
-    videoEl.addEventListener('error', () => {
-      card.innerHTML =
-        '<p class="video-error">Видео временно недоступно. Попробуйте обновить страницу.</p>';
+  function openModal(url: string, title: string) {
+    if (!modal || !modalVideo) return;
+    modalVideo.src = url;
+    modalVideo.setAttribute('aria-label', title);
+    modal.hidden = false;
+    // force reflow so the open transition runs
+    void modal.offsetWidth;
+    modal.dataset.open = 'true';
+    document.body.style.overflow = 'hidden'; // lock body scroll while open
+    // The opening click is a user gesture, so playback is permitted here.
+    modalVideo.play().catch(() => {
+      // play() may reject if the browser still blocks — controls remain available
     });
+  }
+
+  function closeModal() {
+    if (!modal || !modalVideo) return;
+    modal.dataset.open = 'false';
+    modalVideo.pause();
+    modalVideo.removeAttribute('src');
+    modalVideo.load(); // reset playback state
+    document.body.style.overflow = ''; // restore body scroll
+    modal.hidden = true;
+  }
+
+  document.querySelectorAll<HTMLElement>('.video-card').forEach((card) => {
+    const trigger = card.querySelector<HTMLButtonElement>('.video-poster-btn');
+    const url = card.dataset.clipUrl;
+    const title = card.dataset.clipTitle ?? '';
+    if (!trigger || !url) return;
+
+    trigger.addEventListener('click', () => openModal(url, title));
+  });
+
+  closeBtn?.addEventListener('click', closeModal);
+  backdrop?.addEventListener('click', closeModal);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal && modal.dataset.open === 'true') closeModal();
+  });
+
+  // Show a friendly error in the modal if the clip can't load.
+  modalVideo?.addEventListener('error', () => {
+    // Ignore the spurious error fired when we clear src on close.
+    if (!modalVideo.getAttribute('src')) return;
+    const stage = modal?.querySelector<HTMLElement>('.video-modal-stage');
+    if (stage) {
+      stage.innerHTML =
+        '<button class="video-modal-close" aria-label="Закрыть">×</button>' +
+        '<p class="video-modal-error">Видео временно недоступно. Попробуйте обновить страницу.</p>';
+      stage
+        .querySelector<HTMLButtonElement>('.video-modal-close')
+        ?.addEventListener('click', closeModal);
+    }
+  });
+
+  // ── Desktop scroll arrows (pointer:fine only) ───────────────
+  document.querySelectorAll<HTMLElement>('.video-carousel-wrap').forEach((wrap) => {
+    const carousel = wrap.querySelector<HTMLElement>('.video-carousel');
+    const prev = wrap.querySelector<HTMLButtonElement>('.video-arrow-prev');
+    const next = wrap.querySelector<HTMLButtonElement>('.video-arrow-next');
+    if (!carousel || !prev || !next) return;
+
+    const hasFinePointer = window.matchMedia('(pointer: fine)').matches;
+    if (!hasFinePointer) return; // touch devices swipe directly; keep arrows hidden
+
+    prev.hidden = false;
+    next.hidden = false;
+
+    function scrollByCard(dir: number) {
+      if (!carousel) return;
+      const firstCard = carousel.querySelector<HTMLElement>('.video-card');
+      const step = firstCard ? firstCard.offsetWidth + 16 : carousel.clientWidth * 0.8;
+      carousel.scrollBy({ left: dir * step, behavior: 'smooth' });
+    }
+
+    prev.addEventListener('click', () => scrollByCard(-1));
+    next.addEventListener('click', () => scrollByCard(1));
+
+    function updateArrows() {
+      if (!carousel || !prev || !next) return;
+      const maxScroll = carousel.scrollWidth - carousel.clientWidth;
+      prev.classList.toggle('is-disabled', carousel.scrollLeft <= 2);
+      next.classList.toggle('is-disabled', carousel.scrollLeft >= maxScroll - 2);
+    }
+
+    carousel.addEventListener('scroll', updateArrows, { passive: true });
+    window.addEventListener('resize', updateArrows);
+    updateArrows();
   });
 </script>
 
@@ -142,7 +227,12 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
     color: var(--color-accent);
   }
 
-  /* ── Carousel (mobile) ───────────────────────────────────── */
+  /* ── Carousel wrapper (positions desktop arrows) ─────────── */
+  .video-carousel-wrap {
+    position: relative;
+  }
+
+  /* ── Carousel — horizontal scroll-snap on ALL viewports ──── */
   .video-carousel {
     display: flex;
     gap: 16px;
@@ -150,48 +240,81 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none; /* Firefox */
+    padding: 4px 2px; /* snapped cards aren't flush to arrows */
   }
 
   .video-carousel::-webkit-scrollbar {
     display: none;
   }
 
-  /* ── Card ────────────────────────────────────────────────── */
+  /* ── Card — portrait 9:16 (Stories aspect ratio) ─────────── */
   .video-card {
     scroll-snap-align: start;
-    flex: 0 0 280px; /* mobile: shows one card + peek of next */
+    flex: 0 0 clamp(220px, 60vw, 300px); /* one+peek on mobile, several on desktop */
+  }
+
+  .video-frame {
     position: relative;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: 9 / 16; /* PORTRAIT — social-media / Stories clips */
     border-radius: 8px;
     overflow: hidden;
     background: var(--color-bg-raised);
   }
 
-  /* ── Desktop: 3-column grid ──────────────────────────────── */
-  @media (min-width: 860px) {
-    .video-carousel {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      overflow-x: unset;
-      scroll-snap-type: unset;
-    }
-
-    .video-card {
-      flex: unset; /* reset mobile flex-basis */
-    }
+  /* ── Desktop scroll arrows (pointer:fine only) ───────────── */
+  .video-arrow {
+    all: unset;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 3;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--color-border);
+    background: rgba(6, 6, 6, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: var(--color-text-muted);
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
   }
 
-  /* ── Poster overlay ──────────────────────────────────────── */
-  .video-poster-wrap {
+  .video-arrow:hover {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+
+  .video-arrow.is-disabled {
+    opacity: 0.25;
+    pointer-events: none;
+  }
+
+  .video-arrow-prev {
+    left: -8px;
+  }
+
+  .video-arrow-next {
+    right: -8px;
+  }
+
+  /* ── Poster button (entire card face is the trigger) ─────── */
+  .video-poster-btn {
+    all: unset;
     position: absolute;
     inset: 0;
     cursor: pointer;
+    display: block;
   }
 
   .video-poster {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: cover; /* fill portrait frame; landscape test clips center-crop */
     display: block;
     transition: transform 0.5s ease;
   }
@@ -208,9 +331,8 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
     pointer-events: none;
   }
 
-  /* ── Play button (centered 64×64px circle) ───────────────── */
+  /* ── Play button glyph (centered 64×64px circle) ─────────── */
   .video-play-btn {
-    all: unset;
     position: absolute;
     top: 50%;
     left: 50%;
@@ -227,10 +349,8 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
     transition: transform 0.25s ease, border-color 0.25s ease, color 0.25s ease;
-    /* nudge the ▶ glyph visually to center */
-    padding-left: 4px;
+    padding-left: 4px; /* nudge the ▶ glyph to visual center */
   }
 
   .video-card:hover .video-play-btn {
@@ -245,7 +365,6 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
     bottom: 12px;
     left: 16px;
     right: 60px; /* leave room for Phase 3 share slot (44px + 12px margin) */
-    margin: 0;
     font-family: var(--font-sans);
     font-size: 13px;
     line-height: 1.4;
@@ -253,14 +372,6 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-  }
-
-  /* ── Native video element (shown after click) ────────────── */
-  .video-el {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
   }
 
   /* ── Phase 3 share slot (reserved — empty in Phase 2) ────── */
@@ -273,27 +384,104 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
     /* Empty in Phase 2 — Phase 3 inserts a share button here (D-16) */
   }
 
-  /* ── Error state ─────────────────────────────────────────── */
-  .video-error {
+  /* ── Shorts-style enlarge modal ──────────────────────────── */
+  .video-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .video-modal[data-open='true'] {
+    opacity: 1;
+  }
+
+  .video-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8); /* dimmed full-viewport backdrop */
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+
+  /* Centered tall portrait stage — large but NOT edge-to-edge (Shorts look) */
+  .video-modal-stage {
+    position: relative;
+    z-index: 1;
+    height: min(88vh, 1100px);
+    aspect-ratio: 9 / 16;
+    max-width: 92vw;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #000;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.6);
+  }
+
+  .video-modal-video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* show the whole portrait clip inside the tall stage */
+    display: block;
+    background: #000;
+  }
+
+  .video-modal-close {
+    all: unset;
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    z-index: 2;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    color: var(--color-text);
+    font-size: 26px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: color 0.2s ease, background 0.2s ease;
+  }
+
+  .video-modal-close:hover {
+    color: var(--color-accent);
+    background: rgba(0, 0, 0, 0.7);
+  }
+
+  .video-modal-error {
     position: absolute;
     inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 16px;
+    padding: 24px;
     margin: 0;
     font-family: var(--font-sans);
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.4;
     color: var(--color-text-muted);
     text-align: center;
-    background: var(--color-bg-raised);
   }
 
   /* ── Mobile padding ──────────────────────────────────────── */
   @media (max-width: 860px) {
     .video-section {
       padding: 80px 20px 80px;
+    }
+
+    /* On a phone the portrait video naturally fills most of the screen (Shorts) */
+    .video-modal-stage {
+      height: min(92vh, 1100px);
+      max-width: 100vw;
+      border-radius: 0;
     }
   }
 </style>
