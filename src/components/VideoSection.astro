@@ -112,6 +112,14 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
     document.body.appendChild(modal);
   }
 
+  // Cross-component coordinator (decoupled via DOM CustomEvent): whenever the modal
+  // video starts playing — on open-autoplay OR a manual resume — announce it so the
+  // AudioPlayer can pause the music (both must not play at once). Binding to the
+  // element's own `play` event is more reliable than dispatching only on open.
+  modalVideo?.addEventListener('play', () => {
+    document.dispatchEvent(new CustomEvent('brusnika:video-play'));
+  });
+
   function openModal(url: string, title: string) {
     if (!modal || !modalVideo) return;
     modalVideo.src = url;

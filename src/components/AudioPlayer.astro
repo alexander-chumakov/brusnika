@@ -264,6 +264,15 @@
     }
   });
 
+  // Shared pause path — pauses playback AND updates the now-playing bar UI
+  // (label → "на паузе", ▶ icon, EQ stops). Reused by the bar play/pause button
+  // and by the cross-component video coordinator below. No-op if already paused.
+  function pausePlayback() {
+    if (currentIdx === -1 || audio.paused) return;
+    audio.pause();
+    updateBarState('paused');
+  }
+
   // D-10: bar play/pause button
   npPlay.addEventListener('click', () => {
     if (currentIdx === -1) return;
@@ -271,9 +280,16 @@
       audio.volume = userVolume;
       audio.play().catch(() => updateBarState('error'));
     } else {
-      audio.pause();
-      updateBarState('paused');
+      pausePlayback();
     }
+  });
+
+  // Cross-component coordinator (decoupled via DOM CustomEvent): when a video clip
+  // starts playing (VideoSection dispatches 'brusnika:video-play'), pause the audio
+  // so both don't play at once. One direction only — we do NOT auto-resume audio
+  // when the video closes (the user can resume manually). Guarded no-op if paused.
+  document.addEventListener('brusnika:video-play', () => {
+    pausePlayback();
   });
 
   // D-10: bar next button
