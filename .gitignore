@@ -22,3 +22,9 @@ Thumbs.db
 video/
 *.mp4
 *.MP4
+music/
+*.mp3
+*.wav
+*.flac
+*.m4a
+*.aac
