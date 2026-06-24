@@ -291,9 +291,10 @@
   });
 
   // FEATURE: brusnika SNOWFALL — the real brand berry SVG (public/favicon.svg)
-  // drifts down like gentle snow on USER-INITIATED play only (track click /
-  // hero CTA). NOT on auto-advance (would get repetitive). Slow, abundant,
-  // festive — a soft snowfall, not a fast cascade.
+  // drifts down like gentle snow, then SETTLES onto the now-playing bar and
+  // fades out. HERO «слушать» CTA ONLY (not track clicks, never auto-advance).
+  // Smooth and calm — a soft diagonal drift with a few degrees of slow tilt,
+  // no jittery oscillation.
   const prefersReducedMotion = window.matchMedia(
     '(prefers-reduced-motion: reduce)'
   );
@@ -306,7 +307,15 @@
     layer.className = 'bloom-layer';
     layer.setAttribute('aria-hidden', 'true');
 
-    const COUNT = 16 + Math.floor(Math.random() * 11); // 16–26 berries
+    // Land berries on top of the now-playing bar. Measure its top edge now;
+    // fall back to (viewport height − ~72px bar height) if not laid out yet.
+    const barRect = bar.getBoundingClientRect();
+    const landY =
+      barRect.height > 0 && barRect.top > 0
+        ? barRect.top
+        : window.innerHeight - 72;
+
+    const COUNT = 14 + Math.floor(Math.random() * 9); // 14–22 berries
     let maxLife = 0;
 
     for (let i = 0; i < COUNT; i++) {
@@ -321,43 +330,44 @@
       const scale = 0.5 + Math.random() * 0.9; // 0.5–1.4 depth/parallax
       const opacity = 0.5 + Math.random() * 0.5; // 0.5–1 depth/parallax
       const startX = Math.random() * 100; // full-width random position (%)
-      const sway = 18 + Math.random() * 34; // horizontal drift amplitude (px)
-      const swayDir = Math.random() < 0.5 ? -1 : 1; // drift left or right first
-      const spin = (Math.random() - 0.5) * 70; // slow wobble/rotation (deg)
+      const drift = (Math.random() - 0.5) * 50; // one gentle diagonal lean (px)
+      const tilt = (Math.random() - 0.5) * 10; // very slight slow tilt (deg, max ±5)
       const delay = Math.random() * 1.8; // staggered start over ~1.8s
-      const dur = 3 + Math.random() * 1; // 3–4s slow fall
-      maxLife = Math.max(maxLife, delay + dur);
+      const fall = 3 + Math.random() * 1; // 3–4s slow smooth fall
+      const fade = 0.8 + Math.random() * 0.7; // 0.8–1.5s rest-and-fade
+      // berry rests on the bar slightly above the line (account for its size)
+      const restY = landY - size * scale * 0.5;
+      maxLife = Math.max(maxLife, delay + fall + fade);
 
       berry.style.setProperty('--size', `${size}px`);
       berry.style.setProperty('--scale', String(scale));
       berry.style.setProperty('--berry-opacity', String(opacity));
       berry.style.setProperty('--x', `${startX}%`);
-      berry.style.setProperty('--sway', `${swayDir * sway}px`);
-      berry.style.setProperty('--sway2', `${-swayDir * sway}px`);
-      berry.style.setProperty('--spin', `${spin}deg`);
+      berry.style.setProperty('--drift', `${drift}px`);
+      berry.style.setProperty('--tilt', `${tilt}deg`);
+      berry.style.setProperty('--rest-y', `${restY}px`);
       berry.style.setProperty('--delay', `${delay}s`);
-      berry.style.setProperty('--dur', `${dur}s`);
+      berry.style.setProperty('--fall', `${fall}s`);
+      berry.style.setProperty('--fade', `${fade}s`);
 
       layer.appendChild(berry);
     }
 
     document.body.appendChild(layer);
-    // Auto-remove after the last berry lands (no DOM buildup on repeat clicks)
+    // Auto-remove after the last berry has settled and faded (no DOM buildup)
     setTimeout(() => layer.remove(), Math.ceil(maxLife * 1000) + 300);
   }
 
-  // Wire track buttons — user-initiated → bloom
+  // Wire track buttons — playback only, NO berries (CHANGE 1: hero-only)
   trackBtns.forEach((btn, idx) => {
-    btn.addEventListener('click', () => {
-      bloom();
-      playTrack(idx);
-    });
+    btn.addEventListener('click', () => playTrack(idx));
   });
 
   // FIX A: Hero «слушать» CTA starts the first track through the same code
   // path as the track list (same fade-in, now-playing bar appears, index
   // shows "трек 01 / 06"). Prevent the default #music jump. Bind once the
   // island hydrates; robust if hero rendered before the island.
+  // CHANGE 1: the brusnika snowfall fires ONLY here (hero «слушать»).
   const heroCta = document.querySelector<HTMLAnchorElement>('[data-play-first]');
   if (heroCta && TOTAL > 0) {
     heroCta.addEventListener('click', (e) => {
@@ -661,14 +671,20 @@
   .bloom-layer {
     position: fixed;
     inset: 0;
-    z-index: 55; /* below the now-playing bar (z 60); above page content */
+    /* Above the now-playing bar (z 60) so berries visibly SETTLE on top of it
+       and fade there; pointer-events:none keeps the bar fully clickable. */
+    z-index: 61;
     pointer-events: none;
     overflow: hidden;
   }
 
-  /* Each particle is the real brand berry SVG (public/favicon.svg) drifting
-     down like gentle snow. Vertical fall + horizontal sway + slow rotation
-     all animate on transform; depth comes from per-berry scale and opacity. */
+  /* Each particle is the real brand berry SVG (public/favicon.svg). It falls
+     SMOOTHLY (no jitter) from above the top edge, gently leaning along one
+     diagonal with a few degrees of slow tilt, LANDS on the now-playing bar
+     (--rest-y), then fades out while resting. Two phases:
+       1) berry-fall  — smooth descent to the rest line, holds (both)
+       2) berry-rest-fade — gradual opacity fade after the fall completes
+     depth comes from per-berry scale and opacity. */
   .bloom-berry {
     position: absolute;
     top: 0;
@@ -678,39 +694,42 @@
     opacity: 0;
     will-change: transform, opacity;
     transform-origin: center;
-    /* slow gentle snowfall — long, eased, continuous */
-    animation: berry-snow var(--dur) ease-in-out var(--delay) both;
+    /* smooth ease-out fall, then a gentle fade once settled */
+    animation:
+      berry-fall var(--fall) cubic-bezier(0.33, 0, 0.3, 1) var(--delay) both,
+      berry-rest-fade var(--fade) ease-out calc(var(--delay) + var(--fall)) both;
   }
 
-  @keyframes berry-snow {
+  /* Phase 1: smooth descent to the bar with a single gentle diagonal lean
+     and a tiny slow tilt — calm, not oscillating. */
+  @keyframes berry-fall {
     0% {
       opacity: 0;
-      /* start above the top edge */
       transform: translate(0, -16vh) rotate(0deg) scale(var(--scale));
     }
-    10% {
-      opacity: var(--berry-opacity);
-    }
-    25% {
-      transform: translate(var(--sway), 16vh)
-        rotate(calc(var(--spin) * 0.4)) scale(var(--scale));
-    }
-    50% {
-      transform: translate(var(--sway2), 48vh)
-        rotate(calc(var(--spin) * 0.7)) scale(var(--scale));
-    }
-    75% {
-      transform: translate(var(--sway), 80vh)
-        rotate(var(--spin)) scale(var(--scale));
-    }
-    90% {
+    12% {
       opacity: var(--berry-opacity);
     }
     100% {
+      opacity: var(--berry-opacity);
+      /* land at the bar's top edge, slightly drifted with a slight tilt */
+      transform: translate(var(--drift), var(--rest-y))
+        rotate(var(--tilt)) scale(var(--scale));
+    }
+  }
+
+  /* Phase 2: berry rests on the bar and gradually dissolves (no bounce). */
+  @keyframes berry-rest-fade {
+    0% {
+      opacity: var(--berry-opacity);
+      transform: translate(var(--drift), var(--rest-y))
+        rotate(var(--tilt)) scale(var(--scale));
+    }
+    100% {
       opacity: 0;
-      /* drift past the bottom edge */
-      transform: translate(var(--sway2), 116vh)
-        rotate(calc(var(--spin) * 1.2)) scale(var(--scale));
+      /* settle a hair lower as it fades, for a soft "resting" feel */
+      transform: translate(var(--drift), calc(var(--rest-y) + 4px))
+        rotate(var(--tilt)) scale(var(--scale));
     }
   }
 
