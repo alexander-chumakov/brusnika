@@ -6,3 +6,10 @@ posters/
 # Planning + scratch artifacts
 .planning/
 scratchpad/
+
+# Design references / handoff archives — never part of the deploy
+claude_design/
+claude_design_new/
+*.zip
+Внимание*.html
+index.html
