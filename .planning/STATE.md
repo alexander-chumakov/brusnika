@@ -29,11 +29,10 @@ progress:
 
 ## Current Position
 
-Phase: 03.1
-Plan: 1 of 2
-**Plan:** Not started
-**Status:** Ready to execute
-**Progress:** [█████░░░░░] 50% (2 of 4 phases complete; 8 of 8 planned plans across Phases 1–2)
+Phase: 03.1 — Day/Night Theme
+**Status:** ✅ Complete — implemented from the Claude Design handoff (project 981fc3bc), deployed to production (vnimanie-brusnika.vercel.app, noindex), user-approved 2026-06-25.
+**Note:** Executed inline (not via /gsd:execute-phase) directly from the authoritative design; no per-plan SUMMARY files. Day theme = "Warm Cream" two-pink system (brand #f3a9bd constant on CTAs, #c95572 deepened text accent); dark chrome surfaces stay constant; brand eye toggle (3-frame crossfade + circular View-Transitions wipe); no-flash init (vb-theme localStorage + prefers-color-scheme).
+**Progress:** Phases 1–3 + 03.1 done; Phase 4 (Pre-Launch Verification) remains.
 
 ---
 
