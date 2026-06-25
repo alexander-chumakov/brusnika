@@ -400,6 +400,11 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
   document.querySelectorAll<HTMLButtonElement>('.video-share-btn').forEach((btn) => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
+      // Toggle: a second tap on the same trigger closes the open popover.
+      if (popover && popover.dataset.open === 'true' && popoverTrigger === btn) {
+        closePopover();
+        return;
+      }
       const isModalBtn = btn.classList.contains('video-share-btn--modal');
       let url: string | undefined;
       let title = '';
@@ -460,11 +465,15 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
     });
   });
 
-  // Close popover on click-outside and on Escape; return focus to the trigger.
-  document.addEventListener('click', (e) => {
+  // Close popover on tap/click-outside and on Escape; return focus to the trigger.
+  // pointerdown (not click) so it fires reliably on touch — mobile browsers often
+  // don't dispatch `click` for taps on non-interactive areas (Huawei/iOS Safari).
+  document.addEventListener('pointerdown', (e) => {
     if (!popover || popover.dataset.open !== 'true') return;
     const target = e.target as Node;
     if (popover.contains(target)) return;
+    // The trigger handles its own toggle (and re-opens on click); ignore it here so
+    // we don't close-then-reopen on the same tap.
     if (popoverTrigger && popoverTrigger.contains(target)) return;
     closePopover();
   });
