@@ -66,15 +66,16 @@ import { horoterapiyaUrl } from '../data/site.ts';
         <h4 class="lessons-form-title">Записаться</h4>
         <label class="lessons-label">
           <span class="lessons-label-text">формат</span>
-          <select class="field lessons-select">
-            <option>индивидуальный вокал</option>
-            <option>хоротерапия (групповая встреча)</option>
+          <select name="format" class="field lessons-select">
+            <option value="индивидуальный вокал">индивидуальный вокал</option>
+            <option value="хоротерапия (групповая встреча)">хоротерапия (групповая встреча)</option>
           </select>
         </label>
         <label class="lessons-label">
           <span class="lessons-label-text">имя</span>
           <input
             required
+            name="name"
             type="text"
             placeholder="как вас зовут"
             class="field lessons-input"
@@ -84,6 +85,7 @@ import { horoterapiyaUrl } from '../data/site.ts';
           <span class="lessons-label-text">telegram или email</span>
           <input
             required
+            name="contact"
             type="text"
             placeholder="@username или почта"
             class="field lessons-input"
@@ -91,13 +93,22 @@ import { horoterapiyaUrl } from '../data/site.ts';
         </label>
         <label class="lessons-label">
           <span class="lessons-label-text">опыт</span>
-          <select class="field lessons-select">
-            <option>никогда не пел(а), но очень хочу</option>
-            <option>пою для себя</option>
-            <option>занимался(ась) раньше</option>
-            <option>пою или выступаю</option>
+          <select name="experience" class="field lessons-select">
+            <option value="никогда не пел(а), но очень хочу">никогда не пел(а), но очень хочу</option>
+            <option value="пою для себя">пою для себя</option>
+            <option value="занимался(ась) раньше">занимался(ась) раньше</option>
+            <option value="пою или выступаю">пою или выступаю</option>
           </select>
         </label>
+        <!-- Honeypot — visually hidden off-screen; bots fill it, humans don't (BOOK-04) -->
+        <input
+          type="text"
+          name="website"
+          tabindex="-1"
+          autocomplete="off"
+          aria-hidden="true"
+          style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;"
+        />
         <button type="submit" class="btn-pink lessons-submit">отправить заявку</button>
       </form>
       <div id="lessons-thanks">
@@ -106,6 +117,18 @@ import { horoterapiyaUrl } from '../data/site.ts';
         </div>
         <h4 class="thanks-title">Спасибо!</h4>
         <p class="thanks-desc">Заявка отправлена — мы скоро напишем вам, чтобы договориться о времени.</p>
+      </div>
+      <!-- Error state (D-14/D-15): delivery never fails silently — direct Telegram fallback + retry -->
+      <div id="lessons-error" role="alert">
+        <h4 class="error-title">Что-то пошло не так</h4>
+        <p class="error-desc">Заявка не дошла. Пожалуйста, напишите нам напрямую:</p>
+        <a
+          href="https://t.me/vnimaniebrusnika"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="lessons-timepad-link"
+        >написать в Telegram</a>
+        <button type="button" class="error-retry">Попробовать снова</button>
       </div>
     </div>
   </div>
@@ -295,6 +318,42 @@ import { horoterapiyaUrl } from '../data/site.ts';
     color: var(--color-text-muted);
     line-height: 1.6;
     margin: 0;
+  }
+
+  /* Error state — hidden by default; shown by the inline submit handler via display:flex.
+     Soft failure: no red destructive border, token colors only. */
+  #lessons-error {
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+    padding: 24px 0;
+  }
+
+  .error-title {
+    font-family: var(--font-sans);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0;
+  }
+
+  .error-desc {
+    font-size: 15px;
+    color: var(--color-text-muted);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .error-retry {
+    all: unset;
+    cursor: pointer;
+    align-self: flex-start;
+    font-size: 14px;
+    color: var(--color-text-muted);
+  }
+
+  .error-retry:hover {
+    color: var(--color-text);
   }
 
   /* Mobile single-column — also handled by global.css .lessons-modal rule */

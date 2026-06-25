@@ -130,11 +130,14 @@ const noindex = import.meta.env.NOINDEX === 'true';
         var dialog = document.getElementById('lessons-dialog');
         var form = document.getElementById('lessons-form');
         var thanks = document.getElementById('lessons-thanks');
+        var error = document.getElementById('lessons-error');
+        var submitBtn = form ? form.querySelector('[type="submit"]') : null;
 
         function openLessons() {
           if (!overlay || !form || !thanks) return;
           form.style.display = 'flex';
           thanks.style.display = 'none';
+          if (error) error.style.display = 'none';
           form.reset();
           overlay.style.display = 'flex';
           document.body.style.overflow = 'hidden';
@@ -180,14 +183,51 @@ const noindex = import.meta.env.NOINDEX === 'true';
           }
         });
 
-        // Fake submit — D-05: e.preventDefault() + show thanks, NO fetch/XHR
-        // Phase 3 replaces ONLY this handler with: fetch('/api/book', { method: 'POST', body: new FormData(form) })
+        // Real submit — POST to /api/book; success shows thanks, failure shows the
+        // non-silent error state with the Telegram fallback link (D-14). Stays is:inline.
         if (form) {
           form.addEventListener('submit', function (e) {
             e.preventDefault();
-            form.style.display = 'none';
-            if (thanks) thanks.style.display = 'block';
+            var submitText = submitBtn ? submitBtn.textContent : null;
+            if (submitBtn) {
+              submitBtn.textContent = 'отправляем...';
+              submitBtn.setAttribute('disabled', '');
+              submitBtn.setAttribute('aria-busy', 'true');
+            }
+            fetch('/api/book', { method: 'POST', body: new FormData(form) })
+              .then(function (res) {
+                if (res.ok) {
+                  form.style.display = 'none';
+                  if (thanks) thanks.style.display = 'block';
+                } else {
+                  form.style.display = 'none';
+                  if (error) error.style.display = 'flex';
+                }
+              })
+              .catch(function () {
+                // Network failure → error state, never silent (D-14)
+                form.style.display = 'none';
+                if (error) error.style.display = 'flex';
+              })
+              .finally(function () {
+                if (submitBtn) {
+                  if (submitText) submitBtn.textContent = submitText;
+                  submitBtn.removeAttribute('disabled');
+                  submitBtn.removeAttribute('aria-busy');
+                }
+              });
           });
+        }
+
+        // Retry — return from error state to the form, values retained (non-destructive)
+        if (error) {
+          var retryBtn = error.querySelector('.error-retry');
+          if (retryBtn) {
+            retryBtn.addEventListener('click', function () {
+              error.style.display = 'none';
+              if (form) form.style.display = 'flex';
+            });
+          }
         }
       })();
     </script>
