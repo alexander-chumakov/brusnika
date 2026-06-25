@@ -109,12 +109,15 @@ Plans:
 
 **Goal:** The dark-only site gains a user-facing day (light) / night (dark) theme toggle. Remaining hardcoded colors are tokenized into the central `:root` design-token system, a light "day" palette is designed to fit the dream-pop brand, a toggle control is added, and the choice persists (localStorage) with a no-flash-before-paint init and a `prefers-color-scheme` default.
 **Mode:** mvp
-**Requirements**: TBD (new scope — define during discuss-phase; design-first via /gsd:ui-phase)
+**Requirements**: D-04, D-05, D-06, D-07, D-01 (design-first; mapped from CONTEXT.md decisions + UI-SPEC build steps — no formal REQ IDs for this inserted phase)
 **Depends on:** Phase 1, Phase 2
-**Plans:** 2/2 plans complete
+**Plans:** 4 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 03.1 to break down)
+- [ ] 03.1-01-PLAN.md — Theme machinery + full token contract: [data-theme=day] block, no-flash init, working top-right toggle, persistence (MVP thin slice)
+- [ ] 03.1-02-PLAN.md — Tokenize static sections (Hero, Featured, Shows, Sing, Marquee, Tracks, About, Footer) — no dark islands
+- [ ] 03.1-03-PLAN.md — Tokenize interactive surfaces (AudioPlayer bar, Lessons modal, Video card/modal, Gallery + PhotoSwipe) — no dark islands
+- [ ] 03.1-04-PLAN.md — Design-first picks (checkpoint): user chooses day palette direction (Clean White vs Warm Cream) + toggle icon (sun/moon vs lingonberry); commit + clean up
 
 ### Phase 4: Test Deploy & Verification
 
