@@ -135,6 +135,7 @@ import heroImg from '../assets/images/hero.jpg';
     text-transform: uppercase;
     color: var(--color-accent);
     margin-bottom: 30px;
+    text-shadow: 0 1px 16px rgba(0, 0, 0, 0.55);
     animation: riseup 0.7s ease both;
   }
 
@@ -185,7 +186,10 @@ import heroImg from '../assets/images/hero.jpg';
     margin: 34px auto 0;
     font-size: clamp(16px, 2.1vw, 21px);
     line-height: 1.6;
-    color: var(--color-text-muted);
+    /* On the hero photo in BOTH themes → constant light + shadow (the day
+       veil turns the lower hero cream, so a themed dark colour would vanish). */
+    color: #f4efe8;
+    text-shadow: 0 1px 16px rgba(0, 0, 0, 0.65);
     animation: riseup 1s ease both;
     animation-delay: 0.22s;
   }

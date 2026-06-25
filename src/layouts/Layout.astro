@@ -275,6 +275,7 @@ const noindex = import.meta.env.NOINDEX === 'true';
           var isDay = root.getAttribute('data-theme') === 'day';
           btn.setAttribute('aria-pressed', isDay ? 'true' : 'false');
           btn.setAttribute('aria-label', isDay ? 'включить ночную тему' : 'включить дневную тему');
+          btn.setAttribute('title', isDay ? 'Дневная тема — нажмите для ночной' : 'Ночная тема — нажмите для дневной');
         }
         syncAria();
 

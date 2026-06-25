@@ -176,7 +176,7 @@ import { horoterapiyaUrl } from '../data/site.ts';
     font-size: 12px;
     letter-spacing: 2.5px;
     text-transform: uppercase;
-    color: var(--color-accent-deep);
+    color: #f3a9bd; /* left panel is always dark (photo) → constant light */
     margin-bottom: 16px;
   }
 
@@ -186,12 +186,13 @@ import { horoterapiyaUrl } from '../data/site.ts';
     font-size: 30px;
     line-height: 1.1;
     margin: 0 0 16px;
+    color: #f2f0ee; /* left panel always dark → constant light */
   }
 
   .lessons-copy {
     font-size: 15.5px;
     line-height: 1.7;
-    color: var(--color-text-muted);
+    color: #bdb9b4; /* left panel always dark → constant light */
     margin: 0 0 26px;
   }
 
@@ -204,15 +205,22 @@ import { horoterapiyaUrl } from '../data/site.ts';
   .lessons-block-title {
     font-family: var(--font-serif);
     font-size: 19px;
-    color: var(--color-text);
+    color: #f2f0ee; /* left panel always dark → constant light */
     margin-bottom: 7px;
   }
 
   .lessons-block-desc {
     font-size: 14.5px;
     line-height: 1.6;
-    color: var(--color-text-subtle);
+    color: #9a9691; /* left panel always dark → constant light */
     margin: 0;
+  }
+
+  /* The «ближайшая встреча» link lives in the dark left panel → constant pink.
+     (The same class in the right-panel error state stays themed below.) */
+  .lessons-panel-left .lessons-timepad-link {
+    color: #f3a9bd;
+    border-bottom-color: rgba(243, 169, 189, 0.5);
   }
 
   .lessons-timepad-link {
