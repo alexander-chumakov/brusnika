@@ -380,7 +380,11 @@ button {
     padding: 14px 20px !important;
   }
 
-  .nav-menu {
+  /* Hide the links + pill on mobile, but KEEP the menu flex container so the
+     eye theme-toggle stays visible (top-right). The toggle is the only
+     .nav-menu child without these classes. */
+  .nav-menu > .nav-link,
+  .nav-menu > .nav-pill {
     display: none !important;
   }
 
