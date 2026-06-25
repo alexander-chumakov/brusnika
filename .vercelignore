@@ -8,8 +8,7 @@ posters/
 scratchpad/
 
 # Design references / handoff archives — never part of the deploy
-claude_design/
-claude_design_new/
+claude_design*/
 *.zip
 Внимание*.html
 index.html
