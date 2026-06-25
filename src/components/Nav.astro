@@ -1,21 +1,25 @@
 ---
 /**
- * Nav.astro — Fixed top navigation bar
+ * Nav.astro — Fixed top navigation bar + full-screen mobile menu
  *
- * - Backdrop blur + translucent background (themed via --color-surface-nav)
- * - Logo: 9px pink dot with glow + Prata wordmark
- * - Desktop (.nav-menu): links + eye theme-toggle (between «концерты» and the
- *   pill, per the design) + «пойте с нами» pill. Hidden ≤860px.
- * - Mobile (.nav-mobile): eye theme-toggle (always visible) + burger that opens
- *   the .nav-drawer (links + pill). Shown ≤860px.
- * - Eye = three stacked cropped-eye photos that cross-fade (dark / light /
- *   closed). Two eye instances (desktop in-menu + mobile bar); only one shows
- *   per breakpoint. Both carry data-theme-toggle — the handler (Layout.astro)
- *   wires all of them. Burger/drawer JS also lives in Layout.astro.
+ * Mirrors the authoritative Claude Design mobile handoff:
+ * - Top bar: logo + (desktop) links + ALWAYS-visible eye theme-toggle (between
+ *   «концерты» and the pill, design position) + (desktop) «пойте с нами» pill +
+ *   (mobile) burger.
+ * - ≤860px: links + pill hide (.nav-desktop), burger shows (.nav-mobileonly),
+ *   the eye stays in the bar. Burger opens a full-screen overlay menu with big
+ *   Prata links (staggered fade-in), a footer eye toggle + «сменить тему» label,
+ *   and social links.
+ * - Two eye instances (top bar + overlay footer); both carry data-theme-toggle —
+ *   the handler in Layout.astro wires all of them. Overlay open/close JS also
+ *   lives in Layout.astro.
  */
 import eyeDark from '../assets/eye-open-dark.jpg';
 import eyeLight from '../assets/eye-open-light.jpg';
 import eyeClosed from '../assets/eye-closed.jpg';
+import { socialLinks } from '../data/site.ts';
+
+const menuSocial = socialLinks.filter((l) => !l.url.startsWith('mailto'));
 ---
 
 <nav>
@@ -24,31 +28,12 @@ import eyeClosed from '../assets/eye-closed.jpg';
     <span class="nav-wordmark">внимание брусника!</span>
   </a>
 
-  <!-- Desktop menu (hidden ≤860px) -->
-  <div class="nav-menu">
-    <a href="#music" class="nav-link">релизы</a>
-    <a href="#clips" class="nav-link">клипы</a>
-    <a href="#about" class="nav-link">о группе</a>
-    <a href="#shows" class="nav-link">концерты</a>
-    <button
-      type="button"
-      class="theme-toggle"
-      data-theme-toggle
-      title="Сменить тему: день / ночь"
-      aria-label="сменить тему: день или ночь"
-      aria-pressed="false"
-    >
-      <span class="vb-eye">
-        <img class="eye-dark" src={eyeDark.src} alt="глаз" width="48" height="48" loading="eager" decoding="async" />
-        <img class="eye-light" src={eyeLight.src} alt="" width="48" height="48" loading="eager" decoding="async" />
-        <img class="eye-closed" src={eyeClosed.src} alt="" width="48" height="48" loading="eager" decoding="async" />
-      </span>
-    </button>
-    <a href="#sing" class="nav-pill" data-open-lessons>пойте с нами</a>
-  </div>
+  <div class="nav-right">
+    <a href="#music" class="nav-link nav-desktop">релизы</a>
+    <a href="#clips" class="nav-link nav-desktop">клипы</a>
+    <a href="#about" class="nav-link nav-desktop">о группе</a>
+    <a href="#shows" class="nav-link nav-desktop">концерты</a>
 
-  <!-- Mobile controls (shown ≤860px): eye always visible + burger -->
-  <div class="nav-mobile">
     <button
       type="button"
       class="theme-toggle"
@@ -63,27 +48,67 @@ import eyeClosed from '../assets/eye-closed.jpg';
         <img class="eye-closed" src={eyeClosed.src} alt="" width="48" height="48" loading="eager" decoding="async" />
       </span>
     </button>
+
+    <a href="#sing" class="nav-pill nav-desktop" data-open-lessons>пойте с нами</a>
+
     <button
       type="button"
-      class="nav-burger"
+      class="nav-burger nav-mobileonly"
       data-nav-burger
       aria-expanded="false"
-      aria-controls="nav-drawer"
+      aria-controls="nav-overlay"
       aria-label="открыть меню"
     >
       <span></span><span></span><span></span>
     </button>
   </div>
-
-  <!-- Mobile drawer (links + pill); hidden on desktop, toggled by the burger -->
-  <div class="nav-drawer" id="nav-drawer" data-nav-drawer>
-    <a href="#music" class="nav-drawer-link">релизы</a>
-    <a href="#clips" class="nav-drawer-link">клипы</a>
-    <a href="#about" class="nav-drawer-link">о группе</a>
-    <a href="#shows" class="nav-drawer-link">концерты</a>
-    <a href="#sing" class="nav-drawer-pill" data-open-lessons>пойте с нами</a>
-  </div>
 </nav>
+
+<!-- Full-screen mobile menu overlay -->
+<div class="nav-overlay" id="nav-overlay" data-nav-overlay aria-hidden="true">
+  <div class="nav-overlay-glow" aria-hidden="true"></div>
+
+  <div class="nav-overlay-head">
+    <span class="nav-overlay-brand">
+      <span class="nav-dot"></span>
+      <span class="nav-overlay-wordmark">внимание брусника!</span>
+    </span>
+    <button type="button" class="nav-overlay-close" data-nav-close aria-label="закрыть меню">×</button>
+  </div>
+
+  <nav class="nav-overlay-nav">
+    <a href="#music" class="nav-overlay-link">релизы</a>
+    <a href="#clips" class="nav-overlay-link">клипы</a>
+    <a href="#about" class="nav-overlay-link">о группе</a>
+    <a href="#shows" class="nav-overlay-link">концерты</a>
+    <a href="#sing" class="nav-overlay-link nav-overlay-link--cta" data-open-lessons>пойте с нами →</a>
+  </nav>
+
+  <div class="nav-overlay-foot">
+    <div class="nav-overlay-theme">
+      <button
+        type="button"
+        class="theme-toggle"
+        data-theme-toggle
+        title="Сменить тему: день / ночь"
+        aria-label="сменить тему: день или ночь"
+        aria-pressed="false"
+      >
+        <span class="vb-eye">
+          <img class="eye-dark" src={eyeDark.src} alt="глаз" width="44" height="44" loading="eager" decoding="async" />
+          <img class="eye-light" src={eyeLight.src} alt="" width="44" height="44" loading="eager" decoding="async" />
+          <img class="eye-closed" src={eyeClosed.src} alt="" width="44" height="44" loading="eager" decoding="async" />
+        </span>
+      </button>
+      <span class="nav-overlay-theme-label">сменить тему</span>
+    </div>
+    <div class="nav-overlay-social">
+      {menuSocial.map((l) => (
+        <a href={l.url} class="nav-overlay-social-link" target="_blank" rel="noopener noreferrer">{l.label}</a>
+      ))}
+    </div>
+  </div>
+</div>
 
 <style>
   nav {
@@ -126,13 +151,12 @@ import eyeClosed from '../assets/eye-closed.jpg';
     letter-spacing: 0.5px;
   }
 
-  .nav-menu {
+  .nav-right {
     display: flex;
     align-items: center;
     gap: 26px;
   }
 
-  /* .nav-link hover/color defined in global.css */
   .nav-link {
     text-decoration: none;
     font-size: 14px;
@@ -178,24 +202,17 @@ import eyeClosed from '../assets/eye-closed.jpg';
     background: var(--color-accent-hover);
   }
 
-  /* ---- Mobile controls + burger (hidden on desktop) ---- */
-  .nav-mobile {
-    display: none;
-    align-items: center;
-    gap: 6px;
-  }
-
+  /* Burger (mobile only) */
   .nav-burger {
     all: unset;
     cursor: pointer;
     width: 44px;
     height: 44px;
-    border-radius: 8px;
-    display: flex;
+    display: none;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 5px;
+    gap: 6px;
     flex-shrink: 0;
   }
 
@@ -206,101 +223,195 @@ import eyeClosed from '../assets/eye-closed.jpg';
 
   .nav-burger span {
     display: block;
-    width: 22px;
     height: 2px;
     border-radius: 2px;
     background: var(--color-text);
-    transition: transform 0.25s ease, opacity 0.25s ease;
   }
 
-  /* Burger → X when the drawer is open */
-  .nav-burger[aria-expanded="true"] span:nth-child(1) {
-    transform: translateY(7px) rotate(45deg);
-  }
+  .nav-burger span:nth-child(1),
+  .nav-burger span:nth-child(2) { width: 26px; }
+  .nav-burger span:nth-child(3) { width: 17px; }
 
-  .nav-burger[aria-expanded="true"] span:nth-child(2) {
-    opacity: 0;
-  }
-
-  .nav-burger[aria-expanded="true"] span:nth-child(3) {
-    transform: translateY(-7px) rotate(-45deg);
-  }
-
-  /* ---- Mobile drawer (hidden on desktop) ---- */
-  .nav-drawer {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
+  /* ---- Full-screen overlay menu ---- */
+  .nav-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: flex;
     flex-direction: column;
-    padding: 8px 20px 20px;
-    background: var(--color-surface-nav);
-    backdrop-filter: blur(16px);
-    border-bottom: 1px solid var(--color-border);
-    /* closed state */
+    background: var(--color-bg);
     opacity: 0;
-    transform: translateY(-8px);
     visibility: hidden;
     pointer-events: none;
-    transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+    transition: opacity 0.32s ease, visibility 0.32s;
   }
 
-  .nav-drawer.open {
+  .nav-overlay.open {
     opacity: 1;
-    transform: none;
     visibility: visible;
     pointer-events: auto;
   }
 
-  .nav-drawer-link {
-    text-decoration: none;
-    color: var(--color-text-muted);
-    font-size: 16px;
-    letter-spacing: 0.3px;
-    padding: 15px 4px;
-    border-bottom: 1px solid var(--color-border-subtle);
-    transition: color 0.2s ease;
+  .nav-overlay-glow {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(85% 42% at 50% 0%, rgba(243, 169, 189, 0.13), transparent 62%);
   }
 
-  .nav-drawer-link:hover {
+  .nav-overlay-head {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .nav-overlay-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .nav-overlay-wordmark {
+    font-family: var(--font-serif);
+    font-size: 17px;
+    letter-spacing: 0.5px;
     color: var(--color-text);
   }
 
-  .nav-drawer-pill {
-    margin-top: 16px;
+  .nav-overlay-close {
+    all: unset;
+    cursor: pointer;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text);
+    font-size: 30px;
+    line-height: 1;
+  }
+
+  .nav-overlay-nav {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    padding: 0 30px;
+  }
+
+  .nav-overlay-link {
     text-decoration: none;
-    text-align: center;
-    color: var(--color-text-on-accent);
-    background: var(--color-accent);
-    font-size: 15px;
-    font-weight: 600;
-    padding: 14px 18px;
-    border-radius: 2px;
+    font-family: var(--font-serif);
+    font-size: clamp(34px, 11vw, 52px);
+    line-height: 1.18;
+    color: var(--color-text);
+    opacity: 0;
+  }
+
+  .nav-overlay-link--cta {
+    font-style: italic;
+    color: var(--color-accent-deep);
+  }
+
+  .nav-overlay-foot {
+    position: relative;
+    padding: 22px 30px 38px;
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    opacity: 0;
+  }
+
+  .nav-overlay-theme {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+  }
+
+  .nav-overlay-theme .theme-toggle {
+    width: 46px;
+    height: 46px;
+  }
+
+  .nav-overlay-theme .vb-eye {
+    width: 44px;
+    height: 44px;
+  }
+
+  .nav-overlay-theme-label {
+    font-size: 13px;
+    color: var(--color-text-dim);
     letter-spacing: 0.3px;
-    transition: background 0.25s;
   }
 
-  .nav-drawer-pill:hover {
-    background: var(--color-accent-hover);
+  .nav-overlay-social {
+    display: flex;
+    align-items: center;
+    gap: 18px;
   }
 
-  /* Mobile breakpoint: swap desktop menu for the mobile controls + drawer */
+  .nav-overlay-social-link {
+    text-decoration: none;
+    color: var(--color-text-muted);
+    font-size: 14px;
+    transition: color 0.2s ease;
+  }
+
+  .nav-overlay-social-link:hover {
+    color: var(--color-text);
+  }
+
+  /* Staggered entrance — only when the overlay is open */
+  .nav-overlay.open .nav-overlay-link,
+  .nav-overlay.open .nav-overlay-foot {
+    animation: menuItem 0.55s cubic-bezier(.16, .7, .2, 1) both;
+  }
+  .nav-overlay.open .nav-overlay-link:nth-child(1) { animation-delay: .06s; }
+  .nav-overlay.open .nav-overlay-link:nth-child(2) { animation-delay: .11s; }
+  .nav-overlay.open .nav-overlay-link:nth-child(3) { animation-delay: .16s; }
+  .nav-overlay.open .nav-overlay-link:nth-child(4) { animation-delay: .21s; }
+  .nav-overlay.open .nav-overlay-link:nth-child(5) { animation-delay: .27s; }
+  .nav-overlay.open .nav-overlay-foot { animation-delay: .34s; }
+
+  @keyframes menuItem {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nav-overlay.open .nav-overlay-link,
+    .nav-overlay.open .nav-overlay-foot {
+      animation: none;
+      opacity: 1;
+    }
+  }
+
+  /* Breakpoint: desktop links/pill hide, burger shows. Eye stays. */
   @media (max-width: 860px) {
     nav {
-      padding: 14px 20px;
+      padding: 14px 22px;
     }
 
-    .nav-menu {
-      display: none;
+    .nav-desktop {
+      display: none !important;
     }
 
-    .nav-mobile {
+    .nav-burger {
       display: flex;
     }
+  }
 
-    .nav-drawer {
-      display: flex;
+  /* The overlay is mobile-only — never render it past the breakpoint. */
+  @media (min-width: 861px) {
+    .nav-overlay {
+      display: none !important;
     }
   }
 </style>

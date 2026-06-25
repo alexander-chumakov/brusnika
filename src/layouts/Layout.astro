@@ -350,40 +350,45 @@ const noindex = import.meta.env.NOINDEX === 'true';
     <script is:inline>
       (function mobileNav() {
         var burger = document.querySelector('[data-nav-burger]');
-        var drawer = document.querySelector('[data-nav-drawer]');
-        if (!burger || !drawer) return;
+        var overlay = document.querySelector('[data-nav-overlay]');
+        if (!burger || !overlay) return;
+        var closeBtn = overlay.querySelector('[data-nav-close]');
 
-        function close() {
-          drawer.classList.remove('open');
+        function hideOverlay() {
+          overlay.classList.remove('open');
+          overlay.setAttribute('aria-hidden', 'true');
           burger.setAttribute('aria-expanded', 'false');
           burger.setAttribute('aria-label', 'открыть меню');
         }
+        function close() {
+          hideOverlay();
+          document.body.style.overflow = '';
+        }
         function open() {
-          drawer.classList.add('open');
+          overlay.classList.add('open');
+          overlay.setAttribute('aria-hidden', 'false');
           burger.setAttribute('aria-expanded', 'true');
           burger.setAttribute('aria-label', 'закрыть меню');
+          document.body.style.overflow = 'hidden';
         }
 
-        burger.addEventListener('click', function () {
-          if (drawer.classList.contains('open')) close();
-          else open();
-        });
+        burger.addEventListener('click', open);
+        if (closeBtn) closeBtn.addEventListener('click', close);
 
-        // Tapping a drawer link / the pill closes the menu
-        drawer.querySelectorAll('a').forEach(function (a) {
-          a.addEventListener('click', close);
+        // Tapping a nav link closes the overlay. The «пойте с нами» CTA also has
+        // data-open-lessons (demo-modal opens the booking modal) — for that one
+        // leave the scroll lock in place so the modal keeps it; the modal's own
+        // close restores it.
+        overlay.querySelectorAll('.nav-overlay-link').forEach(function (a) {
+          a.addEventListener('click', function () {
+            if (a.hasAttribute('data-open-lessons')) hideOverlay();
+            else close();
+          });
         });
 
         // Escape closes
         document.addEventListener('keydown', function (e) {
-          if (e.key === 'Escape' && drawer.classList.contains('open')) close();
-        });
-
-        // Outside click closes
-        document.addEventListener('click', function (e) {
-          if (!drawer.classList.contains('open')) return;
-          if (drawer.contains(e.target) || burger.contains(e.target)) return;
-          close();
+          if (e.key === 'Escape' && overlay.classList.contains('open')) close();
         });
       })();
     </script>
