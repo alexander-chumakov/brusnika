@@ -3,13 +3,20 @@
    global interactive-state classes for внимание брусника!
    See: .planning/phases/01-foundation-static-site/01-RESEARCH.md
         Pattern 3 (Design Token CSS Architecture, D-10)
+
+   Phase 03.1 — Day/Night theme:
+   - :root holds the NIGHT palette (default).
+   - [data-theme="day"] overrides with the LOCKED "Warm Cream" day
+     palette (authoritative design: claude.ai/design project
+     981fc3bc — "Внимание Брусника.dc.html").
+   - Night values are unchanged from phases 1-3 (pixel-identical).
    ============================================================ */
 
 /* -------------------------------------------------------
-   Design Tokens — CSS Custom Properties
+   Design Tokens — CSS Custom Properties (NIGHT = default)
    ------------------------------------------------------- */
 :root {
-  /* Palette */
+  /* Palette — base */
   --color-bg: #000;
   --color-bg-raised: #070707;
   --color-bg-modal: #0c0a0b;
@@ -23,10 +30,102 @@
   --color-border: rgba(255, 255, 255, 0.08);
   --color-border-subtle: rgba(255, 255, 255, 0.06);
 
+  /* Palette — surfaces / overlays */
+  --color-overlay-scrim: rgba(0, 0, 0, 0.72);
+  --color-overlay-dark: rgba(0, 0, 0, 0.80);
+  --color-surface-player: rgba(6, 6, 6, 0.92);
+  --color-surface-player-border: rgba(243, 169, 189, 0.4);
+  --color-surface-nav: rgba(0, 0, 0, 0.5);
+  --color-surface-video: rgba(6, 6, 6, 0.85);
+  --color-surface-card: #070506;
+
+  /* Palette — hero gradients */
+  --color-hero-gradient-top: rgba(0, 0, 0, 0.34);
+  --color-hero-gradient-bottom: rgba(0, 0, 0, 0.80);
+
+  /* Palette — accent tints / rings / ticket / marquee */
+  --color-accent-tint: rgba(243, 169, 189, 0.07);
+  --color-accent-tint-strong: rgba(243, 169, 189, 0.22);
+  --color-accent-ring: rgba(243, 169, 189, 0.18);
+  --color-accent-ticket: rgba(243, 169, 189, 0.08);
+  --color-accent-ticket-border: rgba(243, 169, 189, 0.6);
+  --color-accent-stroke: rgba(243, 169, 189, 0.45);
+
+  /* Palette — gallery / lightbox / on-accent text */
+  --color-gallery-bg: #141414;
+  --color-gallery-bg-alt: #0a0a0a;
+  --color-glow-cursor: rgba(243, 169, 189, 0.16);
+  --color-glow-radial: rgba(243, 169, 189, 0.12);
+  --color-pswp-bg: #000;
+  --color-text-on-accent: #000;
+
+  /* Exact-night-value tokens — keep Marquee/Sing bg + Tracks heavy
+     divider PIXEL-IDENTICAL in night; only their DAY values diverge. */
+  --color-bg-marquee: #040404;
+  --color-bg-sing: #050505;
+  --color-border-strong: rgba(255, 255, 255, 0.2);
+
   /* Typography */
   --font-serif: 'Prata', serif;
   --font-sans: 'Golos Text', system-ui, sans-serif;
   --font-mono: ui-monospace, monospace;
+}
+
+/* -------------------------------------------------------
+   DAY palette — "Warm Cream" (LOCKED, D-01 / D-02)
+   Authoritative values from the design handoff. Overrides every
+   colour token above; night stays untouched. The user chose full
+   re-colouring (D-06) — the deepened day accent #c95572 drives all
+   pink, including CTAs, so there are no "dark islands" in day mode.
+   ------------------------------------------------------- */
+:root[data-theme="day"] {
+  /* base */
+  --color-bg: #f7f4ef;
+  --color-bg-raised: #efeae1;
+  --color-bg-modal: #f3eee6;
+  --color-accent: #c95572;
+  --color-accent-hover: #a83f5c;
+  --color-text: #231d1a;
+  --color-text-muted: #675f57;
+  --color-text-subtle: #978d81;
+  --color-text-dim: #978d81;
+  --color-text-dimmer: #b7ad9f;
+  --color-border: rgba(35, 25, 22, 0.12);
+  --color-border-subtle: rgba(35, 25, 22, 0.08);
+
+  /* surfaces / overlays */
+  --color-overlay-scrim: rgba(35, 25, 22, 0.55);
+  --color-overlay-dark: rgba(35, 25, 22, 0.65);
+  --color-surface-player: rgba(247, 244, 239, 0.97);
+  --color-surface-player-border: rgba(201, 85, 114, 0.3);
+  --color-surface-nav: rgba(247, 244, 239, 0.8);
+  --color-surface-video: rgba(247, 244, 239, 0.95);
+  --color-surface-card: #efeae1;
+
+  /* hero gradients */
+  --color-hero-gradient-top: rgba(46, 33, 24, 0.30);
+  --color-hero-gradient-bottom: rgba(247, 244, 239, 0.96);
+
+  /* accent tints / rings / ticket / marquee */
+  --color-accent-tint: rgba(201, 85, 114, 0.06);
+  --color-accent-tint-strong: rgba(201, 85, 114, 0.14);
+  --color-accent-ring: rgba(201, 85, 114, 0.18);
+  --color-accent-ticket: rgba(201, 85, 114, 0.06);
+  --color-accent-ticket-border: rgba(201, 85, 114, 0.5);
+  --color-accent-stroke: #c95572;
+
+  /* gallery / lightbox / on-accent text */
+  --color-gallery-bg: #e6e0d7;
+  --color-gallery-bg-alt: #ece6dd;
+  --color-glow-cursor: rgba(201, 85, 114, 0.07);
+  --color-glow-radial: rgba(201, 85, 114, 0.05);
+  --color-pswp-bg: #f0ebe3;
+  --color-text-on-accent: #fff;
+
+  /* exact-night tokens → day values */
+  --color-bg-marquee: #e8e3da;
+  --color-bg-sing: #eae5dc;
+  --color-border-strong: rgba(35, 25, 22, 0.26);
 }
 
 /* -------------------------------------------------------
@@ -38,6 +137,7 @@
 
 html {
   scroll-behavior: smooth;
+  background: var(--color-bg);
 }
 
 body {
@@ -48,11 +148,14 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   cursor: default;
+  /* Theme cross-fade fallback for browsers without View Transitions
+     (the toggle handler runs a circular wipe where supported). */
+  transition: background 0.4s ease, color 0.4s ease;
 }
 
 ::selection {
   background: var(--color-accent);
-  color: #000;
+  color: var(--color-text-on-accent);
 }
 
 input,
@@ -60,6 +163,75 @@ textarea,
 select,
 button {
   font-family: inherit;
+}
+
+/* -------------------------------------------------------
+   Theme transition — View Transitions API (circular wipe)
+   The toggle handler (Layout.astro) drives a clip-path reveal on
+   ::view-transition-new(root). Disable the default cross-fade so the
+   wipe reads cleanly. No-op in browsers without View Transitions.
+   ------------------------------------------------------- */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-new(root) {
+  z-index: 9999;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+/* -------------------------------------------------------
+   Theme toggle — the brand "eye" (D-04)
+   A 48px circular cropped photo of the vocalist's eye. Per-theme
+   CSS filters give the night (cooler) vs day (warmer/brighter) look
+   without baking filters into the image. On toggle the eye blinks
+   (eyelid close→open) then reopens in the new theme's colour.
+
+   ASSET NOTE: the design's exact 3-frame crossfade
+   (eye-open-dark / eye-open-light / eye-closed) exceeds the design
+   MCP's 256 KiB fetch cap, so this uses the single staged
+   src/assets/eye-photo.jpg + filter + a scaleY blink. Drop the three
+   frames into the project to upgrade to the exact crossfade later.
+   ------------------------------------------------------- */
+.vb-eye {
+  position: relative;
+  display: inline-flex;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.5);
+  transition: box-shadow 0.45s ease;
+}
+
+:root[data-theme="day"] .vb-eye {
+  box-shadow: 0 3px 14px rgba(40, 28, 22, 0.22);
+}
+
+.vb-eye img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  filter: grayscale(0.2) brightness(1.05) contrast(1.12);
+  transition: filter 0.45s ease, transform 0.18s ease;
+}
+
+:root[data-theme="day"] .vb-eye img {
+  filter: grayscale(0) brightness(1.28) saturate(1.16) contrast(1.03);
+}
+
+/* Blink: eyelid closes (vertical squeeze). Reduced-motion users skip it. */
+@media (prefers-reduced-motion: no-preference) {
+  .vb-eye.is-blink img {
+    transform: scaleY(0.08);
+  }
 }
 
 /* -------------------------------------------------------
@@ -157,7 +329,7 @@ button {
    Ported from index.html lines 27-41
    ------------------------------------------------------- */
 .nav-link {
-  color: #b6b2ad;
+  color: var(--color-text-muted);
   transition: color .25s;
 }
 
@@ -170,13 +342,13 @@ button {
 }
 
 .track:hover {
-  background: rgba(243, 169, 189, 0.07);
+  background: var(--color-accent-tint);
   padding-left: 24px;
 }
 
 /* Active track row visual — applied by AudioPlayer island (D-09, UI-SPEC C-01) */
 .track--playing {
-  background: rgba(243, 169, 189, 0.05);
+  background: var(--color-accent-tint);
   border-left: 3px solid var(--color-accent);
   padding-left: 13px; /* compensate for 3px border so content doesn't shift */
 }
@@ -210,7 +382,7 @@ button {
 }
 
 .icon-btn:hover {
-  color: #fff;
+  color: var(--color-text);
 }
 
 .ticket-link {
@@ -218,8 +390,8 @@ button {
 }
 
 .ticket-link:hover {
-  background: rgba(243, 169, 189, 0.18);
-  color: #fff;
+  background: var(--color-accent-tint-strong);
+  color: var(--color-text);
 }
 
 /* -------------------------------------------------------

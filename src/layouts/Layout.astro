@@ -49,6 +49,28 @@ const noindex = import.meta.env.NOINDEX === 'true';
     {noindex && <meta name="robots" content="noindex, nofollow" />}
 
     <!--
+      No-flash theme init (Phase 03.1, D-05). Render-blocking, runs BEFORE
+      first paint so the correct theme is applied with no flash:
+        (1) restore the saved choice from localStorage['vb-theme'], else
+        (2) follow the device prefers-color-scheme on first visit.
+      Night is the default (no data-theme attribute); day sets data-theme="day".
+    -->
+    <script is:inline>
+      (function () {
+        try {
+          var saved = localStorage.getItem('vb-theme');
+          if (saved === 'day') {
+            document.documentElement.setAttribute('data-theme', 'day');
+          } else if (!saved && window.matchMedia &&
+                     window.matchMedia('(prefers-color-scheme: light)').matches) {
+            document.documentElement.setAttribute('data-theme', 'day');
+          }
+          // night = default (no attribute)
+        } catch (e) {}
+      })();
+    </script>
+
+    <!--
       .js-reveal inline render-blocking script (01-02 SUMMARY handoff, Plan 04)
       MUST run BEFORE first paint to avoid flash-then-hide of content:
         (1) Mark document root with .js-reveal so global.css hides [data-reveal] elements
@@ -68,14 +90,14 @@ const noindex = import.meta.env.NOINDEX === 'true';
   </head>
   <body>
     <!-- Root wrapper — matches index.html line 58 exactly -->
-    <div style="position:relative;overflow-x:hidden;background:#000;">
+    <div style="position:relative;overflow-x:hidden;background:var(--color-bg);">
       <!-- Cursor-follow glow (FND-03; activated by global-animations.js inline script below) -->
       <div
         id="cursor-glow"
-        style="position:fixed;top:0;left:0;width:520px;height:520px;margin:-260px 0 0 -260px;border-radius:50%;pointer-events:none;z-index:1;background:radial-gradient(circle, rgba(243,169,189,0.16), transparent 62%);transition:transform .35s cubic-bezier(.2,.7,.2,1);will-change:transform;"
+        style="position:fixed;top:0;left:0;width:520px;height:520px;margin:-260px 0 0 -260px;border-radius:50%;pointer-events:none;z-index:1;background:radial-gradient(circle, var(--color-glow-cursor), transparent 62%);transition:transform .35s cubic-bezier(.2,.7,.2,1);will-change:transform;"
       ></div>
       <div
-        style="position:fixed;inset:0;pointer-events:none;z-index:1;background:radial-gradient(70% 45% at 50% -8%, rgba(243,169,189,0.12), transparent 60%);"
+        style="position:fixed;inset:0;pointer-events:none;z-index:1;background:radial-gradient(70% 45% at 50% -8%, var(--color-glow-radial), transparent 60%);"
       ></div>
 
       <!-- Page content from child components -->
@@ -229,6 +251,88 @@ const noindex = import.meta.env.NOINDEX === 'true';
             });
           }
         }
+      })();
+    </script>
+
+    <!--
+      theme-toggle.js — Day/night eye toggle handler (Phase 03.1, D-04).
+      Mirrors the authoritative design (claude.ai/design 981fc3bc):
+        click → eye blinks closed → after ~270ms the theme is applied
+        inside a View Transition while the eye reopens in the new colour,
+        and a circular clip-path wipe expands from the toggle centre.
+      Falls back to a plain swap when View Transitions are unsupported or
+      prefers-reduced-motion is set. No-flash init lives in <head>.
+    -->
+    <script is:inline>
+      (function themeToggle() {
+        var btn = document.querySelector('[data-theme-toggle]');
+        if (!btn) return;
+        var root = document.documentElement;
+        var eye = btn.querySelector('.vb-eye');
+        var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        function syncAria() {
+          var isDay = root.getAttribute('data-theme') === 'day';
+          btn.setAttribute('aria-pressed', isDay ? 'true' : 'false');
+          btn.setAttribute('aria-label', isDay ? 'включить ночную тему' : 'включить дневную тему');
+        }
+        syncAria();
+
+        // Hover: quick playful blink (skipped if mid-toggle or reduced motion)
+        btn.addEventListener('mouseenter', function () {
+          if (reduce || !eye || eye.dataset.toggling === '1' || eye.classList.contains('is-blink')) return;
+          eye.classList.add('is-blink');
+          setTimeout(function () {
+            if (eye.dataset.toggling !== '1') eye.classList.remove('is-blink');
+          }, 190);
+        });
+
+        btn.addEventListener('click', function () {
+          var goingDay = root.getAttribute('data-theme') !== 'day';
+          function apply() {
+            if (goingDay) root.setAttribute('data-theme', 'day');
+            else root.removeAttribute('data-theme');
+            try { localStorage.setItem('vb-theme', goingDay ? 'day' : 'night'); } catch (e) {}
+            syncAria();
+          }
+
+          if (eye) { eye.dataset.toggling = '1'; eye.classList.add('is-blink'); } // close the eye
+
+          var r = btn.getBoundingClientRect();
+          var x = r.left + r.width / 2;
+          var y = r.top + r.height / 2;
+
+          // Hold the closed frame so the blink registers, then reopen in the
+          // new colour via the circular wipe.
+          setTimeout(function () {
+            if (document.startViewTransition && !reduce) {
+              var end = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+              var t = document.startViewTransition(function () {
+                apply();
+                if (eye) eye.classList.remove('is-blink');
+              });
+              t.ready.then(function () {
+                root.animate(
+                  {
+                    clipPath: [
+                      'circle(0px at ' + x + 'px ' + y + 'px)',
+                      'circle(' + end + 'px at ' + x + 'px ' + y + 'px)'
+                    ]
+                  },
+                  {
+                    duration: 620,
+                    easing: 'cubic-bezier(.16,.7,.2,1)',
+                    pseudoElement: '::view-transition-new(root)'
+                  }
+                );
+              });
+              t.finished.finally(function () { if (eye) eye.dataset.toggling = '0'; });
+            } else {
+              apply();
+              if (eye) { eye.classList.remove('is-blink'); eye.dataset.toggling = '0'; }
+            }
+          }, reduce ? 0 : 270);
+        });
       })();
     </script>
   </body>
