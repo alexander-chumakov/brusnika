@@ -72,3 +72,21 @@ export const socialLinks = [
  */
 export const horoterapiyaUrl =
   'https://sonya-brusnika.timepad.ru/event/4010316/';
+
+/**
+ * Share strings for the clip social-sharing flow (Phase 3, SHARE-02/03).
+ *
+ * These are the editable share copy (D-07: Russian body text; D-08: no hashtag).
+ * The share URL itself is NOT stored here — it is computed at runtime from
+ * `window.location.origin` (D-09) because the production domain is not finalized
+ * until launch. Do NOT hardcode a site URL here.
+ *
+ * - shareText: default body text for the native share sheet / Telegram share link.
+ * - shareTitle: per-clip title for the native share sheet's link-share path
+ *   (the file-share path passes files only, no title — see VideoSection share JS).
+ */
+export const shareText =
+  'внимание брусника! — слушайте и смотрите' as const;
+
+export const shareTitle = (clipTitle: string): string =>
+  `${clipTitle} — внимание брусника!`;
