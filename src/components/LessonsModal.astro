@@ -24,7 +24,7 @@ import { horoterapiyaUrl } from '../data/site.ts';
 
 <div
   id="lessons-overlay"
-  style="display:none;position:fixed;inset:0;z-index:90;background:rgba(0,0,0,0.72);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:24px;"
+  style="display:none;position:fixed;inset:0;z-index:90;background:var(--color-overlay-scrim);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:24px;"
 >
   <div
     class="lessons-modal"
@@ -142,7 +142,7 @@ import { horoterapiyaUrl } from '../data/site.ts';
     max-height: 90vh;
     overflow: auto;
     background: var(--color-bg-modal);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--color-border);
     border-radius: 6px;
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -162,13 +162,13 @@ import { horoterapiyaUrl } from '../data/site.ts';
   }
 
   .lessons-close:hover {
-    color: #fff;
+    color: var(--color-text);
   }
 
   /* Left info panel */
   .lessons-panel-left {
     padding: 44px 38px;
-    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    border-right: 1px solid var(--color-border);
   }
 
   .lessons-eyebrow {
@@ -218,7 +218,7 @@ import { horoterapiyaUrl } from '../data/site.ts';
   .lessons-timepad-link {
     color: var(--color-accent);
     text-decoration: none;
-    border-bottom: 1px solid rgba(243, 169, 189, 0.5);
+    border-bottom: 1px solid var(--color-accent-stroke);
   }
 
   .lessons-timepad-link:hover {
@@ -256,13 +256,13 @@ import { horoterapiyaUrl } from '../data/site.ts';
 
   .lessons-select,
   .lessons-input {
-    border: 1px solid rgba(255, 255, 255, 0.14);
+    border: 1px solid var(--color-border);
     border-radius: 3px;
     padding: 12px 14px;
     font-size: 15px;
     color: var(--color-text);
     outline: none;
-    background: #070506;
+    background: var(--color-surface-card);
   }
 
   .lessons-select option {
@@ -272,7 +272,7 @@ import { horoterapiyaUrl } from '../data/site.ts';
   .lessons-submit {
     margin-top: 6px;
     background: var(--color-accent);
-    color: #000;
+    color: var(--color-text-on-accent);
     border: none;
     font-weight: 600;
     font-size: 15px;
@@ -294,7 +294,7 @@ import { horoterapiyaUrl } from '../data/site.ts';
     width: 54px;
     height: 54px;
     border-radius: 50%;
-    background: rgba(243, 169, 189, 0.14);
+    background: var(--color-accent-tint-strong);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -364,7 +364,7 @@ import { horoterapiyaUrl } from '../data/site.ts';
 
     .lessons-panel-left {
       border-right: none;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      border-bottom: 1px solid var(--color-border);
       padding: 32px 24px;
     }
 

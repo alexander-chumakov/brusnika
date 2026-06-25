@@ -569,7 +569,7 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
     height: 44px;
     border-radius: 50%;
     border: 1px solid var(--color-border);
-    background: rgba(6, 6, 6, 0.85);
+    background: var(--color-surface-video);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     color: var(--color-text-muted);
@@ -777,7 +777,7 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
 
   .share-popover-item:hover,
   .share-popover-item:focus-visible {
-    background: rgba(243, 169, 189, 0.07); /* accent tint — matches .track:hover */
+    background: var(--color-accent-tint); /* accent tint — matches .track:hover */
   }
 
   .share-popover-icon {
@@ -832,7 +832,7 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
   .video-modal-backdrop {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.8); /* dimmed full-viewport backdrop */
+    background: var(--color-overlay-dark); /* dimmed full-viewport backdrop */
     backdrop-filter: blur(2px);
     -webkit-backdrop-filter: blur(2px);
   }
@@ -846,7 +846,7 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
     max-width: 92vw;
     border-radius: 12px;
     overflow: hidden;
-    background: #000;
+    background: var(--color-bg);
     box-shadow: 0 12px 48px rgba(0, 0, 0, 0.6);
   }
 
@@ -855,7 +855,7 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
     height: 100%;
     object-fit: contain; /* show the whole portrait clip inside the tall stage */
     display: block;
-    background: #000;
+    background: var(--color-bg);
   }
 
   /* Close button is fixed to the viewport corner (a sibling of the stage), so it
@@ -870,7 +870,7 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background: rgba(0, 0, 0, 0.5);
+    background: var(--color-overlay-scrim);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
     color: var(--color-text);
@@ -885,7 +885,7 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
 
   .video-modal-close:hover {
     color: var(--color-accent);
-    background: rgba(0, 0, 0, 0.7);
+    background: var(--color-overlay-dark);
   }
 
   .video-modal-error {

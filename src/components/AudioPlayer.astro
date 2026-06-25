@@ -457,11 +457,14 @@
     bottom: 0;
     z-index: 60;
     backdrop-filter: blur(16px);
-    background: rgba(6, 6, 6, 0.92);
-    border-top: 1px solid rgba(243, 169, 189, 0.4);
+    background: var(--color-surface-player);
+    border-top: 1px solid var(--color-surface-player-border);
     padding: 12px 28px;
     align-items: center;
     gap: 20px;
+    /* Recolor cross-fade on theme toggle (D-06); never transform/opacity (would
+       fight the player's own show/hide + EQ animations). */
+    transition: background-color 0.25s ease, border-color 0.25s ease;
   }
 
   .np-eq {
@@ -592,7 +595,7 @@
     width: 78px;
     height: 4px;
     border-radius: 2px;
-    background: rgba(243, 169, 189, 0.22);
+    background: var(--color-accent-tint-strong);
     cursor: pointer;
     outline: none;
   }
@@ -605,7 +608,7 @@
   .np-volume-slider::-webkit-slider-runnable-track {
     height: 4px;
     border-radius: 2px;
-    background: rgba(243, 169, 189, 0.22);
+    background: var(--color-accent-tint-strong);
   }
 
   .np-volume-slider::-webkit-slider-thumb {
@@ -616,20 +619,20 @@
     height: 12px;
     border-radius: 50%;
     background: var(--color-accent);
-    box-shadow: 0 0 0 3px rgba(243, 169, 189, 0.18);
+    box-shadow: 0 0 0 3px var(--color-accent-ring);
     cursor: pointer;
     transition: background 0.2s, box-shadow 0.2s;
   }
 
   .np-volume-slider:hover::-webkit-slider-thumb {
     background: var(--color-accent-hover);
-    box-shadow: 0 0 0 4px rgba(243, 169, 189, 0.24);
+    box-shadow: 0 0 0 4px var(--color-accent-ring);
   }
 
   .np-volume-slider::-moz-range-track {
     height: 4px;
     border-radius: 2px;
-    background: rgba(243, 169, 189, 0.22);
+    background: var(--color-accent-tint-strong);
   }
 
   .np-volume-slider::-moz-range-thumb {
@@ -638,7 +641,7 @@
     border: none;
     border-radius: 50%;
     background: var(--color-accent);
-    box-shadow: 0 0 0 3px rgba(243, 169, 189, 0.18);
+    box-shadow: 0 0 0 3px var(--color-accent-ring);
     cursor: pointer;
     transition: background 0.2s;
   }

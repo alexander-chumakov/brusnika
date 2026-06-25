@@ -102,9 +102,9 @@ import heroImg from '../assets/images/hero.jpg';
     inset: 0;
     background: linear-gradient(
       180deg,
-      rgba(0, 0, 0, 0.34) 0%,
+      var(--color-hero-gradient-top) 0%,
       rgba(0, 0, 0, 0.22) 44%,
-      rgba(0, 0, 0, 0.8) 100%
+      var(--color-hero-gradient-bottom) 100%
     );
   }
 
@@ -155,13 +155,13 @@ import heroImg from '../assets/images/hero.jpg';
     display: block;
     /* Solid fallback — guarantees the name is readable if gradient-clip
        is unsupported or fails to paint (e.g. some tablet browsers). */
-    color: #f3a9bd;
+    color: var(--color-accent);
   }
 
   /* Apply the gradient clip only where the browser actually supports it. */
   @supports ((-webkit-background-clip: text) or (background-clip: text)) {
     .hero-title-line {
-      background: linear-gradient(176deg, #ffe7ed 4%, #f3a9bd 58%, #dd7791 100%);
+      background: linear-gradient(176deg, #ffe7ed 4%, var(--color-accent) 58%, #dd7791 100%);
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -185,7 +185,7 @@ import heroImg from '../assets/images/hero.jpg';
     margin: 34px auto 0;
     font-size: clamp(16px, 2.1vw, 21px);
     line-height: 1.6;
-    color: #cfcbc6;
+    color: var(--color-text-muted);
     animation: riseup 1s ease both;
     animation-delay: 0.22s;
   }
@@ -209,7 +209,7 @@ import heroImg from '../assets/images/hero.jpg';
     align-items: center;
     gap: 11px;
     background: var(--color-accent);
-    color: #000;
+    color: var(--color-text-on-accent);
     font-weight: 600;
     font-size: 15px;
     padding: 14px 30px;

@@ -134,11 +134,11 @@ const shows = await getCollection('shows');
     gap: 28px;
     align-items: center;
     padding: 26px 8px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid var(--color-border);
   }
 
   .show-row:last-child {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--color-border);
   }
 
   .show-date-primary {
@@ -169,8 +169,8 @@ const shows = await getCollection('shows');
   .ticket-link {
     text-decoration: none;
     color: var(--color-accent);
-    border: 1px solid rgba(243, 169, 189, 0.6);
-    background: rgba(243, 169, 189, 0.08);
+    border: 1px solid var(--color-accent-ticket-border);
+    background: var(--color-accent-ticket);
     font-size: 13.5px;
     padding: 10px 24px;
     border-radius: 2px;

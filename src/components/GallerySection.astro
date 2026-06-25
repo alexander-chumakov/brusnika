@@ -155,8 +155,8 @@ const galleryImages = import.meta.glob<{ default: ImageMetadata }>(
     overflow: hidden;
     background: repeating-linear-gradient(
       45deg,
-      #141414 0 12px,
-      #0a0a0a 12px 24px
+      var(--color-gallery-bg) 0 12px,
+      var(--color-gallery-bg-alt) 12px 24px
     );
     text-decoration: none;
     display: block;
@@ -194,10 +194,10 @@ const galleryImages = import.meta.glob<{ default: ImageMetadata }>(
 
 <style is:global>
   .pswp {
-    --pswp-bg: #000;
-    --pswp-icon-color: #f2f0ee;
-    --pswp-icon-color-secondary: #9a9691;
-    --pswp-error-text-color: #f3a9bd;
+    --pswp-bg: var(--color-pswp-bg);
+    --pswp-icon-color: var(--color-text);
+    --pswp-icon-color-secondary: var(--color-text-subtle);
+    --pswp-error-text-color: var(--color-accent);
   }
 
   .hidden-caption-content {
@@ -215,10 +215,10 @@ const galleryImages = import.meta.glob<{ default: ImageMetadata }>(
     font-family: var(--font-sans);
     font-size: 14.5px;
     line-height: 1.35;
-    color: #f2f0ee;
+    color: var(--color-text);
     text-align: center;
     padding: 8px 18px;
-    background: rgba(0, 0, 0, 0.55);
+    background: var(--color-overlay-scrim);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
     border-radius: 999px;
