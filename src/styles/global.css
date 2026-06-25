@@ -108,6 +108,10 @@
   --color-surface-card: #efeae1;
   --color-hero-gradient-top: rgba(46, 33, 24, 0.30);
   --color-hero-gradient-bottom: rgba(247, 244, 239, 0.96);
+  /* Now-playing bar: light in day (D-06 — no dark island). The design keeps it
+     dark glass; per the user's "recolour everything" choice we theme it. */
+  --color-surface-player: rgba(247, 244, 239, 0.97);
+  --color-surface-player-border: rgba(201, 85, 114, 0.3);
 
   /* deepened TEXT accent + marquee stroke (brand pink --color-accent
      stays #f3a9bd — NOT overridden here). */
