@@ -195,6 +195,9 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
 
   function closeModal() {
     if (!modal || !modalVideo) return;
+    // The share popover is portaled to <body>, so it outlives the modal unless we
+    // close it explicitly — otherwise its options linger after the video is gone.
+    closePopover(false);
     modal.dataset.open = 'false';
     modalVideo.pause();
     modalVideo.removeAttribute('src');
@@ -215,7 +218,11 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
   closeBtn?.addEventListener('click', closeModal);
   backdrop?.addEventListener('click', closeModal);
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && modal && modal.dataset.open === 'true') closeModal();
+    if (e.key !== 'Escape') return;
+    // If the popover is open, Escape closes it first (its own handler does that) —
+    // leave the modal open this round.
+    if (popover && popover.dataset.open === 'true') return;
+    if (modal && modal.dataset.open === 'true') closeModal();
   });
 
   // Show a friendly error in the modal if the clip can't load.
@@ -281,15 +288,28 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
   // The button that opened the popover — focus returns here on close.
   let popoverTrigger: HTMLButtonElement | null = null;
   let copyTimer: ReturnType<typeof setTimeout> | null = null;
+  // Guard against overlapping native-share invocations: a slow share sheet plus
+  // repeated taps otherwise throws InvalidStateError and falls through to the
+  // popover, producing duplicate/ghost popovers.
+  let isSharing = false;
 
-  function closePopover() {
+  function closePopover(returnFocus = true) {
     if (!popover) return;
     popover.dataset.open = 'false';
-    if (popoverTrigger) {
-      popoverTrigger.setAttribute('aria-expanded', 'false');
-      popoverTrigger.focus();
-    }
+    const trigger = popoverTrigger;
     popoverTrigger = null;
+    if (trigger) {
+      trigger.setAttribute('aria-expanded', 'false');
+      // Don't yank focus back to a trigger that's been hidden (e.g. the modal
+      // share button when the video modal is closing).
+      if (returnFocus && trigger.isConnected) {
+        try {
+          trigger.focus();
+        } catch {
+          /* not focusable (hidden) — ignore */
+        }
+      }
+    }
   }
 
   function openPopover(trigger: HTMLButtonElement) {
@@ -323,38 +343,50 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
   ) {
     const siteUrl = window.location.origin; // D-09 — home page, runtime only
 
-    // 1. Mobile file share (Web Share Level 2). canShare({files}) gates the fetch.
-    if (
+    const canFileShare =
       typeof navigator.canShare === 'function' &&
       navigator.canShare({
         files: [new File([''], 'test.mp4', { type: 'video/mp4' })],
-      })
-    ) {
-      try {
-        const res = await fetch(clipUrl);
-        const blob = await res.blob();
-        const file = new File([blob], `${clipTitle}.mp4`, { type: 'video/mp4' });
-        // FILES ONLY — no title/text/url (iOS Safari suppresses the sheet otherwise).
-        await navigator.share({ files: [file] });
-        return;
-      } catch (err) {
-        if (err instanceof Error && err.name === 'AbortError') return; // user cancelled
-        // Any other error (e.g. CORS fetch failure) falls through to link/popover.
-      }
-    }
+      });
+    const hasShare = typeof navigator.share === 'function';
 
-    // 2. Link share when files are unsupported but Web Share exists.
-    if (typeof navigator.share === 'function') {
+    // Native share (mobile/tablet). Guarded so a slow share sheet + repeated taps
+    // can't stack navigator.share() calls (InvalidStateError) and spawn ghost popovers.
+    if (canFileShare || hasShare) {
+      if (isSharing) return; // a share sheet is already opening — ignore extra taps
+      isSharing = true;
       try {
-        await navigator.share({
-          title: shareTitle(clipTitle),
-          text: shareText,
-          url: siteUrl,
-        });
-        return;
-      } catch (err) {
-        if (err instanceof Error && err.name === 'AbortError') return; // user cancelled
-        // Other errors surface no UI; fall through to the popover.
+        // 1. File share (Web Share Level 2). canShare({files}) gated the fetch.
+        if (canFileShare) {
+          try {
+            const res = await fetch(clipUrl);
+            const blob = await res.blob();
+            const file = new File([blob], `${clipTitle}.mp4`, { type: 'video/mp4' });
+            // FILES ONLY — no title/text/url (iOS Safari suppresses the sheet otherwise).
+            await navigator.share({ files: [file] });
+            return;
+          } catch (err) {
+            if (err instanceof Error && err.name === 'AbortError') return; // cancelled
+            // Any other error (e.g. CORS fetch failure) falls through to link share.
+          }
+        }
+
+        // 2. Link share when files are unsupported but Web Share exists.
+        if (hasShare) {
+          try {
+            await navigator.share({
+              title: shareTitle(clipTitle),
+              text: shareText,
+              url: siteUrl,
+            });
+            return;
+          } catch (err) {
+            if (err instanceof Error && err.name === 'AbortError') return; // cancelled
+            // Other errors surface no UI; fall through to the popover.
+          }
+        }
+      } finally {
+        isSharing = false;
       }
     }
 
