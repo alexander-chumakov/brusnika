@@ -72,7 +72,9 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
                 aria-haspopup="menu"
                 aria-expanded="false"
               >
-                <span class="video-share-glyph" aria-hidden="true">⬆</span>
+                <span class="video-share-glyph" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                </span>
               </button>
             </div>
           </div>
@@ -91,8 +93,11 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
          dimmed margin, never overlapping the video's native controls and never
          clipped by the stage's overflow:hidden. -->
     <button class="video-modal-close" aria-label="Закрыть">×</button>
-    <!-- Share button inside the enlarge modal (D-03 — share whether or not a clip
-         is opened). Reads the currently-open clip's url/title, set when the modal opens. -->
+    <!-- Share button kept OFF the video, in the dimmed margin just left of the close
+         button. Native video controls occupy BOTH the top (PiP + volume in Safari/iOS)
+         and the bottom (play/timeline), so no corner of the video is clear — the margin
+         is the only collision-free spot. Sibling of the stage so it's not clipped by
+         the stage's overflow:hidden. Reads the open clip's url/title, set on modal open. -->
     <button
       class="video-share-btn video-share-btn--modal"
       type="button"
@@ -100,7 +105,9 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
       aria-haspopup="menu"
       aria-expanded="false"
     >
-      <span class="video-share-glyph" aria-hidden="true">⬆</span>
+      <span class="video-share-glyph" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      </span>
     </button>
     <div class="video-modal-stage" role="dialog" aria-modal="true" aria-label="Просмотр клипа">
       <video
@@ -117,15 +124,21 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
        absent (desktop). Inert when closed (visibility:hidden + pointer-events:none). -->
   <div class="share-popover" role="menu" data-open="false" aria-label="Поделиться">
     <button class="share-popover-item" type="button" role="menuitem" data-share="vk">
-      <span class="share-popover-icon" aria-hidden="true">В</span>
+      <span class="share-popover-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.194c.136-.148.131-.427.131-.427s-.018-1.304.586-1.496c.596-.189 1.36 1.26 2.171 1.818.613.422 1.079.33 1.079.33l2.164-.03s1.132-.07.595-.96c-.044-.073-.313-.661-1.612-1.869-1.36-1.264-1.176-1.059.46-3.246.997-1.331 1.396-2.143 1.271-2.491-.118-.331-.85-.244-.85-.244l-2.435.015s-.181-.025-.315.055c-.131.079-.215.262-.215.262s-.387 1.031-.902 1.907c-1.088 1.852-1.523 1.95-1.701 1.835-.413-.267-.31-1.073-.31-1.646 0-1.79.272-2.536-.529-2.729-.265-.064-.46-.106-1.139-.113-.871-.009-1.608.003-2.025.207-.278.136-.492.439-.361.457.161.022.525.099.718.362.249.34.24 1.105.24 1.105s.143 2.094-.334 2.355c-.327.179-.776-.186-1.746-1.866-.497-.86-.872-1.81-.872-1.81s-.072-.177-.201-.272c-.156-.115-.374-.151-.374-.151l-2.314.015s-.347.01-.474.161c-.114.135-.009.414-.009.414s1.813 4.243 3.867 6.38c1.883 1.96 4.021 1.832 4.021 1.832z"/></svg>
+      </span>
       <span class="share-popover-label">Поделиться ВКонтакте</span>
     </button>
     <button class="share-popover-item" type="button" role="menuitem" data-share="telegram">
-      <span class="share-popover-icon" aria-hidden="true">✈</span>
+      <span class="share-popover-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.479.329-.913.489-1.302.481-.428-.009-1.252-.242-1.865-.44-.752-.244-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+      </span>
       <span class="share-popover-label">Поделиться в Telegram</span>
     </button>
     <button class="share-popover-item" type="button" role="menuitem" data-share="copy">
-      <span class="share-popover-icon" aria-hidden="true">⎘</span>
+      <span class="share-popover-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      </span>
       <span class="share-popover-label">Скопировать ссылку</span>
     </button>
   </div>
@@ -652,6 +665,13 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
   .video-share-glyph {
     font-size: 15px;
     line-height: 1;
+    display: inline-flex;
+  }
+
+  .video-share-glyph svg {
+    width: 18px;
+    height: 18px;
+    display: block;
   }
 
   .video-share-btn:hover {
@@ -664,7 +684,9 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
     outline-offset: 2px;
   }
 
-  /* Modal instance sits in the dimmed margin, top-right, just left of the close button. */
+  /* Modal instance sits in the dimmed margin, top-right, just left of the close button —
+     off the video, because native controls cover the video's top (PiP + volume) and
+     bottom (play/timeline) and leave no clear corner. */
   .video-share-btn--modal {
     position: fixed;
     top: max(16px, env(safe-area-inset-top, 0px));
@@ -719,9 +741,18 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
 
   .share-popover-icon {
     width: 18px;
-    text-align: center;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     color: var(--color-text-muted);
     flex: 0 0 auto;
+  }
+
+  .share-popover-icon svg {
+    width: 18px;
+    height: 18px;
+    display: block;
   }
 
   /* «Скопировано ✓» confirmation state on the copy row's label. */
