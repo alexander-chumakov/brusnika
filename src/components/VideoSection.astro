@@ -63,8 +63,18 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
               <span class="video-title-label">{v.data.title}</span>
             </button>
 
-            <!-- Phase 3 share slot — reserved 44×44px bottom-right (D-16); do NOT fill here -->
-            <div class="video-share-slot" aria-hidden="true"></div>
+            <!-- Phase 3 share button — fills the reserved 44×44px slot (D-16, D-03) -->
+            <div class="video-share-slot">
+              <button
+                class="video-share-btn"
+                type="button"
+                aria-label="Поделиться клипом"
+                aria-haspopup="menu"
+                aria-expanded="false"
+              >
+                <span class="video-share-glyph" aria-hidden="true">⬆</span>
+              </button>
+            </div>
           </div>
         </div>
       ))}
@@ -81,6 +91,17 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
          dimmed margin, never overlapping the video's native controls and never
          clipped by the stage's overflow:hidden. -->
     <button class="video-modal-close" aria-label="Закрыть">×</button>
+    <!-- Share button inside the enlarge modal (D-03 — share whether or not a clip
+         is opened). Reads the currently-open clip's url/title, set when the modal opens. -->
+    <button
+      class="video-share-btn video-share-btn--modal"
+      type="button"
+      aria-label="Поделиться клипом"
+      aria-haspopup="menu"
+      aria-expanded="false"
+    >
+      <span class="video-share-glyph" aria-hidden="true">⬆</span>
+    </button>
     <div class="video-modal-stage" role="dialog" aria-modal="true" aria-label="Просмотр клипа">
       <video
         class="video-modal-video"
@@ -90,9 +111,29 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
       ></video>
     </div>
   </div>
+
+  <!-- Desktop share popover — ONE shared element, portaled to <body> at runtime so it
+       escapes the carousel/card overflow:hidden. Opens only when navigator.share is
+       absent (desktop). Inert when closed (visibility:hidden + pointer-events:none). -->
+  <div class="share-popover" role="menu" data-open="false" aria-label="Поделиться">
+    <button class="share-popover-item" type="button" role="menuitem" data-share="vk">
+      <span class="share-popover-icon" aria-hidden="true">В</span>
+      <span class="share-popover-label">Поделиться ВКонтакте</span>
+    </button>
+    <button class="share-popover-item" type="button" role="menuitem" data-share="telegram">
+      <span class="share-popover-icon" aria-hidden="true">✈</span>
+      <span class="share-popover-label">Поделиться в Telegram</span>
+    </button>
+    <button class="share-popover-item" type="button" role="menuitem" data-share="copy">
+      <span class="share-popover-icon" aria-hidden="true">⎘</span>
+      <span class="share-popover-label">Скопировать ссылку</span>
+    </button>
+  </div>
 </section>
 
 <script>
+  import { shareText, shareTitle } from '../data/site.ts';
+
   // ── Shorts-style enlarge modal ──────────────────────────────
   // Cards never play inline and never autoplay (VID-02). Clicking a card opens a
   // centered overlay (CSS-positioned, NOT requestFullscreen) and plays the CDN clip.
@@ -120,8 +161,12 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
     document.dispatchEvent(new CustomEvent('brusnika:video-play'));
   });
 
+  // The clip currently shown in the enlarge modal — read by the modal's share button.
+  let openClip: { url: string; title: string } | null = null;
+
   function openModal(url: string, title: string) {
     if (!modal || !modalVideo) return;
+    openClip = { url, title };
     modalVideo.src = url;
     modalVideo.setAttribute('aria-label', title);
     modal.hidden = false;
@@ -206,6 +251,183 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
     carousel.addEventListener('scroll', updateArrows, { passive: true });
     window.addEventListener('resize', updateArrows);
     updateArrows();
+  });
+
+  // ── Share flow (SHARE-02 mobile file share / SHARE-03 desktop popover) ──────
+  // Mobile: hand the actual clip .mp4 to the OS native share sheet (Web Share Level 2,
+  // files-only per iOS caveat); degrade to link share when files unsupported.
+  // Desktop (no navigator.share): open the VK / Telegram / Copy-link popover.
+  const popover = document.querySelector<HTMLElement>('.share-popover');
+
+  // Portal the popover to <body> (same pattern as the modal) so it escapes the
+  // carousel/card overflow:hidden and competes at the root stacking context.
+  if (popover && popover.parentElement !== document.body) {
+    document.body.appendChild(popover);
+  }
+
+  // The button that opened the popover — focus returns here on close.
+  let popoverTrigger: HTMLButtonElement | null = null;
+  let copyTimer: ReturnType<typeof setTimeout> | null = null;
+
+  function closePopover() {
+    if (!popover) return;
+    popover.dataset.open = 'false';
+    if (popoverTrigger) {
+      popoverTrigger.setAttribute('aria-expanded', 'false');
+      popoverTrigger.focus();
+    }
+    popoverTrigger = null;
+  }
+
+  function openPopover(trigger: HTMLButtonElement) {
+    if (!popover) return;
+    popoverTrigger = trigger;
+    // Anchor the fixed popover above the button's right edge (escapes card overflow).
+    const rect = trigger.getBoundingClientRect();
+    // Make it measurable, then position with the real size.
+    popover.style.left = '0px';
+    popover.style.top = '0px';
+    void popover.offsetWidth; // reflow so getBoundingClientRect is accurate
+    const pw = popover.offsetWidth;
+    const ph = popover.offsetHeight;
+    let left = rect.right - pw;
+    let top = rect.top - ph - 8; // 8px above the button
+    if (top < 8) top = rect.bottom + 8; // flip below if no room above
+    if (left < 8) left = 8;
+    const maxLeft = window.innerWidth - pw - 8;
+    if (left > maxLeft) left = Math.max(8, maxLeft);
+    popover.style.left = `${left}px`;
+    popover.style.top = `${top}px`;
+    void popover.offsetWidth; // reflow before toggling open so the transition runs
+    popover.dataset.open = 'true';
+    trigger.setAttribute('aria-expanded', 'true');
+  }
+
+  async function shareClip(
+    trigger: HTMLButtonElement,
+    clipUrl: string,
+    clipTitle: string,
+  ) {
+    const siteUrl = window.location.origin; // D-09 — home page, runtime only
+
+    // 1. Mobile file share (Web Share Level 2). canShare({files}) gates the fetch.
+    if (
+      typeof navigator.canShare === 'function' &&
+      navigator.canShare({
+        files: [new File([''], 'test.mp4', { type: 'video/mp4' })],
+      })
+    ) {
+      try {
+        const res = await fetch(clipUrl);
+        const blob = await res.blob();
+        const file = new File([blob], `${clipTitle}.mp4`, { type: 'video/mp4' });
+        // FILES ONLY — no title/text/url (iOS Safari suppresses the sheet otherwise).
+        await navigator.share({ files: [file] });
+        return;
+      } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') return; // user cancelled
+        // Any other error (e.g. CORS fetch failure) falls through to link/popover.
+      }
+    }
+
+    // 2. Link share when files are unsupported but Web Share exists.
+    if (typeof navigator.share === 'function') {
+      try {
+        await navigator.share({
+          title: shareTitle(clipTitle),
+          text: shareText,
+          url: siteUrl,
+        });
+        return;
+      } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') return; // user cancelled
+        // Other errors surface no UI; fall through to the popover.
+      }
+    }
+
+    // 3. Desktop fallback — open the VK / Telegram / Copy-link popover.
+    // The popover always shares the home-page URL (D-09), so it needs no clip ref.
+    openPopover(trigger);
+  }
+
+  // Card share buttons read the clip from their .video-card; the modal button reads
+  // the currently-open clip.
+  document.querySelectorAll<HTMLButtonElement>('.video-share-btn').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isModalBtn = btn.classList.contains('video-share-btn--modal');
+      let url: string | undefined;
+      let title = '';
+      if (isModalBtn) {
+        url = openClip?.url;
+        title = openClip?.title ?? '';
+      } else {
+        const card = btn.closest<HTMLElement>('.video-card');
+        url = card?.dataset.clipUrl;
+        title = card?.dataset.clipTitle ?? '';
+      }
+      if (!url) return;
+      void shareClip(btn, url, title);
+    });
+  });
+
+  // ── Popover row actions ─────────────────────────────────────
+  popover?.querySelectorAll<HTMLButtonElement>('.share-popover-item').forEach((item) => {
+    item.addEventListener('click', async () => {
+      const siteUrl = window.location.origin;
+      const action = item.dataset.share;
+      if (action === 'vk') {
+        window.open(
+          'https://vk.com/share.php?url=' + encodeURIComponent(siteUrl),
+          '_blank',
+          'noopener',
+        );
+        closePopover();
+      } else if (action === 'telegram') {
+        window.open(
+          'https://t.me/share/url?url=' +
+            encodeURIComponent(siteUrl) +
+            '&text=' +
+            encodeURIComponent(shareText),
+          '_blank',
+          'noopener',
+        );
+        closePopover();
+      } else if (action === 'copy') {
+        try {
+          await navigator.clipboard.writeText(siteUrl);
+        } catch {
+          // Clipboard may be blocked; show no error UI (silent).
+        }
+        const label = item.querySelector<HTMLElement>('.share-popover-label');
+        if (label) {
+          const original = label.textContent ?? 'Скопировать ссылку';
+          label.textContent = 'Скопировано ✓';
+          item.classList.add('share-copied');
+          if (copyTimer) clearTimeout(copyTimer);
+          copyTimer = setTimeout(() => {
+            label.textContent = original;
+            item.classList.remove('share-copied');
+          }, 2000);
+        }
+        // Copy keeps the popover open.
+      }
+    });
+  });
+
+  // Close popover on click-outside and on Escape; return focus to the trigger.
+  document.addEventListener('click', (e) => {
+    if (!popover || popover.dataset.open !== 'true') return;
+    const target = e.target as Node;
+    if (popover.contains(target)) return;
+    if (popoverTrigger && popoverTrigger.contains(target)) return;
+    closePopover();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && popover && popover.dataset.open === 'true') {
+      closePopover();
+    }
   });
 </script>
 
@@ -400,14 +622,112 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
     overflow: hidden;
   }
 
-  /* ── Phase 3 share slot (reserved — empty in Phase 2) ────── */
+  /* ── Phase 3 share slot (holds the share button) ────────── */
   .video-share-slot {
     position: absolute;
     bottom: 12px;
     right: 12px;
     width: 44px;
     height: 44px;
-    /* Empty in Phase 2 — Phase 3 inserts a share button here (D-16) */
+  }
+
+  /* ── Phase 3 share button (clones .video-modal-close base) ── */
+  .video-share-btn {
+    all: unset;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .video-share-glyph {
+    font-size: 15px;
+    line-height: 1;
+  }
+
+  .video-share-btn:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+
+  .video-share-btn:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  /* Modal instance sits in the dimmed margin, top-right, just left of the close button. */
+  .video-share-btn--modal {
+    position: fixed;
+    top: max(16px, env(safe-area-inset-top, 0px));
+    right: calc(max(16px, env(safe-area-inset-right, 0px)) + 56px);
+    z-index: 1010; /* same layer as .video-modal-close, above the stage */
+  }
+
+  /* ── Phase 3 desktop share popover ───────────────────────── */
+  /* Portaled to <body> at runtime; fixed-positioned near the clicked button.
+     Inert when closed: pointer-events:none + visibility:hidden (NOT opacity alone). */
+  .share-popover {
+    position: fixed;
+    z-index: 2010; /* above the video modal (2000) */
+    background: var(--color-bg-modal);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+    min-width: 180px;
+    max-width: 240px;
+    padding: 8px 0;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.15s ease, visibility 0.15s ease;
+  }
+
+  .share-popover[data-open='true'] {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .share-popover-item {
+    all: unset;
+    box-sizing: border-box;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    cursor: pointer;
+    font-family: var(--font-sans);
+    font-size: 15px;
+    color: var(--color-text);
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .share-popover-item:hover,
+  .share-popover-item:focus-visible {
+    background: rgba(243, 169, 189, 0.07); /* accent tint — matches .track:hover */
+  }
+
+  .share-popover-icon {
+    width: 18px;
+    text-align: center;
+    color: var(--color-text-muted);
+    flex: 0 0 auto;
+  }
+
+  /* «Скопировано ✓» confirmation state on the copy row's label. */
+  .share-popover-item.share-copied,
+  .share-popover-item.share-copied .share-popover-icon {
+    color: var(--color-accent);
   }
 
   /* ── Shorts-style enlarge modal ──────────────────────────── */
