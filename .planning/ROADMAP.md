@@ -96,7 +96,13 @@ Plans:
   4. Submitting the form more than 5 times within 60 seconds from the same IP is rate-limited (HTTP 429); a network failure or API error shows a clear error state with a fallback Telegram link rather than silently dropping the submission
   5. The "записаться" / хоротерапия section links to the live Timepad event page
 
-**Plans:** TBD
+**Plans:** 2/2 plans planned
+Plans:
+**Wave 1** *(both plans run in parallel — no shared write files)*
+
+- [ ] 03-01-PLAN.md — Sharing slice: share button on clip card + enlarge modal, mobile Web Share file handoff, desktop VK/Telegram/copy popover (SHARE-01/02/03)
+- [ ] 03-02-PLAN.md — Booking slice: /api/book serverless endpoint (Telegram primary + gated email fallback), form name=/honeypot/error state, real submit handler, rate-limit (BOOK-01/02/03/04/05)
+
 **UI hint**: yes
 
 ### Phase 4: Pre-Launch Verification
@@ -123,7 +129,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Foundation & Static Site | 4/4 | Complete   | 2026-06-24 |
 | 2. Media Islands | 4/4 | Complete   | 2026-06-24 |
-| 3. Sharing & Booking | 0/? | Not started | - |
+| 3. Sharing & Booking | 0/2 | Planned | - |
 | 4. Pre-Launch Verification | 0/? | Not started | - |
 
 ---
