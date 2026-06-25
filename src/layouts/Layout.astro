@@ -265,20 +265,24 @@ const noindex = import.meta.env.NOINDEX === 'true';
     -->
     <script is:inline>
       (function themeToggle() {
-        var btn = document.querySelector('[data-theme-toggle]');
-        if (!btn) return;
+        var btns = Array.prototype.slice.call(document.querySelectorAll('[data-theme-toggle]'));
+        if (!btns.length) return;
         var root = document.documentElement;
-        var eye = btn.querySelector('.vb-eye');
         var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
         function syncAria() {
           var isDay = root.getAttribute('data-theme') === 'day';
-          btn.setAttribute('aria-pressed', isDay ? 'true' : 'false');
-          btn.setAttribute('aria-label', isDay ? 'включить ночную тему' : 'включить дневную тему');
-          btn.setAttribute('title', isDay ? 'Дневная тема — нажмите для ночной' : 'Ночная тема — нажмите для дневной');
+          btns.forEach(function (b) {
+            b.setAttribute('aria-pressed', isDay ? 'true' : 'false');
+            b.setAttribute('aria-label', isDay ? 'включить ночную тему' : 'включить дневную тему');
+            b.setAttribute('title', isDay ? 'Дневная тема — нажмите для ночной' : 'Ночная тема — нажмите для дневной');
+          });
         }
         syncAria();
 
+        // Wire every toggle (desktop in-menu eye + mobile-bar eye)
+        btns.forEach(function (btn) {
+        var eye = btn.querySelector('.vb-eye');
         // Hover: quick playful blink (skipped if mid-toggle or reduced motion)
         btn.addEventListener('mouseenter', function () {
           if (reduce || !eye || eye.dataset.toggling === '1' || eye.classList.contains('is-blink')) return;
@@ -333,6 +337,53 @@ const noindex = import.meta.env.NOINDEX === 'true';
               if (eye) { eye.classList.remove('is-blink'); eye.dataset.toggling = '0'; }
             }
           }, reduce ? 0 : 270);
+        });
+        }); // end btns.forEach
+      })();
+    </script>
+
+    <!--
+      mobile-nav.js — burger menu for ≤860px (Phase 03.1 follow-up).
+      Opens/closes the .nav-drawer (links + «пойте с нами»). The eye toggle
+      stays in the top bar. Closes on link tap, Escape, and outside click.
+    -->
+    <script is:inline>
+      (function mobileNav() {
+        var burger = document.querySelector('[data-nav-burger]');
+        var drawer = document.querySelector('[data-nav-drawer]');
+        if (!burger || !drawer) return;
+
+        function close() {
+          drawer.classList.remove('open');
+          burger.setAttribute('aria-expanded', 'false');
+          burger.setAttribute('aria-label', 'открыть меню');
+        }
+        function open() {
+          drawer.classList.add('open');
+          burger.setAttribute('aria-expanded', 'true');
+          burger.setAttribute('aria-label', 'закрыть меню');
+        }
+
+        burger.addEventListener('click', function () {
+          if (drawer.classList.contains('open')) close();
+          else open();
+        });
+
+        // Tapping a drawer link / the pill closes the menu
+        drawer.querySelectorAll('a').forEach(function (a) {
+          a.addEventListener('click', close);
+        });
+
+        // Escape closes
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape' && drawer.classList.contains('open')) close();
+        });
+
+        // Outside click closes
+        document.addEventListener('click', function (e) {
+          if (!drawer.classList.contains('open')) return;
+          if (drawer.contains(e.target) || burger.contains(e.target)) return;
+          close();
         });
       })();
     </script>

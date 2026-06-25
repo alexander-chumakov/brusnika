@@ -2,16 +2,16 @@
 /**
  * Nav.astro — Fixed top navigation bar
  *
- * Pixel-faithful port of index.html lines 64-76 + the day/night eye toggle.
  * - Backdrop blur + translucent background (themed via --color-surface-nav)
  * - Logo: 9px pink dot with glow + Prata wordmark
- * - .nav-menu: nav-link anchors + the eye theme-toggle + «пойте с нами» pill
- * - Eye toggle position matches the authoritative design: between «концерты»
- *   and the pink pill (Phase 03.1, D-03/D-04). Handler + no-flash init live
- *   in Layout.astro.
+ * - Desktop (.nav-menu): links + eye theme-toggle (between «концерты» and the
+ *   pill, per the design) + «пойте с нами» pill. Hidden ≤860px.
+ * - Mobile (.nav-mobile): eye theme-toggle (always visible) + burger that opens
+ *   the .nav-drawer (links + pill). Shown ≤860px.
  * - Eye = three stacked cropped-eye photos that cross-fade (dark / light /
- *   closed) — the design's exact toggle artwork.
- * - Mobile: .nav-menu hidden at 860px (FND-04; also covered by global.css)
+ *   closed). Two eye instances (desktop in-menu + mobile bar); only one shows
+ *   per breakpoint. Both carry data-theme-toggle — the handler (Layout.astro)
+ *   wires all of them. Burger/drawer JS also lives in Layout.astro.
  */
 import eyeDark from '../assets/eye-open-dark.jpg';
 import eyeLight from '../assets/eye-open-light.jpg';
@@ -23,6 +23,8 @@ import eyeClosed from '../assets/eye-closed.jpg';
     <span class="nav-dot"></span>
     <span class="nav-wordmark">внимание брусника!</span>
   </a>
+
+  <!-- Desktop menu (hidden ≤860px) -->
   <div class="nav-menu">
     <a href="#music" class="nav-link">релизы</a>
     <a href="#clips" class="nav-link">клипы</a>
@@ -43,6 +45,43 @@ import eyeClosed from '../assets/eye-closed.jpg';
       </span>
     </button>
     <a href="#sing" class="nav-pill" data-open-lessons>пойте с нами</a>
+  </div>
+
+  <!-- Mobile controls (shown ≤860px): eye always visible + burger -->
+  <div class="nav-mobile">
+    <button
+      type="button"
+      class="theme-toggle"
+      data-theme-toggle
+      title="Сменить тему: день / ночь"
+      aria-label="сменить тему: день или ночь"
+      aria-pressed="false"
+    >
+      <span class="vb-eye">
+        <img class="eye-dark" src={eyeDark.src} alt="глаз" width="48" height="48" loading="eager" decoding="async" />
+        <img class="eye-light" src={eyeLight.src} alt="" width="48" height="48" loading="eager" decoding="async" />
+        <img class="eye-closed" src={eyeClosed.src} alt="" width="48" height="48" loading="eager" decoding="async" />
+      </span>
+    </button>
+    <button
+      type="button"
+      class="nav-burger"
+      data-nav-burger
+      aria-expanded="false"
+      aria-controls="nav-drawer"
+      aria-label="открыть меню"
+    >
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+
+  <!-- Mobile drawer (links + pill); hidden on desktop, toggled by the burger -->
+  <div class="nav-drawer" id="nav-drawer" data-nav-drawer>
+    <a href="#music" class="nav-drawer-link">релизы</a>
+    <a href="#clips" class="nav-drawer-link">клипы</a>
+    <a href="#about" class="nav-drawer-link">о группе</a>
+    <a href="#shows" class="nav-drawer-link">концерты</a>
+    <a href="#sing" class="nav-drawer-pill" data-open-lessons>пойте с нами</a>
   </div>
 </nav>
 
@@ -100,8 +139,7 @@ import eyeClosed from '../assets/eye-closed.jpg';
     letter-spacing: 0.3px;
   }
 
-  /* Day/night eye toggle — sits between «концерты» and the pill (design
-     position). The .vb-eye visual lives in global.css. */
+  /* Day/night eye toggle — .vb-eye visual lives in global.css */
   .theme-toggle {
     all: unset;
     cursor: pointer;
@@ -140,17 +178,129 @@ import eyeClosed from '../assets/eye-closed.jpg';
     background: var(--color-accent-hover);
   }
 
-  /* Mobile: hide nav menu at 860px (also covered by global.css) */
+  /* ---- Mobile controls + burger (hidden on desktop) ---- */
+  .nav-mobile {
+    display: none;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .nav-burger {
+    all: unset;
+    cursor: pointer;
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    flex-shrink: 0;
+  }
+
+  .nav-burger:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  .nav-burger span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--color-text);
+    transition: transform 0.25s ease, opacity 0.25s ease;
+  }
+
+  /* Burger → X when the drawer is open */
+  .nav-burger[aria-expanded="true"] span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+
+  .nav-burger[aria-expanded="true"] span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .nav-burger[aria-expanded="true"] span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  /* ---- Mobile drawer (hidden on desktop) ---- */
+  .nav-drawer {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    padding: 8px 20px 20px;
+    background: var(--color-surface-nav);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--color-border);
+    /* closed state */
+    opacity: 0;
+    transform: translateY(-8px);
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+  }
+
+  .nav-drawer.open {
+    opacity: 1;
+    transform: none;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .nav-drawer-link {
+    text-decoration: none;
+    color: var(--color-text-muted);
+    font-size: 16px;
+    letter-spacing: 0.3px;
+    padding: 15px 4px;
+    border-bottom: 1px solid var(--color-border-subtle);
+    transition: color 0.2s ease;
+  }
+
+  .nav-drawer-link:hover {
+    color: var(--color-text);
+  }
+
+  .nav-drawer-pill {
+    margin-top: 16px;
+    text-decoration: none;
+    text-align: center;
+    color: var(--color-text-on-accent);
+    background: var(--color-accent);
+    font-size: 15px;
+    font-weight: 600;
+    padding: 14px 18px;
+    border-radius: 2px;
+    letter-spacing: 0.3px;
+    transition: background 0.25s;
+  }
+
+  .nav-drawer-pill:hover {
+    background: var(--color-accent-hover);
+  }
+
+  /* Mobile breakpoint: swap desktop menu for the mobile controls + drawer */
   @media (max-width: 860px) {
     nav {
       padding: 14px 20px;
     }
 
-    /* Keep the eye toggle visible on mobile — hide only the links + pill
-       (the menu container stays so the eye shows top-right). */
-    .nav-menu > .nav-link,
-    .nav-menu > .nav-pill {
+    .nav-menu {
       display: none;
+    }
+
+    .nav-mobile {
+      display: flex;
+    }
+
+    .nav-drawer {
+      display: flex;
     }
   }
 </style>
