@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-06-25T08:07:07.326Z"
+last_updated: "2026-06-25T08:21:26.887Z"
 progress:
-  total_phases: 4
+  total_phases: 5
   completed_phases: 2
   total_plans: 10
   completed_plans: 8
-  percent: 50
+  percent: 40
 ---
 
 # Project State: внимание брусника! — Band Website
@@ -29,10 +29,10 @@ progress:
 
 ## Current Position
 
-Phase: 3
-Plan: 4 of 4 complete (02-01 CDN/content + 02-02 audio player + 02-03 gallery lightbox + 02-04 video clip section)
+Phase: 03 (sharing-booking) — EXECUTING
+Plan: 1 of 2
 **Plan:** Not started
-**Status:** Ready to execute
+**Status:** Executing Phase 03
 **Progress:** [█████░░░░░] 50% (2 of 4 phases complete; 8 of 8 planned plans across Phases 1–2)
 
 ---
@@ -58,6 +58,10 @@ Plan: 4 of 4 complete (02-01 CDN/content + 02-02 audio player + 02-03 gallery li
 ---
 
 ## Accumulated Context
+
+### Roadmap Evolution
+
+- Phase 03.1 inserted after Phase 3: Day/Night Theme — add light theme + toggle to dark-only site (cross-cutting UI; plan design-first)
 
 ### Key Decisions Made
 

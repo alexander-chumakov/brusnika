@@ -11,7 +11,7 @@
 
 - [x] **Phase 1: Foundation & Static Site** — Astro scaffold, self-hosted fonts, all static sections, shows data, real links, noindex gate, deployed to Vercel (completed 2026-06-24)
 - [x] **Phase 2: Media Islands** — Working audio player (CDN-backed), video player, photo lightbox gallery (completed 2026-06-24)
-- [ ] **Phase 3: Sharing & Booking** — Social share button with mobile/desktop paths; booking form wired to Соня's Telegram bot
+- [x] **Phase 3: Sharing & Booking** — Social share button with mobile/desktop paths; booking form wired to Соня's Telegram bot (completed 2026-06-25)
 - [ ] **Phase 4: Pre-Launch Verification** — Noindex confirmed correct, no Google Fonts, iOS audio seekable, all links real, booking tested end-to-end, launch-time toggle documented
 
 ---
@@ -96,28 +96,41 @@ Plans:
   4. Submitting the form more than 5 times within 60 seconds from the same IP is rate-limited (HTTP 429); a network failure or API error shows a clear error state with a fallback Telegram link rather than silently dropping the submission
   5. The "записаться" / хоротерапия section links to the live Timepad event page
 
-**Plans:** 2/2 plans planned
+**Plans:** 2/2 plans complete
 Plans:
 **Wave 1** *(both plans run in parallel — no shared write files)*
 
-- [ ] 03-01-PLAN.md — Sharing slice: share button on clip card + enlarge modal, mobile Web Share file handoff, desktop VK/Telegram/copy popover (SHARE-01/02/03)
-- [ ] 03-02-PLAN.md — Booking slice: /api/book serverless endpoint (Telegram primary + gated email fallback), form name=/honeypot/error state, real submit handler, rate-limit (BOOK-01/02/03/04/05)
+- [x] 03-01-PLAN.md — Sharing slice: share button on clip card + enlarge modal, mobile Web Share file handoff, desktop VK/Telegram/copy popover (SHARE-01/02/03)
+- [x] 03-02-PLAN.md — Booking slice: /api/book serverless endpoint (Telegram primary + gated email fallback), form name=/honeypot/error state, real submit handler, rate-limit (BOOK-01/02/03/04/05)
 
 **UI hint**: yes
 
-### Phase 4: Pre-Launch Verification
+### Phase 03.1: Day/Night Theme (INSERTED)
 
-**Goal:** Every pitfall documented in research is confirmed resolved; the site is ready for Соня to approve and go public; the launch-time noindex toggle is documented so it cannot be forgotten.
+**Goal:** The dark-only site gains a user-facing day (light) / night (dark) theme toggle. Remaining hardcoded colors are tokenized into the central `:root` design-token system, a light "day" palette is designed to fit the dream-pop brand, a toggle control is added, and the choice persists (localStorage) with a no-flash-before-paint init and a `prefers-color-scheme` default.
+**Mode:** mvp
+**Requirements**: TBD (new scope — define during discuss-phase; design-first via /gsd:ui-phase)
+**Depends on:** Phase 1, Phase 2
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 03.1 to break down)
+
+### Phase 4: Test Deploy & Verification
+
+**Goal:** v1 is deployed to Vercel as a **private (noindex) test build** and shared with the band for review. Every pitfall documented in research is confirmed resolved on the deployed test URL. v1 does NOT go public — actually launching (flipping noindex to public + the launch playbook) is deferred to a future Launch milestone.
 **Mode:** mvp
 **Depends on:** Phase 2, Phase 3
-**Requirements:** (cross-cutting verification — no new requirements; confirms FND-02, FND-07, AUD-05, SHARE-02, SHARE-03, BOOK-02, LINK-01, LINK-02 are correct in production)
+**Requirements:** (cross-cutting verification — no new requirements; confirms FND-02, FND-07, AUD-05, SHARE-02, SHARE-03, BOOK-02, LINK-01, LINK-02 work on the test deploy)
 **Success Criteria** (what must be TRUE):
 
-  1. Toggling the `NOINDEX` env var to `false` and redeploying causes the robots meta tag to disappear from page source and `robots.txt` to allow crawling; the launch procedure is written down in one place so the band cannot miss it
-  2. A Network tab audit of the deployed production URL shows zero requests to `fonts.googleapis.com` or `fonts.gstatic.com` at any point during page load
+  1. The shared Vercel test deploy is confirmed **private/noindex**: the `robots` meta tag is present (`noindex`) and `robots.txt` disallows crawling, so the site will not be indexed by search engines while the band reviews it. (The site stays private throughout v1; going public is out of scope.)
+  2. A Network tab audit of the deployed test URL shows zero requests to `fonts.googleapis.com` or `fonts.gstatic.com` at any point during page load (self-hosted fonts work — critical because Google Fonts is unreliable/blocked for Russian ISPs)
   3. Audio seek on a real iPhone (Safari): scrubbing to the middle of a track plays from that position without restarting; Network tab confirms `Content-Range` in response headers
-  4. All outbound links across the entire page — streaming platforms, ticket pages, footer social, contact — open to real destination pages; zero `#` placeholder `href` values remain
+  4. Every outbound link is audited and its status recorded: links with real destinations open correctly; any remaining `#` placeholder (e.g. streaming/ticket URLs still pending from the band) is documented in a single checklist so nothing is silently broken. (Zero-placeholders is a Launch-milestone gate, not a v1 test gate.)
   5. A live booking form submission delivers a correctly formatted message to Соня's Telegram chat; the band confirms receipt
+
+**Deferred to a future Launch milestone (NOT v1):** flipping `NOINDEX` to `false` to go public, writing the band-facing launch procedure, and the zero-placeholder-links gate. These are launch actions, not test-deploy verification.
 
 **Plans:** TBD
 
@@ -129,8 +142,9 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Foundation & Static Site | 4/4 | Complete   | 2026-06-24 |
 | 2. Media Islands | 4/4 | Complete   | 2026-06-24 |
-| 3. Sharing & Booking | 0/2 | Planned | - |
-| 4. Pre-Launch Verification | 0/? | Not started | - |
+| 3. Sharing & Booking | 2/2 | Complete   | 2026-06-25 |
+| 3.1 Day/Night Theme (inserted) | 0/? | Not planned | - |
+| 4. Test Deploy & Verification | 0/? | Not started | - |
 
 ---
 
