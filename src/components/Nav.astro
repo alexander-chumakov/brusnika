@@ -2,17 +2,20 @@
 /**
  * Nav.astro — Fixed top navigation bar
  *
- * Pixel-faithful port of index.html lines 64-76.
+ * Pixel-faithful port of index.html lines 64-76 + the day/night eye toggle.
  * - Backdrop blur + translucent background (themed via --color-surface-nav)
  * - Logo: 9px pink dot with glow + Prata wordmark
- * - .nav-menu: four .nav-link anchors (релизы, клипы, о группе, концерты) + «пойте с нами» pink pill
- * - Pill carries data-open-lessons (wired in Plan 04)
- * - .theme-toggle: the brand "eye" day/night switch (Phase 03.1, D-03/D-04).
- *   Placed OUTSIDE .nav-menu so it stays visible when the menu is hidden
- *   at ≤860px. Handler + no-flash init live in Layout.astro.
+ * - .nav-menu: nav-link anchors + the eye theme-toggle + «пойте с нами» pill
+ * - Eye toggle position matches the authoritative design: between «концерты»
+ *   and the pink pill (Phase 03.1, D-03/D-04). Handler + no-flash init live
+ *   in Layout.astro.
+ * - Eye = three stacked cropped-eye photos that cross-fade (dark / light /
+ *   closed) — the design's exact toggle artwork.
  * - Mobile: .nav-menu hidden at 860px (FND-04; also covered by global.css)
  */
-import eyePhoto from '../assets/eye-photo.jpg';
+import eyeDark from '../assets/eye-open-dark.jpg';
+import eyeLight from '../assets/eye-open-light.jpg';
+import eyeClosed from '../assets/eye-closed.jpg';
 ---
 
 <nav>
@@ -20,14 +23,11 @@ import eyePhoto from '../assets/eye-photo.jpg';
     <span class="nav-dot"></span>
     <span class="nav-wordmark">внимание брусника!</span>
   </a>
-  <div class="nav-right">
-    <div class="nav-menu">
-      <a href="#music" class="nav-link">релизы</a>
-      <a href="#clips" class="nav-link">клипы</a>
-      <a href="#about" class="nav-link">о группе</a>
-      <a href="#shows" class="nav-link">концерты</a>
-      <a href="#sing" class="nav-pill" data-open-lessons>пойте с нами</a>
-    </div>
+  <div class="nav-menu">
+    <a href="#music" class="nav-link">релизы</a>
+    <a href="#clips" class="nav-link">клипы</a>
+    <a href="#about" class="nav-link">о группе</a>
+    <a href="#shows" class="nav-link">концерты</a>
     <button
       type="button"
       class="theme-toggle"
@@ -37,9 +37,12 @@ import eyePhoto from '../assets/eye-photo.jpg';
       aria-pressed="false"
     >
       <span class="vb-eye">
-        <img src={eyePhoto.src} alt="" width="48" height="48" loading="eager" decoding="async" />
+        <img class="eye-dark" src={eyeDark.src} alt="глаз" width="48" height="48" loading="eager" decoding="async" />
+        <img class="eye-light" src={eyeLight.src} alt="" width="48" height="48" loading="eager" decoding="async" />
+        <img class="eye-closed" src={eyeClosed.src} alt="" width="48" height="48" loading="eager" decoding="async" />
       </span>
     </button>
+    <a href="#sing" class="nav-pill" data-open-lessons>пойте с нами</a>
   </div>
 </nav>
 
@@ -84,16 +87,10 @@ import eyePhoto from '../assets/eye-photo.jpg';
     letter-spacing: 0.5px;
   }
 
-  .nav-right {
-    display: flex;
-    align-items: center;
-    gap: 26px;
-  }
-
   .nav-menu {
     display: flex;
     align-items: center;
-    gap: 30px;
+    gap: 26px;
   }
 
   /* .nav-link hover/color defined in global.css */
@@ -103,23 +100,8 @@ import eyePhoto from '../assets/eye-photo.jpg';
     letter-spacing: 0.3px;
   }
 
-  .nav-pill {
-    text-decoration: none;
-    color: var(--color-text-on-accent);
-    background: var(--color-accent);
-    font-size: 13.5px;
-    font-weight: 600;
-    padding: 9px 18px;
-    border-radius: 2px;
-    letter-spacing: 0.3px;
-    transition: background 0.25s;
-  }
-
-  .nav-pill:hover {
-    background: var(--color-accent-hover);
-  }
-
-  /* Day/night eye toggle (.vb-eye visual lives in global.css) */
+  /* Day/night eye toggle — sits between «концерты» and the pill (design
+     position). The .vb-eye visual lives in global.css. */
   .theme-toggle {
     all: unset;
     cursor: pointer;
@@ -142,8 +124,23 @@ import eyePhoto from '../assets/eye-photo.jpg';
     outline-offset: 2px;
   }
 
-  /* Mobile: hide nav menu at 860px (the eye toggle stays visible —
-     it is a sibling of .nav-menu, not a child). global.css !important wins. */
+  .nav-pill {
+    text-decoration: none;
+    color: var(--color-text-on-accent);
+    background: var(--color-accent);
+    font-size: 13.5px;
+    font-weight: 600;
+    padding: 9px 18px;
+    border-radius: 2px;
+    letter-spacing: 0.3px;
+    transition: background 0.25s;
+  }
+
+  .nav-pill:hover {
+    background: var(--color-accent-hover);
+  }
+
+  /* Mobile: hide nav menu at 860px (also covered by global.css) */
   @media (max-width: 860px) {
     nav {
       padding: 14px 20px;
