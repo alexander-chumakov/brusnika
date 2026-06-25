@@ -202,13 +202,15 @@ const menuSocial = socialLinks.filter((l) => !l.url.startsWith('mailto'));
     background: var(--color-accent-hover);
   }
 
-  /* Burger (mobile only) */
+  /* Burger — visible by default (mobile); hidden on desktop via the
+     min-width query below. (Base flex + desktop-hide avoids the rule-order
+     ambiguity a base display:none + max-width override would create.) */
   .nav-burger {
     all: unset;
     cursor: pointer;
     width: 44px;
     height: 44px;
-    display: none;
+    display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
@@ -233,23 +235,25 @@ const menuSocial = socialLinks.filter((l) => !l.url.startsWith('mailto'));
   .nav-burger span:nth-child(3) { width: 17px; }
 
   /* ---- Full-screen overlay menu ---- */
+  /* Closed = fully removed from layout (mirrors the design's conditional
+     render) so it can never render in normal flow. Only .open shows it. */
   .nav-overlay {
     position: fixed;
     inset: 0;
     z-index: 80;
-    display: flex;
+    display: none;
     flex-direction: column;
     background: var(--color-bg);
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transition: opacity 0.32s ease, visibility 0.32s;
   }
 
   .nav-overlay.open {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
+    display: flex;
+    animation: menuFade 0.32s ease both;
+  }
+
+  @keyframes menuFade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
   }
 
   .nav-overlay-glow {
@@ -402,14 +406,14 @@ const menuSocial = socialLinks.filter((l) => !l.url.startsWith('mailto'));
     .nav-desktop {
       display: none !important;
     }
-
-    .nav-burger {
-      display: flex;
-    }
   }
 
-  /* The overlay is mobile-only — never render it past the breakpoint. */
+  /* Desktop: hide the burger + the overlay (mobile-only). */
   @media (min-width: 861px) {
+    .nav-burger {
+      display: none !important;
+    }
+
     .nav-overlay {
       display: none !important;
     }
