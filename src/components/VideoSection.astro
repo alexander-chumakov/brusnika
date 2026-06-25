@@ -63,8 +63,18 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
               <span class="video-title-label">{v.data.title}</span>
             </button>
 
-            <!-- Phase 3 share slot — reserved 44×44px bottom-right (D-16); do NOT fill here -->
-            <div class="video-share-slot" aria-hidden="true"></div>
+            <!-- Phase 3 share button — fills the reserved 44×44px slot (D-16, D-03) -->
+            <div class="video-share-slot">
+              <button
+                class="video-share-btn"
+                type="button"
+                aria-label="Поделиться клипом"
+                aria-haspopup="menu"
+                aria-expanded="false"
+              >
+                <span class="video-share-glyph" aria-hidden="true">⬆</span>
+              </button>
+            </div>
           </div>
         </div>
       ))}
@@ -81,6 +91,17 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
          dimmed margin, never overlapping the video's native controls and never
          clipped by the stage's overflow:hidden. -->
     <button class="video-modal-close" aria-label="Закрыть">×</button>
+    <!-- Share button inside the enlarge modal (D-03 — share whether or not a clip
+         is opened). Reads the currently-open clip's url/title, set when the modal opens. -->
+    <button
+      class="video-share-btn video-share-btn--modal"
+      type="button"
+      aria-label="Поделиться клипом"
+      aria-haspopup="menu"
+      aria-expanded="false"
+    >
+      <span class="video-share-glyph" aria-hidden="true">⬆</span>
+    </button>
     <div class="video-modal-stage" role="dialog" aria-modal="true" aria-label="Просмотр клипа">
       <video
         class="video-modal-video"
@@ -89,6 +110,24 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
         preload="none"
       ></video>
     </div>
+  </div>
+
+  <!-- Desktop share popover — ONE shared element, portaled to <body> at runtime so it
+       escapes the carousel/card overflow:hidden. Opens only when navigator.share is
+       absent (desktop). Inert when closed (visibility:hidden + pointer-events:none). -->
+  <div class="share-popover" role="menu" data-open="false" aria-label="Поделиться">
+    <button class="share-popover-item" type="button" role="menuitem" data-share="vk">
+      <span class="share-popover-icon" aria-hidden="true">В</span>
+      <span class="share-popover-label">Поделиться ВКонтакте</span>
+    </button>
+    <button class="share-popover-item" type="button" role="menuitem" data-share="telegram">
+      <span class="share-popover-icon" aria-hidden="true">✈</span>
+      <span class="share-popover-label">Поделиться в Telegram</span>
+    </button>
+    <button class="share-popover-item" type="button" role="menuitem" data-share="copy">
+      <span class="share-popover-icon" aria-hidden="true">⎘</span>
+      <span class="share-popover-label">Скопировать ссылку</span>
+    </button>
   </div>
 </section>
 
@@ -400,14 +439,112 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
     overflow: hidden;
   }
 
-  /* ── Phase 3 share slot (reserved — empty in Phase 2) ────── */
+  /* ── Phase 3 share slot (holds the share button) ────────── */
   .video-share-slot {
     position: absolute;
     bottom: 12px;
     right: 12px;
     width: 44px;
     height: 44px;
-    /* Empty in Phase 2 — Phase 3 inserts a share button here (D-16) */
+  }
+
+  /* ── Phase 3 share button (clones .video-modal-close base) ── */
+  .video-share-btn {
+    all: unset;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .video-share-glyph {
+    font-size: 15px;
+    line-height: 1;
+  }
+
+  .video-share-btn:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+
+  .video-share-btn:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  /* Modal instance sits in the dimmed margin, top-right, just left of the close button. */
+  .video-share-btn--modal {
+    position: fixed;
+    top: max(16px, env(safe-area-inset-top, 0px));
+    right: calc(max(16px, env(safe-area-inset-right, 0px)) + 56px);
+    z-index: 1010; /* same layer as .video-modal-close, above the stage */
+  }
+
+  /* ── Phase 3 desktop share popover ───────────────────────── */
+  /* Portaled to <body> at runtime; fixed-positioned near the clicked button.
+     Inert when closed: pointer-events:none + visibility:hidden (NOT opacity alone). */
+  .share-popover {
+    position: fixed;
+    z-index: 2010; /* above the video modal (2000) */
+    background: var(--color-bg-modal);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+    min-width: 180px;
+    max-width: 240px;
+    padding: 8px 0;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.15s ease, visibility 0.15s ease;
+  }
+
+  .share-popover[data-open='true'] {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .share-popover-item {
+    all: unset;
+    box-sizing: border-box;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    cursor: pointer;
+    font-family: var(--font-sans);
+    font-size: 15px;
+    color: var(--color-text);
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .share-popover-item:hover,
+  .share-popover-item:focus-visible {
+    background: rgba(243, 169, 189, 0.07); /* accent tint — matches .track:hover */
+  }
+
+  .share-popover-icon {
+    width: 18px;
+    text-align: center;
+    color: var(--color-text-muted);
+    flex: 0 0 auto;
+  }
+
+  /* «Скопировано ✓» confirmation state on the copy row's label. */
+  .share-popover-item.share-copied,
+  .share-popover-item.share-copied .share-popover-icon {
+    color: var(--color-accent);
   }
 
   /* ── Shorts-style enlarge modal ──────────────────────────── */
