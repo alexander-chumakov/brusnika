@@ -45,20 +45,26 @@ Standard 8-point scale. Declared values match existing component patterns:
 | Token | Value | Usage in this phase |
 |-------|-------|---------------------|
 | xs | 4px | Icon inner padding, share icon glyph offset |
-| sm | 8px | Popover item padding (vertical), gap between popover rows |
+| sm | 8px | Popover item gap, popover outer offset from anchor |
 | md | 16px | Popover horizontal padding, share button margin from card edge |
-| lg | 24px | Popover outer gap from anchor button, error state text margin |
+| lg | 24px | Error state text margin, error state vertical padding |
 | xl | 32px | — (not used in new elements this phase) |
 | 2xl | 48px | — (not used in new elements this phase) |
 | 3xl | 64px | — (not used in new elements this phase) |
 
-Exceptions:
+Justified exceptions (multiples of 4, used as breathing-room values where the 8/16 step is too coarse):
 
+- **12px** — popover option row vertical padding and the error-state inter-element gap.
+  A multiple of 4; sits between `sm` (8px) and `lg` (24px). Same justified exception as
+  the existing 12px card slot inset already in `VideoSection.astro`.
 - **44×44px touch target** for the share button (per-card `.video-share-slot` and
   modal). This is a mandatory minimum touch target, not a spacing token — same
   convention as the existing `video-modal-close` and `video-arrow` buttons. Source: CONTEXT.md D-03.
-- **12px** card slot inset (`bottom: 12px; right: 12px`) — inherited from the
+- **12px** card slot inset (`bottom: 12px; right: 12px`) — inherited verbatim from the
   `.video-share-slot` CSS already written in Phase 2. Do not change.
+
+No spacing value anywhere in this contract is a non-multiple-of-4 (all values are drawn
+from {4, 8, 12, 16, 24, 32, 48, 64}).
 
 ---
 
@@ -76,6 +82,12 @@ All sizes match the existing component system. No new type roles are introduced.
 Source: `LessonsModal.astro` scoped styles — body 15px/1.6, labels 12.5px, thanks
 title 24px Prata. Error heading is new; follows `.lessons-form-title` convention
 (sans-serif, semibold for urgency, distinct from Prata success state).
+
+**Size-proximity note:** the 15px body and 16px error heading differ by only 1px (both
+inherited from the existing component system — keep both as-is). They must NEVER be
+rendered in adjacent sibling elements where the 1px difference is imperceptible. The
+error heading is always separated from body copy by weight (600 vs 400) and the 12px
+inter-element gap, so the hierarchy reads through weight + spacing, never size alone.
 
 ---
 
@@ -117,6 +129,10 @@ New UI elements this phase introduces. All must match the dark/pink dream-pop ae
 Mounts into the existing `.video-share-slot` (44×44px, `bottom: 12px; right: 12px`
 on each carousel card). A second instance goes inside the enlarge modal header area.
 
+**Primary focal point:** the accent-colored share glyph is the anchor of this control —
+on hover the ring and glyph both shift to `--color-accent`, making it the single
+draw-the-eye element within the otherwise dark card corner.
+
 | Property | Spec |
 |----------|------|
 | Size | 44×44px (full slot; meets touch target minimum) |
@@ -156,7 +172,9 @@ when closed (NOT just `opacity:0`, per accumulated architecture note).
 | Telegram | Paper-plane or `✈` | `https://t.me/share/url?url={encodedUrl}&text={encodedText}` — open in new tab |
 | Скопировать ссылку | `⎘` or `□□` | `navigator.clipboard.writeText(url)` → text swaps to "Скопировано ✓" for 2s |
 
-Each option: `display: flex; align-items: center; gap: 10px; padding: 10px 16px`.
+Each option: `display: flex; align-items: center; gap: 8px; padding: 12px 16px`
+(8px and 16px from the standard scale; 12px is the justified breathing-room exception
+documented in the Spacing Scale section — matches the popover table's `12px 16px`).
 Hover: `background: rgba(243,169,189,0.07)` — same tint as `.track:hover`.
 
 ### 3. "Скопировано" Confirmation
@@ -174,6 +192,10 @@ Hover: `background: rgba(243,169,189,0.07)` — same tint as `.track:hover`.
 New element added to `.lessons-panel-right` in `LessonsModal.astro`. Hidden by
 default; shown when all delivery channels fail. The existing `#lessons-form` and
 `#lessons-thanks` states stay; this is a third state.
+
+**Primary focal point:** the error heading ("Что-то пошло не так") is the first and
+primary element — it is the topmost child, set in semibold weight, so the eye lands on
+it before reading the recovery copy and direct link below.
 
 | Property | Spec |
 |----------|------|
