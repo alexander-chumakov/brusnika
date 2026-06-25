@@ -132,6 +132,8 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
 </section>
 
 <script>
+  import { shareText, shareTitle } from '../data/site.ts';
+
   // ── Shorts-style enlarge modal ──────────────────────────────
   // Cards never play inline and never autoplay (VID-02). Clicking a card opens a
   // centered overlay (CSS-positioned, NOT requestFullscreen) and plays the CDN clip.
@@ -159,8 +161,12 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
     document.dispatchEvent(new CustomEvent('brusnika:video-play'));
   });
 
+  // The clip currently shown in the enlarge modal — read by the modal's share button.
+  let openClip: { url: string; title: string } | null = null;
+
   function openModal(url: string, title: string) {
     if (!modal || !modalVideo) return;
+    openClip = { url, title };
     modalVideo.src = url;
     modalVideo.setAttribute('aria-label', title);
     modal.hidden = false;
@@ -245,6 +251,183 @@ const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.d
     carousel.addEventListener('scroll', updateArrows, { passive: true });
     window.addEventListener('resize', updateArrows);
     updateArrows();
+  });
+
+  // ── Share flow (SHARE-02 mobile file share / SHARE-03 desktop popover) ──────
+  // Mobile: hand the actual clip .mp4 to the OS native share sheet (Web Share Level 2,
+  // files-only per iOS caveat); degrade to link share when files unsupported.
+  // Desktop (no navigator.share): open the VK / Telegram / Copy-link popover.
+  const popover = document.querySelector<HTMLElement>('.share-popover');
+
+  // Portal the popover to <body> (same pattern as the modal) so it escapes the
+  // carousel/card overflow:hidden and competes at the root stacking context.
+  if (popover && popover.parentElement !== document.body) {
+    document.body.appendChild(popover);
+  }
+
+  // The button that opened the popover — focus returns here on close.
+  let popoverTrigger: HTMLButtonElement | null = null;
+  let copyTimer: ReturnType<typeof setTimeout> | null = null;
+
+  function closePopover() {
+    if (!popover) return;
+    popover.dataset.open = 'false';
+    if (popoverTrigger) {
+      popoverTrigger.setAttribute('aria-expanded', 'false');
+      popoverTrigger.focus();
+    }
+    popoverTrigger = null;
+  }
+
+  function openPopover(trigger: HTMLButtonElement) {
+    if (!popover) return;
+    popoverTrigger = trigger;
+    // Anchor the fixed popover above the button's right edge (escapes card overflow).
+    const rect = trigger.getBoundingClientRect();
+    // Make it measurable, then position with the real size.
+    popover.style.left = '0px';
+    popover.style.top = '0px';
+    void popover.offsetWidth; // reflow so getBoundingClientRect is accurate
+    const pw = popover.offsetWidth;
+    const ph = popover.offsetHeight;
+    let left = rect.right - pw;
+    let top = rect.top - ph - 8; // 8px above the button
+    if (top < 8) top = rect.bottom + 8; // flip below if no room above
+    if (left < 8) left = 8;
+    const maxLeft = window.innerWidth - pw - 8;
+    if (left > maxLeft) left = Math.max(8, maxLeft);
+    popover.style.left = `${left}px`;
+    popover.style.top = `${top}px`;
+    void popover.offsetWidth; // reflow before toggling open so the transition runs
+    popover.dataset.open = 'true';
+    trigger.setAttribute('aria-expanded', 'true');
+  }
+
+  async function shareClip(
+    trigger: HTMLButtonElement,
+    clipUrl: string,
+    clipTitle: string,
+  ) {
+    const siteUrl = window.location.origin; // D-09 — home page, runtime only
+
+    // 1. Mobile file share (Web Share Level 2). canShare({files}) gates the fetch.
+    if (
+      typeof navigator.canShare === 'function' &&
+      navigator.canShare({
+        files: [new File([''], 'test.mp4', { type: 'video/mp4' })],
+      })
+    ) {
+      try {
+        const res = await fetch(clipUrl);
+        const blob = await res.blob();
+        const file = new File([blob], `${clipTitle}.mp4`, { type: 'video/mp4' });
+        // FILES ONLY — no title/text/url (iOS Safari suppresses the sheet otherwise).
+        await navigator.share({ files: [file] });
+        return;
+      } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') return; // user cancelled
+        // Any other error (e.g. CORS fetch failure) falls through to link/popover.
+      }
+    }
+
+    // 2. Link share when files are unsupported but Web Share exists.
+    if (typeof navigator.share === 'function') {
+      try {
+        await navigator.share({
+          title: shareTitle(clipTitle),
+          text: shareText,
+          url: siteUrl,
+        });
+        return;
+      } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') return; // user cancelled
+        // Other errors surface no UI; fall through to the popover.
+      }
+    }
+
+    // 3. Desktop fallback — open the VK / Telegram / Copy-link popover.
+    // The popover always shares the home-page URL (D-09), so it needs no clip ref.
+    openPopover(trigger);
+  }
+
+  // Card share buttons read the clip from their .video-card; the modal button reads
+  // the currently-open clip.
+  document.querySelectorAll<HTMLButtonElement>('.video-share-btn').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isModalBtn = btn.classList.contains('video-share-btn--modal');
+      let url: string | undefined;
+      let title = '';
+      if (isModalBtn) {
+        url = openClip?.url;
+        title = openClip?.title ?? '';
+      } else {
+        const card = btn.closest<HTMLElement>('.video-card');
+        url = card?.dataset.clipUrl;
+        title = card?.dataset.clipTitle ?? '';
+      }
+      if (!url) return;
+      void shareClip(btn, url, title);
+    });
+  });
+
+  // ── Popover row actions ─────────────────────────────────────
+  popover?.querySelectorAll<HTMLButtonElement>('.share-popover-item').forEach((item) => {
+    item.addEventListener('click', async () => {
+      const siteUrl = window.location.origin;
+      const action = item.dataset.share;
+      if (action === 'vk') {
+        window.open(
+          'https://vk.com/share.php?url=' + encodeURIComponent(siteUrl),
+          '_blank',
+          'noopener',
+        );
+        closePopover();
+      } else if (action === 'telegram') {
+        window.open(
+          'https://t.me/share/url?url=' +
+            encodeURIComponent(siteUrl) +
+            '&text=' +
+            encodeURIComponent(shareText),
+          '_blank',
+          'noopener',
+        );
+        closePopover();
+      } else if (action === 'copy') {
+        try {
+          await navigator.clipboard.writeText(siteUrl);
+        } catch {
+          // Clipboard may be blocked; show no error UI (silent).
+        }
+        const label = item.querySelector<HTMLElement>('.share-popover-label');
+        if (label) {
+          const original = label.textContent ?? 'Скопировать ссылку';
+          label.textContent = 'Скопировано ✓';
+          item.classList.add('share-copied');
+          if (copyTimer) clearTimeout(copyTimer);
+          copyTimer = setTimeout(() => {
+            label.textContent = original;
+            item.classList.remove('share-copied');
+          }, 2000);
+        }
+        // Copy keeps the popover open.
+      }
+    });
+  });
+
+  // Close popover on click-outside and on Escape; return focus to the trigger.
+  document.addEventListener('click', (e) => {
+    if (!popover || popover.dataset.open !== 'true') return;
+    const target = e.target as Node;
+    if (popover.contains(target)) return;
+    if (popoverTrigger && popoverTrigger.contains(target)) return;
+    closePopover();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && popover && popover.dataset.open === 'true') {
+      closePopover();
+    }
   });
 </script>
 
