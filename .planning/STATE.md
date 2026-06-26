@@ -116,6 +116,12 @@ Plan: Not started
 
 None currently.
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260626-j7a | Replace featured-album banner with Дискография releases carousel | 2026-06-26 | 936e782 | [260626-j7a-replace-featured-album-banner-with-relea](./quick/260626-j7a-replace-featured-album-banner-with-relea/) |
+
 ### Todos
 
 - Deploy Phase 01 to Vercel preview for human visual verification (Plan 04 checkpoint)
