@@ -78,8 +78,53 @@ const yearCountsMap: Record<string, number> = Object.fromEntries(
           <div class="rel-track">
             {items.map((item) => (
               <div class="rel-slide">
-                {item.image ? (
+                {item.cover && item.image ? (
                   <Fragment>
+                    {/* ── COVER MODE: blurred bg + sharp square + text ── */}
+                    {/* Blurred background — decorative, may crop */}
+                    <img
+                      src={item.image.src}
+                      alt=""
+                      aria-hidden="true"
+                      class="rel-cover-bg"
+                    />
+                    {/* Dark overlay for text contrast */}
+                    <div class="rel-cover-overlay" aria-hidden="true"></div>
+                    {/* Foreground row */}
+                    <div class="rel-cover-row">
+                      {/* Text block */}
+                      <div class="rel-cover-text">
+                        <span class="rel-slide-eyebrow">{item.eyebrow}</span>
+                        <h2 class="rel-slide-title">{item.title}</h2>
+                        {item.desc && <p class="rel-slide-desc">{item.desc}</p>}
+                        <div class="rel-slide-actions">
+                          <a
+                            href={item.url}
+                            target="_blank"
+                            rel="noopener"
+                            class="rel-slide-cta"
+                          >▶ слушать</a>
+                          <span class="rel-slide-meta">{item.meta}</span>
+                        </div>
+                      </div>
+                      {/* Sharp full cover square — no crop */}
+                      <div class="rel-cover-square-wrap">
+                        <Image
+                          src={item.image}
+                          alt={`внимание брусника! — ${item.title}`}
+                          widths={[340, 680]}
+                          sizes="(max-width: 760px) clamp(150px,42vw,210px), clamp(190px,30vw,340px)"
+                          format="webp"
+                          quality={90}
+                          loading="lazy"
+                          class="rel-cover-square-img"
+                        />
+                      </div>
+                    </div>
+                  </Fragment>
+                ) : item.image ? (
+                  <Fragment>
+                    {/* ── PHOTO MODE (unchanged) ── */}
                     <Image
                       src={item.image}
                       alt={`внимание брусника! — ${item.title}`}
@@ -109,7 +154,8 @@ const yearCountsMap: Record<string, number> = Object.fromEntries(
                   </Fragment>
                 ) : (
                   <Fragment>
-                    <!-- Themed striped tile — readable in both day + night via CSS tokens -->
+                    {/* ── PLACEHOLDER MODE (unchanged) ── */}
+                    {/* Themed striped tile — readable in both day + night via CSS tokens */}
                     <div class="rel-slide-placeholder" aria-hidden="true">
                       <div class="rel-slide-placeholder-dot"></div>
                     </div>
@@ -700,6 +746,87 @@ const yearCountsMap: Record<string, number> = Object.fromEntries(
     border-color: #f3a9bd;
   }
 
+  /* ── COVER MODE ──────────────────────────────────────────────────────────
+     Blurred background + dark overlay + sharp square + text row.
+     The slide frame (.rel-slide) is unchanged; all cover elements are
+     positioned/stretched within it, so arrows/dots/autoplay work normally.
+  ── */
+
+  /* Blurred decorative background (decorative: may scale/crop) */
+  .rel-cover-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scale(1.12);
+    filter: blur(34px) brightness(0.5);
+    z-index: 0;
+  }
+
+  /* Dark gradient overlay — ensures text contrast over the blurred bg */
+  .rel-cover-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.72) 0%,
+      rgba(0, 0, 0, 0.5) 55%,
+      rgba(0, 0, 0, 0.45) 100%
+    );
+    z-index: 1;
+  }
+
+  /* Foreground row: text block (left) + sharp cover square (right) */
+  .rel-cover-row {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: clamp(20px, 4vw, 48px);
+    height: 100%;
+    padding: clamp(24px, 4vw, 56px);
+    /* Extra bottom padding clears the progress-bar + arrows row */
+    padding-bottom: calc(clamp(34px, 4vw, 52px) + clamp(28px, 5vw, 48px) + 28px);
+    max-width: 1180px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Text block (same tokens as photo-slide content, hard-coded whites over dark bg) */
+  .rel-cover-text {
+    flex: 1;
+    min-width: 0;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* The .rel-slide-title inside cover-text defaults white (inherited from photo rule);
+     override desc to match photo slide colour since we don't have --placeholder modifier */
+  .rel-cover-text .rel-slide-desc {
+    color: #d8d4cf;
+    max-width: 420px;
+  }
+
+  /* Sharp cover square — shows the full artwork, no crop */
+  .rel-cover-square-wrap {
+    flex: 0 0 auto;
+    aspect-ratio: 1 / 1;
+    height: clamp(190px, 30vw, 340px);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  }
+
+  .rel-cover-square-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* source is square 1:1, so nothing actually crops */
+    display: block;
+  }
+
   /* ── Mobile ── */
   @media (max-width: 860px) {
     .releases-section {
@@ -731,6 +858,30 @@ const yearCountsMap: Record<string, number> = Object.fromEntries(
         align-items: flex-start;
         gap: 10px;
       }
+    }
+  }
+
+  /* ── Cover mode responsive (≤760px): column, cover square above text ── */
+  @media (max-width: 760px) {
+    .rel-cover-row {
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(16px, 4vw, 28px);
+      padding: clamp(20px, 4vw, 36px);
+      /* allow padding to expand on mobile so nothing overlaps the arrows */
+      padding-bottom: calc(clamp(34px, 4vw, 52px) + clamp(28px, 5vw, 48px) + 28px);
+    }
+
+    /* Cover square appears first (above text) */
+    .rel-cover-square-wrap {
+      order: -1;
+      height: clamp(150px, 42vw, 210px);
+    }
+
+    .rel-cover-text {
+      max-width: 100%;
+      text-align: left;
     }
   }
 </style>
