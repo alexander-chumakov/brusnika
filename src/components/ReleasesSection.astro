@@ -185,7 +185,7 @@ const yearCountsMap: Record<string, number> = Object.fromEntries(
            exists in the HTML; JS rebuilds it on year switch / animates fills. -->
       <div id="rel-progress" class="rel-progress" aria-hidden="true">
         {byYear[0].items.map((_item, i) => (
-          <div class="rel-seg"><div class="rel-seg-fill" data-seg={i}></div></div>
+          <div class="rel-seg"><div class="rel-seg-fill" data-seg={i} style={i === 0 ? 'width:100%' : undefined}></div></div>
         ))}
       </div>
 
@@ -285,24 +285,31 @@ const yearCountsMap: Record<string, number> = Object.fromEntries(
         opt.classList.toggle('active', isActive);
       });
 
-      // Animate progress fill segments
+      // Progress fill segments. Uses a CSS transition (not a @keyframes
+      // animation) so the white fill is reliable; the width is always set to
+      // a concrete value, so worst case the active bar is solid white.
       const segs = Array.from(progressEl.querySelectorAll('.rel-seg-fill'));
       segs.forEach(function(seg, i) {
-        if (reduced) {
-          seg.style.animation = 'none';
-          seg.style.width = i <= slide ? '100%' : '0%';
-          return;
-        }
+        seg.style.animation = 'none';
         if (i < slide) {
-          seg.style.animation = 'none';
+          // completed — solid white
+          seg.style.transition = 'none';
           seg.style.width = '100%';
         } else if (i === slide) {
-          seg.style.animation = 'none';
-          void seg.offsetWidth; // force reflow to restart the animation
-          seg.style.width = '';
-          seg.style.animation = 'fillbar 6000ms linear forwards';
+          if (reduced) {
+            seg.style.transition = 'none';
+            seg.style.width = '100%';
+          } else {
+            // active — grow 0 → 100% over the autoplay interval
+            seg.style.transition = 'none';
+            seg.style.width = '0%';
+            void seg.offsetWidth; // reflow so the grow restarts each slide
+            seg.style.transition = 'width 6000ms linear';
+            seg.style.width = '100%';
+          }
         } else {
-          seg.style.animation = 'none';
+          // upcoming — empty
+          seg.style.transition = 'none';
           seg.style.width = '0%';
         }
       });
