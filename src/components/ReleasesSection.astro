@@ -232,7 +232,13 @@ const yearCountsMap: Record<string, number> = Object.fromEntries(
 
     // ── helpers ──────────────────────────────────────────────────────────
     function activeYear()  { return yearsArr[activeYearIdx]; }
-    function activeCount() { return yearCountsMap[activeYear()] || 1; }
+    function activeCount() {
+      // Prefer the real DOM slide count (robust even if the injected map is
+      // ever empty); fall back to the injected map, then 1.
+      const t = activeTrack();
+      if (t && t.children && t.children.length) return t.children.length;
+      return yearCountsMap[activeYear()] || 1;
+    }
 
     function activePanel() {
       return banner.querySelector('.rel-year-panel[data-year="' + activeYear() + '"]');
