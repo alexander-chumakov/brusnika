@@ -135,11 +135,11 @@ Plans:
 
 **Deferred to a future Launch milestone (NOT v1):** flipping `NOINDEX` to `false` to go public, writing the band-facing launch procedure, and the zero-placeholder-links gate. These are launch actions, not test-deploy verification.
 
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 Plans:
 **Wave 1**
 
-- [ ] 04-01-PLAN.md — robots.txt gap fix (D-01) + all automated curl/code verification (SC1 meta, SC2 fonts, SC3 server-side range, SC4 link audit, SC5 endpoint reachability + token-absence) + band-shareable findings doc with placeholder-link tracker and Russian human-check instructions
+- [x] 04-01-PLAN.md — robots.txt gap fix (D-01) + all automated curl/code verification (SC1 meta, SC2 fonts, SC3 server-side range, SC4 link audit, SC5 endpoint reachability + token-absence) + band-shareable findings doc with placeholder-link tracker and Russian human-check instructions
 
 **Wave 2** *(blocked on Wave 1 — needs the live robots.txt + the verification doc to update)*
 
@@ -155,7 +155,7 @@ Plans:
 | 2. Media Islands | 4/4 | Complete   | 2026-06-24 |
 | 3. Sharing & Booking | 2/2 | Complete   | 2026-06-25 |
 | 3.1 Day/Night Theme (inserted) | 0/? | Not planned | - |
-| 4. Test Deploy & Verification | 0/2 | Planned | - |
+| 4. Test Deploy & Verification | 1/2 | In Progress|  |
 
 ---
 
