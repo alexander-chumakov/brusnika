@@ -5,10 +5,9 @@
  * All CTAs point to the Spotify artist page; per-release deep-links are
  * deferred until the band confirms canonical URLs (mirrors site.ts convention).
  *
- * 7 releases carry a photo (dooduri / home-session / vesennee-tango /
- * live-urban / vspomni-menya / g-guitar / featured). The other 12 render as
- * themed placeholder tiles in ReleasesSection. Images are imported as ESM
- * assets so Astro's <Image> component can process and optimise them at build time.
+ * 10 releases carry a photo; the other 9 render as themed placeholder tiles
+ * in ReleasesSection. Images are imported as ESM assets so Astro's <Image>
+ * component can process and optimise them at build time.
  */
 
 import type { ImageMetadata } from 'astro';
@@ -17,8 +16,11 @@ import homeSessionImg from '../assets/images/home-session.jpg';
 import vesenneeTangoImg from '../assets/images/vesennee-tango.jpg';
 import liveUrbanImg from '../assets/images/live-urban.jpg';
 import vspomniMenyaImg from '../assets/images/vspomni-menya.jpg';
+import nauchiMenyaBytImg from '../assets/images/nauchi-menya-byt.jpg';
+import klubNadezhdImg from '../assets/images/klub-nadezhd.jpg';
+import razvlechenieImg from '../assets/images/razvlechenie.jpg';
 import gGuitarImg from '../assets/images/g-guitar.jpg';
-import featuredImg from '../assets/images/featured.jpg';
+import neodnoznachnoeImg from '../assets/images/neodnoznachnoe.jpg';
 
 export interface Release {
   year: string;
@@ -98,6 +100,8 @@ export const releases: Release[] = [
     title: 'Научи меня быть',
     eyebrow: 'сингл · 2025',
     meta: 'сингл · 2025',
+    image: nauchiMenyaBytImg,
+    imagePosition: 'center 35%',
     url: SP,
   },
   {
@@ -117,6 +121,8 @@ export const releases: Release[] = [
     title: 'Клуб Неоправданных Надежд',
     eyebrow: 'сингл · 2025',
     meta: 'сингл · 2025',
+    image: klubNadezhdImg,
+    imagePosition: 'center 22%',
     url: SP,
   },
   {
@@ -135,8 +141,8 @@ export const releases: Release[] = [
     eyebrow: 'дебютный альбом · 2024',
     meta: 'альбом · 25 октября 2024',
     desc: 'Одиннадцать песен о любви, памяти и взрослении. Тёплые гитары, синтезаторы и шорох плёнки.',
-    image: featuredImg,
-    imagePosition: 'center 42%',
+    image: neodnoznachnoeImg,
+    imagePosition: 'center 28%',
     url: SP,
   },
   {
@@ -162,6 +168,8 @@ export const releases: Release[] = [
     title: 'Развлечение',
     eyebrow: 'сингл · 2023',
     meta: 'сингл · 2023',
+    image: razvlechenieImg,
+    imagePosition: 'center 42%',
     url: SP,
   },
   {
