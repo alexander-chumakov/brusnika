@@ -5,10 +5,10 @@
  * All CTAs point to the Spotify artist page; per-release deep-links are
  * deferred until the band confirms canonical URLs (mirrors site.ts convention).
  *
- * 13 releases carry artwork (10 wide-photo slides + 3 designed-cover slides);
- * the other 6 render as themed placeholder tiles in ReleasesSection.
- * Images are imported as ESM assets so Astro's <Image> component can process
- * and optimise them at build time.
+ * All 19 releases now carry artwork: 12 wide-photo slides + 7 designed-cover
+ * slides (cover: true → shown uncropped on a blurred backdrop). No placeholder
+ * tiles remain. Images are imported as ESM assets so Astro's <Image> component
+ * can process and optimise them at build time.
  */
 
 import type { ImageMetadata } from 'astro';
@@ -25,6 +25,12 @@ import neodnoznachnoeImg from '../assets/images/neodnoznachnoe.jpg';
 import kudaLetyatMysliImg from '../assets/images/kuda-letyat-mysli.png';
 import neaktualnoeImg from '../assets/images/neaktualnoe.jpg';
 import pariImg from '../assets/images/pari.jpg';
+import beznakazannymImg from '../assets/images/beznakazannym.jpg';
+import zanavesImg from '../assets/images/zanaves.jpg';
+import oskolkiImg from '../assets/images/oskolki.jpg';
+import bozhyaKorovkaImg from '../assets/images/bozhya-korovka.jpg';
+import bosikomImg from '../assets/images/bosikom.jpg';
+import kakPoymatSebyaImg from '../assets/images/kak-poymat-sebya.jpg';
 
 export interface Release {
   year: string;
@@ -170,6 +176,8 @@ export const releases: Release[] = [
     title: 'Безнаказанным',
     eyebrow: 'сингл · 2024',
     meta: 'сингл · 2024',
+    image: beznakazannymImg,
+    cover: true,
     url: SP,
   },
   // ── 2023 ────────────────────────────────────────────────
@@ -201,6 +209,8 @@ export const releases: Release[] = [
     title: 'Занавес',
     eyebrow: 'сингл · 2022',
     meta: 'сингл · 2022',
+    image: zanavesImg,
+    imagePosition: 'center 25%',
     url: SP,
   },
   {
@@ -209,6 +219,8 @@ export const releases: Release[] = [
     title: 'Осколки',
     eyebrow: 'сингл · 2022',
     meta: 'сингл · 2022',
+    image: oskolkiImg,
+    cover: true,
     url: SP,
   },
   {
@@ -217,6 +229,8 @@ export const releases: Release[] = [
     title: 'Божья Коровка',
     eyebrow: 'сингл · 2022',
     meta: 'сингл · 2022',
+    image: bozhyaKorovkaImg,
+    cover: true,
     url: SP,
   },
   // ── 2021 ────────────────────────────────────────────────
@@ -226,6 +240,8 @@ export const releases: Release[] = [
     title: 'босиком',
     eyebrow: 'EP · 2021',
     meta: 'EP · 2021',
+    image: bosikomImg,
+    cover: true,
     url: SP,
   },
   {
@@ -234,6 +250,8 @@ export const releases: Release[] = [
     title: 'как поймать себя (?)',
     eyebrow: 'мини-альбом · 2021',
     meta: 'мини-альбом · 2021',
+    image: kakPoymatSebyaImg,
+    imagePosition: 'center 25%',
     url: SP,
   },
 ];
