@@ -3,7 +3,7 @@
  * index.astro — Home page
  *
  * Document order matches index.html exactly:
- *   Nav → Hero → Marquee → FeaturedAlbum
+ *   Nav → Hero → Marquee → ReleasesSection (carousel)
  *   → [Plan 03: TracksSection, ShowsSection, GallerySection]
  *   → About → Sing
  *   → [Plan 04: Footer + BookingModal markup]
@@ -18,7 +18,7 @@ import Layout from '../layouts/Layout.astro';
 import Nav from '../components/Nav.astro';
 import HeroSection from '../components/HeroSection.astro';
 import MarqueeSection from '../components/MarqueeSection.astro';
-import FeaturedAlbumSection from '../components/FeaturedAlbumSection.astro';
+import ReleasesSection from '../components/ReleasesSection.astro';
 import TracksSection from '../components/TracksSection.astro';
 import AudioPlayer from '../components/AudioPlayer.astro';
 import VideoSection from '../components/VideoSection.astro';
@@ -33,7 +33,7 @@ import FooterSection from '../components/FooterSection.astro';
   <Nav />
   <HeroSection />
   <MarqueeSection />
-  <FeaturedAlbumSection />
+  <ReleasesSection />
   <TracksSection />
   <AudioPlayer client:idle />
   <VideoSection client:visible />
