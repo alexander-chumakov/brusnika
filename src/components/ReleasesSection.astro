@@ -288,30 +288,14 @@ const yearCountsMap: Record<string, number> = Object.fromEntries(
       // Progress fill segments. Uses a CSS transition (not a @keyframes
       // animation) so the white fill is reliable; the width is always set to
       // a concrete value, so worst case the active bar is solid white.
+      // Active + completed segments are SOLID white (always clearly visible);
+      // upcoming segments stay empty. (No grow-from-0 animation — that left the
+      // active bar invisible right when a slide appeared.)
       const segs = Array.from(progressEl.querySelectorAll('.rel-seg-fill'));
       segs.forEach(function(seg, i) {
         seg.style.animation = 'none';
-        if (i < slide) {
-          // completed — solid white
-          seg.style.transition = 'none';
-          seg.style.width = '100%';
-        } else if (i === slide) {
-          if (reduced) {
-            seg.style.transition = 'none';
-            seg.style.width = '100%';
-          } else {
-            // active — grow 0 → 100% over the autoplay interval
-            seg.style.transition = 'none';
-            seg.style.width = '0%';
-            void seg.offsetWidth; // reflow so the grow restarts each slide
-            seg.style.transition = 'width 6000ms linear';
-            seg.style.width = '100%';
-          }
-        } else {
-          // upcoming — empty
-          seg.style.transition = 'none';
-          seg.style.width = '0%';
-        }
+        seg.style.transition = 'none';
+        seg.style.width = (i <= slide) ? '100%' : '0%';
       });
     }
 
