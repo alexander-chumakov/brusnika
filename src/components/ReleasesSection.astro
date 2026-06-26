@@ -698,17 +698,19 @@ const yearCountsMap: Record<string, number> = Object.fromEntries(
     z-index: 3;
   }
 
-  .rel-seg {
+  /* :global() so these apply to the segments that JS (buildDots) creates via
+     createElement — those elements don't carry Astro's scope attribute, so a
+     plain scoped `.rel-seg` rule would NOT style them (→ invisible slider). */
+  .rel-progress :global(.rel-seg) {
     flex: 1;
     height: 6px;
     background: rgba(255, 255, 255, 0.32);
     border-radius: 3px;
     overflow: hidden;
-    /* dark halo so the white bars read on any photo */
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
   }
 
-  .rel-seg-fill {
+  .rel-progress :global(.rel-seg-fill) {
     height: 100%;
     background: rgba(255, 255, 255, 0.92);
     width: 0%;
