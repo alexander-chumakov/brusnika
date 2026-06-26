@@ -181,8 +181,13 @@ const yearCountsMap: Record<string, number> = Object.fromEntries(
         </div>
       ))}
 
-      <!-- Progress bar container — rebuilt by JS per active year's item count -->
-      <div id="rel-progress" class="rel-progress" aria-hidden="true"></div>
+      <!-- Progress bar — server-rendered for the default year so it always
+           exists in the HTML; JS rebuilds it on year switch / animates fills. -->
+      <div id="rel-progress" class="rel-progress" aria-hidden="true">
+        {byYear[0].items.map((_item, i) => (
+          <div class="rel-seg"><div class="rel-seg-fill" data-seg={i}></div></div>
+        ))}
+      </div>
 
       <!-- Prev / next arrows -->
       <div class="rel-arrows">
