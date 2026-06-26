@@ -1,42 +1,65 @@
 /**
- * releases.ts — Full discography data for внимание брусника!
+ * releases.ts — Featured releases for the hero slideshow in ReleasesSection.
  *
- * All 18 releases in chronological-reverse order (newest first).
- * Per-release real streaming/store links are deferred — every entry
- * currently points to the Spotify artist page.
- * Deferred: replace url values with per-release Spotify/Apple/Яндекс
- * links when available (mirrors site.ts deferral convention).
+ * Exactly 3 slides (one per year), newest first.
+ * All CTAs point to the Spotify artist page; per-release deep-links are
+ * deferred until the band confirms canonical URLs (mirrors site.ts convention).
+ *
+ * Images are imported as ESM assets so Astro's <Image> component can
+ * process and optimise them at build time.
  */
 
-export interface Release {
-  type: string;    // сингл | EP | live | альбом | мини-альбом
-  title: string;
+import type { ImageMetadata } from 'astro';
+import bandTableImg from '../assets/images/band-table.jpg';
+import gGuitarImg from '../assets/images/g-guitar.jpg';
+import featuredImg from '../assets/images/featured.jpg';
+
+export interface ReleaseSlide {
   year: string;
-  meta: string;    // '' when none
-  live?: boolean;  // ● live badge
-  cover?: boolean; // true ONLY for «Неоднозначное» → maps to featured.jpg
+  eyebrow: string;
+  title: string;
+  desc: string;
+  ctaLabel: string;
+  meta: string;
+  image: ImageMetadata;
+  imagePosition: string;
   url: string;
 }
 
 const SP = 'https://open.spotify.com/artist/11epkfgLUMWmXsTbgfPu4B';
 
-export const releases: Release[] = [
-  { type: 'сингл',       title: 'Доодури',                   year: '2026', meta: 'новый сингл · 15 мая',        url: SP },
-  { type: 'сингл',       title: 'Весеннее танго',             year: '2026', meta: 'кавер на Анну Герман',        url: SP },
-  { type: 'live',        title: 'Home Session',               year: '2026', meta: 'акустический live · апрель',  live: true, url: SP },
-  { type: 'EP',          title: 'Преисполненный',             year: '2025', meta: 'EP + Deluxe',                 url: SP },
-  { type: 'сингл',       title: 'Вспомни меня',               year: '2025', meta: 'с YERKATT',                  url: SP },
-  { type: 'сингл',       title: 'Клуб Неоправданных Надежд', year: '2025', meta: '',                            url: SP },
-  { type: 'сингл',       title: 'Научи меня быть',            year: '2025', meta: '',                            url: SP },
-  { type: 'live',        title: 'Live Урбан 2024',            year: '2025', meta: 'концертный EP',               live: true, url: SP },
-  { type: 'альбом',      title: 'Неоднозначное',              year: '2024', meta: '11 песен · дебют',            cover: true, url: SP },
-  { type: 'EP',          title: 'неактуальное',               year: '2024', meta: 'мини-альбом',                 url: SP },
-  { type: 'сингл',       title: 'Безнаказанным',              year: '2024', meta: '',                            url: SP },
-  { type: 'сингл',       title: 'Развлечение',                year: '2023', meta: '',                            url: SP },
-  { type: 'сингл',       title: 'Пари',                       year: '2023', meta: '',                            url: SP },
-  { type: 'сингл',       title: 'Занавес',                    year: '2022', meta: '',                            url: SP },
-  { type: 'сингл',       title: 'Осколки',                    year: '2022', meta: '',                            url: SP },
-  { type: 'сингл',       title: 'Божья Коровка',              year: '2022', meta: '',                            url: SP },
-  { type: 'EP',          title: 'босиком',                    year: '2021', meta: '',                            url: SP },
-  { type: 'мини-альбом', title: 'как поймать себя (?)',       year: '2021', meta: '',                            url: SP },
+export const releaseSlides: ReleaseSlide[] = [
+  {
+    year: '2026',
+    eyebrow: 'новый сингл · 2026',
+    title: 'Доодури',
+    desc: 'Самый свежий релиз — тёплый и негромкий, как поздняя весна.',
+    ctaLabel: '▶ слушать',
+    meta: 'сингл · 15 мая 2026',
+    image: bandTableImg,
+    imagePosition: 'center 32%',
+    url: SP,
+  },
+  {
+    year: '2025',
+    eyebrow: 'EP + Deluxe · 2025',
+    title: 'Преисполненный',
+    desc: 'Песни о свободе и взрослении — с расширенным Deluxe-изданием.',
+    ctaLabel: '▶ слушать',
+    meta: 'EP · 24 октября 2025',
+    image: gGuitarImg,
+    imagePosition: 'center 42%',
+    url: SP,
+  },
+  {
+    year: '2024',
+    eyebrow: 'дебютный альбом · 2024',
+    title: 'Неоднозначное',
+    desc: 'Одиннадцать песен о любви, памяти и взрослении. Тёплые гитары, синтезаторы и шорох плёнки.',
+    ctaLabel: '▶ слушать целиком',
+    meta: '11 треков · 38 мин',
+    image: featuredImg,
+    imagePosition: 'center 42%',
+    url: SP,
+  },
 ];
