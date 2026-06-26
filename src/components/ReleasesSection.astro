@@ -1,21 +1,33 @@
 ---
 /**
- * ReleasesSection.astro — Releases hero slideshow
+ * ReleasesSection.astro — Full-discography releases hero slideshow with
+ * strict per-year filtering.
  *
  * Canonical design: claude_design_releases/_x/main.dc.html (lines 199–276, 614–642).
- * 3 featured slides (2026 / 2025 / 2024) with:
- *   - Year-selector dropdown (Prata italic, big pink year label + ▾ caret)
- *   - Full-bleed hero banner with photo + left-to-right gradient + content block
- *   - 3-segment progress bars (fillbar animation, 6 s/slide)
- *   - Prev/next arrows (photo-overlay style)
- *   - Autoplay (6 s), pause on hover, restart on manual nav
- *   - prefers-reduced-motion safe (no autoplay, no fill animation)
+ * 19 releases across 6 years; only 3 carry photos — the rest render as
+ * themed striped placeholder tiles (--rel-a / --rel-b / --rel-fg tokens
+ * from global.css, no redefinition here).
+ *
+ * Year selector is a STRICT FILTER:
+ *   - Picking a year shows ONLY that year's releases.
+ *   - Prev/next arrows wrap modulo that year's item count (never cross years).
+ *   - Autoplay (6 s) runs within the active year and pauses on hover.
+ *   - prefers-reduced-motion: no autoplay, no fill animation; arrows still work.
  *
  * Section id="music" so Nav «релизы» → #music anchor still works.
  * TracksSection (singles list) renders directly below in index.astro — do NOT touch.
  */
 import { Image } from 'astro:assets';
-import { releaseSlides } from '../data/releases.ts';
+import { releases } from '../data/releases.ts';
+
+const years = [...new Set(releases.map((r) => r.year))].sort().reverse();
+const byYear = years.map((y) => ({ year: y, items: releases.filter((r) => r.year === y) }));
+const defaultYear = years[0];
+
+// Plain object (JSON-serialisable) for define:vars injection into the inline script
+const yearCountsMap: Record<string, number> = Object.fromEntries(
+  byYear.map((g) => [g.year, g.items.length])
+);
 ---
 
 <section id="music" class="releases-section">
@@ -33,19 +45,20 @@ import { releaseSlides } from '../data/releases.ts';
           aria-expanded="false"
           aria-label="Выбрать год"
         >
-          <span id="rel-year-label" class="rel-year-label">2026</span>
+          <span id="rel-year-label" class="rel-year-label">{defaultYear}</span>
           <span id="rel-caret" class="rel-caret" aria-hidden="true">▾</span>
         </button>
 
+        <!-- Dropdown lists ALL 6 years; JS highlights the active one -->
         <div id="rel-year-menu" class="rel-year-menu" role="listbox" aria-label="Год релиза">
-          {releaseSlides.map((s, i) => (
+          {years.map((year, i) => (
             <button
               class={`rel-year-opt${i === 0 ? ' active' : ''}`}
-              data-i={String(i)}
+              data-year={year}
               role="option"
               aria-selected={i === 0 ? 'true' : 'false'}
             >
-              {s.year}
+              {year}
             </button>
           ))}
         </div>
@@ -55,48 +68,75 @@ import { releaseSlides } from '../data/releases.ts';
     <!-- ── Hero banner ── -->
     <div id="rel-banner" data-reveal class="rel-banner">
 
-      <!-- Slide track -->
-      <div id="rel-track" class="rel-track">
-        {releaseSlides.map((s) => (
-          <div class="rel-slide">
-            <Image
-              src={s.image}
-              alt={`внимание брусника! — ${s.title}`}
-              widths={[768, 1180]}
-              sizes="(max-width: 860px) 100vw, 1180px"
-              format="webp"
-              quality={85}
-              loading="lazy"
-              class="rel-slide-img"
-              style={`object-position: ${s.imagePosition}`}
-            />
-            <div class="rel-slide-grad" aria-hidden="true"></div>
-            <div class="rel-slide-content">
-              <span class="rel-slide-eyebrow">{s.eyebrow}</span>
-              <h2 class="rel-slide-title">{s.title}</h2>
-              <p class="rel-slide-desc">{s.desc}</p>
-              <div class="rel-slide-actions">
-                <a
-                  href={s.url}
-                  target="_blank"
-                  rel="noopener"
-                  class="rel-slide-cta"
-                >{s.ctaLabel}</a>
-                <span class="rel-slide-meta">{s.meta}</span>
+      <!-- One year-panel per year; only the first (active) is displayed initially -->
+      {byYear.map(({ year, items }, yi) => (
+        <div
+          class="rel-year-panel"
+          data-year={year}
+          style={yi !== 0 ? 'display:none' : undefined}
+        >
+          <div class="rel-track">
+            {items.map((item) => (
+              <div class="rel-slide">
+                {item.image ? (
+                  <Fragment>
+                    <Image
+                      src={item.image}
+                      alt={`внимание брусника! — ${item.title}`}
+                      widths={[768, 1180]}
+                      sizes="(max-width: 860px) 100vw, 1180px"
+                      format="webp"
+                      quality={85}
+                      loading="lazy"
+                      class="rel-slide-img"
+                      style={`object-position: ${item.imagePosition ?? 'center'}`}
+                    />
+                    <div class="rel-slide-grad" aria-hidden="true"></div>
+                    <div class="rel-slide-content">
+                      <span class="rel-slide-eyebrow">{item.eyebrow}</span>
+                      <h2 class="rel-slide-title">{item.title}</h2>
+                      {item.desc && <p class="rel-slide-desc">{item.desc}</p>}
+                      <div class="rel-slide-actions">
+                        <a
+                          href={item.url}
+                          target="_blank"
+                          rel="noopener"
+                          class="rel-slide-cta"
+                        >▶ слушать</a>
+                        <span class="rel-slide-meta">{item.meta}</span>
+                      </div>
+                    </div>
+                  </Fragment>
+                ) : (
+                  <Fragment>
+                    <!-- Themed striped tile — readable in both day + night via CSS tokens -->
+                    <div class="rel-slide-placeholder" aria-hidden="true">
+                      <div class="rel-slide-placeholder-dot"></div>
+                    </div>
+                    <div class="rel-slide-content rel-slide-content--placeholder">
+                      <span class="rel-slide-eyebrow">{item.eyebrow}</span>
+                      <h2 class="rel-slide-title">{item.title}</h2>
+                      {item.desc && <p class="rel-slide-desc">{item.desc}</p>}
+                      <div class="rel-slide-actions">
+                        <a
+                          href={item.url}
+                          target="_blank"
+                          rel="noopener"
+                          class="rel-slide-cta"
+                        >▶ слушать</a>
+                        <span class="rel-slide-meta">{item.meta}</span>
+                      </div>
+                    </div>
+                  </Fragment>
+                )}
               </div>
-            </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
 
-      <!-- Progress bars (3 segments) -->
-      <div class="rel-progress" aria-hidden="true">
-        {releaseSlides.map((_, i) => (
-          <div class="rel-seg">
-            <div class="rel-seg-fill" data-seg={String(i)}></div>
-          </div>
-        ))}
-      </div>
+      <!-- Progress bar container — rebuilt by JS per active year's item count -->
+      <div id="rel-progress" class="rel-progress" aria-hidden="true"></div>
 
       <!-- Prev / next arrows -->
       <div class="rel-arrows">
@@ -111,139 +151,190 @@ import { releaseSlides } from '../data/releases.ts';
   <div id="rel-overlay" class="rel-overlay" aria-hidden="true"></div>
 </section>
 
-<!-- ── Slideshow state machine ── -->
-<script>
-  const SLIDES = 3;
-  const years  = ['2026', '2025', '2024'];
+<!-- ── Slideshow state machine ──
+     define:vars makes this an inline script; no TypeScript syntax allowed.
+     yearsArr and yearCountsMap are injected as const declarations by Astro.
+-->
+<script define:vars={{ yearsArr: years, yearCountsMap }}>
+  // yearsArr: string[]  e.g. ["2026","2025","2024","2023","2022","2021"]
+  // yearCountsMap: Record<string,number>  e.g. {"2026":3,"2025":6,...}
 
-  // Element refs — guard every querySelector for SSR/null safety
-  const track   = document.getElementById('rel-track')     as HTMLElement | null;
-  const banner  = document.getElementById('rel-banner')    as HTMLElement | null;
-  const yearBtn = document.getElementById('rel-year-btn')  as HTMLButtonElement | null;
-  const yearLbl = document.getElementById('rel-year-label') as HTMLElement | null;
-  const caretEl = document.getElementById('rel-caret')     as HTMLElement | null;
-  const yearMenu= document.getElementById('rel-year-menu') as HTMLElement | null;
-  const overlay = document.getElementById('rel-overlay')   as HTMLElement | null;
-  const prevBtn = document.getElementById('rel-prev')      as HTMLButtonElement | null;
-  const nextBtn = document.getElementById('rel-next')      as HTMLButtonElement | null;
+  const banner     = document.getElementById('rel-banner');
+  const yearBtn    = document.getElementById('rel-year-btn');
+  const yearLbl    = document.getElementById('rel-year-label');
+  const caretEl    = document.getElementById('rel-caret');
+  const yearMenu   = document.getElementById('rel-year-menu');
+  const overlay    = document.getElementById('rel-overlay');
+  const prevBtn    = document.getElementById('rel-prev');
+  const nextBtn    = document.getElementById('rel-next');
+  const progressEl = document.getElementById('rel-progress');
 
-  if (!track || !yearBtn || !yearLbl || !yearMenu) {
+  if (!banner || !yearBtn || !yearLbl || !yearMenu || !progressEl) {
     // Component not present on this page — nothing to do
-    // (guards against future conditional rendering)
   } else {
-    const yearOpts = Array.from(yearMenu.querySelectorAll<HTMLElement>('.rel-year-opt'));
-    const segs     = Array.from(document.querySelectorAll<HTMLElement>('.rel-seg-fill'));
+    const yearOpts = Array.from(yearMenu.querySelectorAll('.rel-year-opt'));
+    const reduced  = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    let current = 0;
-    let timer: number | null = null;
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let activeYearIdx = 0;
+    let slide = 0;
+    let timer = null;
 
-    // ── render: apply current state to DOM ──
-    function render(): void {
-      // Move slide track
-      track!.style.transform = `translateX(-${current * 100}%)`;
+    // ── helpers ──────────────────────────────────────────────────────────
+    function activeYear()  { return yearsArr[activeYearIdx]; }
+    function activeCount() { return yearCountsMap[activeYear()] || 1; }
 
-      // Sync year label
-      yearLbl!.textContent = years[current];
+    function activePanel() {
+      return banner.querySelector('.rel-year-panel[data-year="' + activeYear() + '"]');
+    }
 
-      // Sync dropdown option styling + ARIA
-      yearOpts.forEach((opt, idx) => {
-        const active = idx === current;
-        opt.setAttribute('aria-selected', active ? 'true' : 'false');
-        opt.classList.toggle('active', active);
+    function activeTrack() {
+      const panel = activePanel();
+      return panel ? panel.querySelector('.rel-track') : null;
+    }
+
+    // ── build progress dot segments matching the active year's item count ─
+    function buildDots() {
+      const count = activeCount();
+      progressEl.innerHTML = '';
+      if (count <= 1) {
+        progressEl.style.visibility = 'hidden';
+        return;
+      }
+      progressEl.style.visibility = '';
+      for (let i = 0; i < count; i++) {
+        const seg  = document.createElement('div');
+        seg.className = 'rel-seg';
+        const fill = document.createElement('div');
+        fill.className = 'rel-seg-fill';
+        fill.dataset.seg = String(i);
+        seg.appendChild(fill);
+        progressEl.appendChild(seg);
+      }
+    }
+
+    // ── render: push current state into the DOM ───────────────────────────
+    function render() {
+      // Translate the active year's track to the current slide
+      const track = activeTrack();
+      if (track) track.style.transform = 'translateX(-' + (slide * 100) + '%)';
+
+      // Update year label in the selector button
+      yearLbl.textContent = activeYear();
+
+      // Sync dropdown option highlights + ARIA
+      yearOpts.forEach(function(opt) {
+        const isActive = opt.dataset.year === activeYear();
+        opt.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        opt.classList.toggle('active', isActive);
       });
 
-      // Sync progress segments
-      segs.forEach((seg, idx) => {
+      // Animate progress fill segments
+      const segs = Array.from(progressEl.querySelectorAll('.rel-seg-fill'));
+      segs.forEach(function(seg, i) {
         if (reduced) {
           seg.style.animation = 'none';
-          seg.style.width = idx <= current ? '100%' : '0%';
+          seg.style.width = i <= slide ? '100%' : '0%';
           return;
         }
-        if (idx < current) {
-          // Already past — fill fully
+        if (i < slide) {
           seg.style.animation = 'none';
           seg.style.width = '100%';
-        } else if (idx === current) {
-          // Active — restart fill animation
+        } else if (i === slide) {
           seg.style.animation = 'none';
-          void seg.offsetWidth; // force reflow to retrigger
+          void seg.offsetWidth; // force reflow to restart the animation
           seg.style.width = '';
           seg.style.animation = 'fillbar 6000ms linear forwards';
         } else {
-          // Upcoming — empty
           seg.style.animation = 'none';
           seg.style.width = '0%';
         }
       });
     }
 
-    // ── autoplay ──
-    function startAutoplay(): void {
+    // ── switch active year (STRICT filter — resets slide to 0) ───────────
+    function switchYear(idx) {
+      // Hide the current year's panel
+      const oldPanel = activePanel();
+      if (oldPanel) oldPanel.style.display = 'none';
+
+      activeYearIdx = idx;
+      slide = 0;
+
+      // Show the new year's panel
+      const newPanel = activePanel();
+      if (newPanel) newPanel.style.display = '';
+
+      buildDots();
+      render();
+      startAutoplay();
+    }
+
+    // ── autoplay (within the active year only) ────────────────────────────
+    function startAutoplay() {
       if (reduced) return;
+      if (activeCount() <= 1) return; // single-item year — no autoplay
       stopAutoplay();
-      timer = window.setInterval(() => {
-        current = (current + 1) % SLIDES;
+      timer = window.setInterval(function() {
+        slide = (slide + 1) % activeCount();
         render();
       }, 6000);
     }
 
-    function stopAutoplay(): void {
+    function stopAutoplay() {
       if (timer !== null) { window.clearInterval(timer); timer = null; }
     }
 
     // Pause on banner hover; resume on leave
-    banner?.addEventListener('mouseenter', stopAutoplay);
-    banner?.addEventListener('mouseleave', startAutoplay);
+    banner.addEventListener('mouseenter', stopAutoplay);
+    banner.addEventListener('mouseleave', startAutoplay);
 
-    // ── arrows ──
-    prevBtn?.addEventListener('click', () => {
-      current = ((current - 1) + SLIDES) % SLIDES;
+    // ── prev/next arrows (stay within active year) ────────────────────────
+    prevBtn && prevBtn.addEventListener('click', function() {
+      const count = activeCount();
+      slide = ((slide - 1) + count) % count;
       render();
       startAutoplay();
     });
 
-    nextBtn?.addEventListener('click', () => {
-      current = (current + 1) % SLIDES;
+    nextBtn && nextBtn.addEventListener('click', function() {
+      slide = (slide + 1) % activeCount();
       render();
       startAutoplay();
     });
 
-    // ── year dropdown ──
-    function openMenu(): void {
-      yearMenu!.classList.add('open');
-      caretEl?.classList.add('open');
-      yearBtn!.setAttribute('aria-expanded', 'true');
-      overlay?.classList.add('active');
+    // ── year dropdown ─────────────────────────────────────────────────────
+    function openMenu() {
+      yearMenu.classList.add('open');
+      if (caretEl) caretEl.classList.add('open');
+      yearBtn.setAttribute('aria-expanded', 'true');
+      if (overlay) overlay.classList.add('active');
     }
 
-    function closeMenu(): void {
-      yearMenu!.classList.remove('open');
-      caretEl?.classList.remove('open');
-      yearBtn!.setAttribute('aria-expanded', 'false');
-      overlay?.classList.remove('active');
+    function closeMenu() {
+      yearMenu.classList.remove('open');
+      if (caretEl) caretEl.classList.remove('open');
+      yearBtn.setAttribute('aria-expanded', 'false');
+      if (overlay) overlay.classList.remove('active');
     }
 
-    yearBtn.addEventListener('click', (e) => {
+    yearBtn.addEventListener('click', function(e) {
       e.stopPropagation();
-      yearMenu!.classList.contains('open') ? closeMenu() : openMenu();
+      yearMenu.classList.contains('open') ? closeMenu() : openMenu();
     });
 
-    yearOpts.forEach((opt) => {
-      opt.addEventListener('click', () => {
-        const idx = parseInt(opt.dataset.i ?? '0', 10);
-        if (!isNaN(idx) && idx >= 0 && idx < SLIDES) {
-          current = idx;
-        }
+    yearOpts.forEach(function(opt) {
+      opt.addEventListener('click', function() {
+        const yr  = opt.dataset.year || '';
+        const idx = yearsArr.indexOf(yr);
+        if (idx !== -1) switchYear(idx);
         closeMenu();
-        render();
-        startAutoplay();
       });
     });
 
-    overlay?.addEventListener('click', closeMenu);
+    if (overlay) overlay.addEventListener('click', closeMenu);
 
-    // ── initial paint ──
+    // ── initial paint ─────────────────────────────────────────────────────
+    buildDots();
     render();
     startAutoplay();
   }
@@ -381,7 +472,13 @@ import { releaseSlides } from '../data/releases.ts';
     margin-bottom: 58px;
   }
 
-  /* ── Slide track ── */
+  /* ── Year panel wrapper (one per year; only the active one is visible) ── */
+  .rel-year-panel {
+    width: 100%;
+    overflow: hidden;
+  }
+
+  /* ── Slide track (horizontal flex strip inside each year panel) ── */
   .rel-track {
     display: flex;
     width: 100%;
@@ -408,7 +505,7 @@ import { releaseSlides } from '../data/releases.ts';
     display: block;
   }
 
-  /* Left-to-right dark gradient overlay */
+  /* Left-to-right dark gradient overlay (photo slides only) */
   .rel-slide-grad {
     position: absolute;
     inset: 0;
@@ -421,7 +518,36 @@ import { releaseSlides } from '../data/releases.ts';
     z-index: 1;
   }
 
-  /* Content block — left side of slide, above gradient */
+  /* ── Themed striped placeholder tile (no-photo releases) ── */
+  .rel-slide-placeholder {
+    position: absolute;
+    inset: 0;
+    /* Diagonal stripe: --rel-a / --rel-b from global.css (themed) */
+    background:
+      radial-gradient(ellipse at 30% 50%, rgba(243, 169, 189, 0.07) 0%, transparent 62%),
+      repeating-linear-gradient(
+        135deg,
+        var(--rel-a) 0px,
+        var(--rel-a) 15px,
+        var(--rel-b) 15px,
+        var(--rel-b) 30px
+      );
+    z-index: 0;
+  }
+
+  /* Small brand-pink dot accent — top-left corner of placeholder */
+  .rel-slide-placeholder-dot {
+    position: absolute;
+    top: clamp(20px, 3vw, 28px);
+    left: clamp(20px, 3vw, 28px);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    opacity: 0.75;
+  }
+
+  /* ── Content block (shared by photo + placeholder slides) ── */
   .rel-slide-content {
     position: relative;
     z-index: 2;
@@ -433,6 +559,7 @@ import { releaseSlides } from '../data/releases.ts';
     max-width: 600px;
   }
 
+  /* Eyebrow — photo slides use hardcoded #f3a9bd (identical to --color-accent) */
   .rel-slide-eyebrow {
     display: block;
     font-family: var(--font-mono);
@@ -443,6 +570,7 @@ import { releaseSlides } from '../data/releases.ts';
     margin-bottom: 12px;
   }
 
+  /* Title — photo slides: white; placeholder slides: themed via modifier below */
   .rel-slide-title {
     font-family: var(--font-serif);
     font-size: clamp(36px, 6vw, 76px);
@@ -489,6 +617,21 @@ import { releaseSlides } from '../data/releases.ts';
     font-size: 13px;
     letter-spacing: 0.5px;
     color: #cfcbc6;
+  }
+
+  /* ── Placeholder content modifier — theme-aware colors ──
+     Overrides the hardcoded white values so the tile reads correctly
+     in both night (dark stripes) and day (warm cream stripes).       */
+  .rel-slide-content--placeholder .rel-slide-title {
+    color: var(--rel-fg);       /* night: #efe9e0 (off-white); day: #6a5a48 (dark brown) */
+  }
+
+  .rel-slide-content--placeholder .rel-slide-desc {
+    color: var(--color-text-muted);
+  }
+
+  .rel-slide-content--placeholder .rel-slide-meta {
+    color: var(--color-text-dim);
   }
 
   /* ── Progress bars ── */
@@ -575,12 +718,10 @@ import { releaseSlides } from '../data/releases.ts';
       margin-bottom: 40px;
     }
 
-    /* Scale down the slide description on narrow viewports */
     .rel-slide-desc {
       font-size: 14px;
     }
 
-    /* On very small screens (< 480px) hide description to keep banner tidy */
     @media (max-width: 480px) {
       .rel-slide-desc {
         display: none;
