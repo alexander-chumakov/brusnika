@@ -121,6 +121,7 @@ None currently.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260626-j7a | Replace featured-album banner with Дискография releases carousel | 2026-06-26 | 936e782 | [260626-j7a-replace-featured-album-banner-with-relea](./quick/260626-j7a-replace-featured-album-banner-with-relea/) |
+| 260626-krg | Redo releases as hero slideshow with year selector (canonical design; supersedes 260626-j7a carousel) | 2026-06-26 | 2126035 | [260626-krg-redo-releases-section-as-hero-slideshow-](./quick/260626-krg-redo-releases-section-as-hero-slideshow-/) |
 
 ### Todos
 
