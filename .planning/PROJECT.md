@@ -66,12 +66,13 @@ A visitor can experience the band's music and world (listen, watch, look) and ta
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Build v1 in Astro (not Next.js or static HTML) | Media-heavy mostly-static site; ships minimal JS, islands for interactive bits, clean v2 CMS path | — Pending |
-| Self-host audio + video | Band preference; full control over media | — Pending (storage approach TBD in research) |
-| Booking form delivers via Telegram bot | Fits the Russian audience; instant, no inbox to monitor | — Pending |
-| Social sharing via Web Share API + share links | Only realistic web mechanism for sharing to stories/feeds | — Pending |
-| Deploy noindex for pre-launch testing | Test privately before public launch | — Pending |
-| Defer CMS/admin to v2 | Ship the experience first; decide CMS once content patterns are known | — Pending |
+| Build v1 in Astro (not Next.js or static HTML) | Media-heavy mostly-static site; ships minimal JS, islands for interactive bits, clean v2 CMS path | ✅ Validated — v1 built & deployed in Astro (Phase 4 test deploy) |
+| Self-host audio + video | Band preference; full control over media | ✅ Validated — media on Vercel Blob/CDN; range/seek confirmed (Phase 4, SC3 server) |
+| Booking form delivers via Telegram bot | Fits the Russian audience; instant, no inbox to monitor | ✅ Validated — live submission reached band's Telegram (Phase 4, SC5) |
+| Social sharing via Web Share API + share links | Only realistic web mechanism for sharing to stories/feeds | ✅ Validated — share buttons + TG/VK fallbacks present on deploy (Phase 4, SHARE) |
+| Deploy noindex for pre-launch testing | Test privately before public launch | ✅ Validated — noindex meta + robots.txt disallow confirmed on live test deploy (Phase 4, SC1) |
+| Self-host fonts (no Google Fonts) | Google Fonts unreliable/blocked for Russian ISPs | ✅ Validated — zero Google Fonts requests; fonts served from /_astro (Phase 4, SC2) |
+| Defer CMS/admin to v2 | Ship the experience first; decide CMS once content patterns are known | — Pending (v2) |
 
 ## Evolution
 
@@ -91,4 +92,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-24 after initialization*
+*Last updated: 2026-06-26 — Phase 4 (Test Deploy & Verification) complete; v1 milestone verified (5/5 success criteria) as a private noindex test build. Public launch deferred to a future Launch milestone.*
