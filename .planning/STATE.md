@@ -123,6 +123,7 @@ None currently.
 | 260626-j7a | Replace featured-album banner with Дискография releases carousel | 2026-06-26 | 936e782 | [260626-j7a-replace-featured-album-banner-with-relea](./quick/260626-j7a-replace-featured-album-banner-with-relea/) |
 | 260626-krg | Redo releases as hero slideshow with year selector (canonical design; supersedes 260626-j7a carousel) | 2026-06-26 | 2126035 | [260626-krg-redo-releases-section-as-hero-slideshow-](./quick/260626-krg-redo-releases-section-as-hero-slideshow-/) |
 | fast | Serve real berry favicon.ico + bump cache version (fixes stale Astro tab icon) | 2026-06-26 | 40e1439 | — (inline /gsd-fast) |
+| 260626-ld1 | Full 19-release discography (2021–2026) in releases section; year selector strictly filters by year | 2026-06-26 | b1cb058 | [260626-ld1-full-discography-in-releases-section-yea](./quick/260626-ld1-full-discography-in-releases-section-yea/) |
 
 ### Todos
 
