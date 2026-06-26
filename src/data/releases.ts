@@ -5,14 +5,15 @@
  * All CTAs point to the Spotify artist page; per-release deep-links are
  * deferred until the band confirms canonical URLs (mirrors site.ts convention).
  *
- * Only 3 releases carry a photo (band-table.jpg / g-guitar.jpg / featured.jpg).
- * The other 16 render as themed placeholder tiles in ReleasesSection.
- * Images are imported as ESM assets so Astro's <Image> component can
- * process and optimise them at build time.
+ * 4 releases carry a photo (dooduri.jpg / home-session.jpg / g-guitar.jpg /
+ * featured.jpg). The other 15 render as themed placeholder tiles in
+ * ReleasesSection. Images are imported as ESM assets so Astro's <Image>
+ * component can process and optimise them at build time.
  */
 
 import type { ImageMetadata } from 'astro';
-import bandTableImg from '../assets/images/band-table.jpg';
+import dooduriImg from '../assets/images/dooduri.jpg';
+import homeSessionImg from '../assets/images/home-session.jpg';
 import gGuitarImg from '../assets/images/g-guitar.jpg';
 import featuredImg from '../assets/images/featured.jpg';
 
@@ -39,8 +40,8 @@ export const releases: Release[] = [
     eyebrow: 'новый сингл · 2026',
     meta: 'сингл · 15 мая 2026',
     desc: 'Самый свежий релиз — тёплый и негромкий, как поздняя весна.',
-    image: bandTableImg,
-    imagePosition: 'center 32%',
+    image: dooduriImg,
+    imagePosition: 'center 30%',
     url: SP,
   },
   {
@@ -57,6 +58,9 @@ export const releases: Release[] = [
     title: 'Home Session Live',
     eyebrow: 'live · 2026',
     meta: 'акустический live · апрель 2026',
+    desc: 'Живая акустическая сессия — весь состав в одной комнате.',
+    image: homeSessionImg,
+    imagePosition: 'center 45%',
     url: SP,
   },
   // ── 2025 ────────────────────────────────────────────────
