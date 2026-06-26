@@ -624,6 +624,11 @@ const yearCountsMap: Record<string, number> = Object.fromEntries(
     line-height: 0.98;
     color: #fff;
     margin: 0 0 16px;
+    /* Long single words (e.g. «Безнаказанным») must wrap, not overflow the
+       flex column and slide under the cover square. */
+    overflow-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
   }
 
   .rel-slide-desc {
@@ -808,6 +813,13 @@ const yearCountsMap: Record<string, number> = Object.fromEntries(
   .rel-cover-text .rel-slide-desc {
     color: #d8d4cf;
     max-width: 420px;
+  }
+
+  /* Cover mode shares its row width with the square, so the text column is
+     narrower than a full-bleed photo slide — use a smaller title so long
+     single words fit on one line instead of overflowing under the cover. */
+  .rel-cover-text .rel-slide-title {
+    font-size: clamp(28px, 4.2vw, 54px);
   }
 
   /* Sharp cover square — shows the full artwork, no crop */
