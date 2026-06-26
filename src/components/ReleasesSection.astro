@@ -692,18 +692,24 @@ const yearCountsMap: Record<string, number> = Object.fromEntries(
     bottom: clamp(34px, 4vw, 52px);
     display: flex;
     gap: 6px;
-    width: clamp(120px, 18vw, 190px);
+    width: clamp(140px, 18vw, 210px);
     z-index: 3;
+    box-sizing: border-box;
+    /* Dark translucent pill (same treatment as the arrows) so the white
+       segments stay visible on LIGHT photos too, not just dark ones. */
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.32);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
   }
 
   .rel-seg {
     flex: 1;
     height: 4px;
-    background: rgba(255, 255, 255, 0.45);
+    background: rgba(255, 255, 255, 0.4);
     border-radius: 2px;
     overflow: hidden;
-    /* keep the track readable over both light and dark photo corners */
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
   }
 
   .rel-seg-fill {
