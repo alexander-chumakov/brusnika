@@ -1,0 +1,399 @@
+---
+/**
+ * ReleasesSection.astro — «Дискография» releases carousel
+ *
+ * Replaces FeaturedAlbumSection. Ports the carousel from
+ * claude_design_releases/_x/var_carousel.dc.html lines 197–244.
+ *
+ * - 18 releases from src/data/releases.ts
+ * - Snap-scroll track with ← → arrow buttons + drag-to-scroll
+ * - «Неоднозначное» shows featured.jpg cover; all others use a
+ *   diagonal-striped placeholder tile (--rel-* theme tokens)
+ * - id="music" preserved so Nav «релизы» → #music still works
+ * - Uses project color and font CSS custom properties only (no raw
+ *   design-file token names, no Google Fonts)
+ */
+import { Image } from 'astro:assets';
+import featuredImg from '../assets/images/featured.jpg';
+import { releases } from '../data/releases.ts';
+---
+
+<section id="music" class="releases-section">
+  <!-- Header row -->
+  <div data-reveal class="rel-header">
+    <div>
+      <div class="rel-eyebrow">релизы</div>
+      <h2 class="rel-title">Дискография <span class="rel-title-span">2021 — сегодня</span></h2>
+    </div>
+    <div class="rel-header-right">
+      <a
+        href="https://open.spotify.com/artist/11epkfgLUMWmXsTbgfPu4B"
+        target="_blank"
+        rel="noopener"
+        class="rel-listen-all"
+      >слушать всё ↗</a>
+      <div class="rel-arrows">
+        <button id="rel-prev" aria-label="назад" class="rel-arrow">←</button>
+        <button id="rel-next" aria-label="вперёд" class="rel-arrow">→</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scroll track -->
+  <div data-reveal id="rel-track" class="rel-scroll">
+    {releases.map((r) => (
+      <div class="rel-card">
+        <a href={r.url} target="_blank" rel="noopener" draggable="false" class="rel-link">
+          <!-- Cover square -->
+          <div class="rel-cover">
+            {r.cover ? (
+              <>
+                <Image
+                  src={featuredImg}
+                  alt={`внимание брусника! — ${r.title}`}
+                  widths={[260, 520]}
+                  sizes="clamp(208px, 56vw, 260px)"
+                  format="webp"
+                  quality={85}
+                  loading="lazy"
+                  class="rel-cover-img"
+                />
+                <div class="rel-cover-gradient"></div>
+                <div class="rel-cover-label">{r.title}</div>
+              </>
+            ) : (
+              <>
+                <div class="rel-tile"></div>
+                <div class="rel-tile-overlay"></div>
+                <div class="rel-tile-center">
+                  <span class="rel-tile-title">{r.title}</span>
+                </div>
+                <span class="rel-tile-dot"></span>
+              </>
+            )}
+            {r.live && (
+              <span class="rel-live-badge">● live</span>
+            )}
+          </div>
+          <!-- Footer below cover -->
+          <div class="rel-footer">
+            <div class="rel-type-year">{r.type} · {r.year}</div>
+            <div class="rel-footer-title">{r.title}</div>
+            <div class="rel-meta">{r.meta}</div>
+          </div>
+        </a>
+      </div>
+    ))}
+  </div>
+</section>
+
+<script>
+  const track = document.getElementById('rel-track') as HTMLElement | null;
+  if (track) {
+    // Arrow buttons
+    const prev = document.getElementById('rel-prev');
+    const next = document.getElementById('rel-next');
+    const scroll = (dir: number) => {
+      track.scrollBy({ left: dir * Math.min(track.clientWidth * 0.85, 580), behavior: 'smooth' });
+    };
+    if (prev) prev.addEventListener('click', () => scroll(-1));
+    if (next) next.addEventListener('click', () => scroll(1));
+
+    // Drag-to-scroll
+    let dragging = false;
+    let startX = 0;
+    let scrollStart = 0;
+
+    track.addEventListener('pointerdown', (e: PointerEvent) => {
+      dragging = true;
+      startX = e.clientX;
+      scrollStart = track.scrollLeft;
+      track.style.cursor = 'grabbing';
+      track.setPointerCapture(e.pointerId);
+    });
+
+    track.addEventListener('pointermove', (e: PointerEvent) => {
+      if (!dragging) return;
+      track.scrollLeft = scrollStart - (e.clientX - startX);
+    });
+
+    track.addEventListener('pointerup', () => {
+      dragging = false;
+      track.style.cursor = 'grab';
+    });
+
+    track.addEventListener('pointerleave', () => {
+      dragging = false;
+      track.style.cursor = 'grab';
+    });
+  }
+</script>
+
+<style>
+  .releases-section {
+    position: relative;
+    z-index: 2;
+    padding: 120px 0 120px;
+    scroll-margin-top: 70px;
+    overflow: hidden;
+  }
+
+  /* Header */
+  .rel-header {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 24px;
+    margin-bottom: 46px;
+  }
+
+  .rel-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--color-accent-deep);
+    margin-bottom: 16px;
+  }
+
+  .rel-title {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(34px, 5.4vw, 64px);
+    line-height: 1;
+    margin: 0;
+    letter-spacing: 0.3px;
+    color: var(--color-text);
+  }
+
+  .rel-title-span {
+    color: var(--color-accent-deep);
+    font-style: italic;
+  }
+
+  .rel-header-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .rel-listen-all {
+    text-decoration: none;
+    color: var(--color-text-muted);
+    font-size: 14px;
+    border-bottom: 1px solid var(--color-border-strong);
+    padding-bottom: 3px;
+    transition: color 0.25s;
+  }
+
+  .rel-listen-all:hover {
+    color: var(--color-text);
+  }
+
+  .rel-arrows {
+    display: flex;
+    gap: 9px;
+  }
+
+  .rel-arrow {
+    all: unset;
+    cursor: pointer;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--color-border-strong);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text);
+    font-size: 18px;
+    transition: background 0.25s, border-color 0.25s;
+  }
+
+  .rel-arrow:hover {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: #000;
+  }
+
+  /* Scroll track */
+  .rel-scroll {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding: 6px 40px 30px;
+    scroll-padding-left: 40px;
+    cursor: grab;
+    /* Hide scrollbar visually but keep it functional */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .rel-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Card */
+  .rel-card {
+    flex: 0 0 auto;
+    width: clamp(208px, 56vw, 260px);
+    scroll-snap-align: start;
+  }
+
+  .rel-link {
+    text-decoration: none;
+    display: block;
+  }
+
+  /* Cover square */
+  .rel-cover {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    border-radius: 5px;
+    overflow: hidden;
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.34);
+  }
+
+  /* Cover image variant */
+  .rel-cover-img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 42%;
+  }
+
+  .rel-cover-gradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.62));
+  }
+
+  .rel-cover-label {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 20px;
+    font-family: var(--font-serif);
+    font-size: 26px;
+    line-height: 1.05;
+    color: #fff;
+  }
+
+  /* Placeholder tile variant */
+  .rel-tile {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      135deg,
+      var(--rel-a) 0 15px,
+      var(--rel-b) 15px 30px
+    );
+  }
+
+  .rel-tile-overlay {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(120% 90% at 18% 0%, rgba(243, 169, 189, 0.16), transparent 60%);
+  }
+
+  .rel-tile-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 22px;
+    text-align: center;
+  }
+
+  .rel-tile-title {
+    font-family: var(--font-serif);
+    font-size: clamp(20px, 2vw, 26px);
+    line-height: 1.12;
+    color: var(--rel-fg);
+    text-wrap: balance;
+  }
+
+  .rel-tile-dot {
+    position: absolute;
+    left: 14px;
+    top: 14px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    box-shadow: 0 0 10px rgba(243, 169, 189, 0.8);
+  }
+
+  /* Live badge */
+  .rel-live-badge {
+    position: absolute;
+    right: 12px;
+    top: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(6px);
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 5px 9px;
+    border-radius: 999px;
+    border: 1px solid rgba(243, 169, 189, 0.5);
+  }
+
+  /* Card footer */
+  .rel-footer {
+    padding-top: 15px;
+  }
+
+  .rel-type-year {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--color-accent-deep);
+    margin-bottom: 7px;
+  }
+
+  .rel-footer-title {
+    font-family: var(--font-serif);
+    font-size: 19px;
+    line-height: 1.15;
+    color: var(--color-text);
+  }
+
+  .rel-meta {
+    font-size: 13px;
+    color: var(--color-text-dim);
+    margin-top: 5px;
+    min-height: 16px;
+  }
+
+  /* Mobile */
+  @media (max-width: 860px) {
+    .releases-section {
+      padding: 80px 0 80px;
+    }
+
+    .rel-header {
+      padding: 0 20px;
+      margin-bottom: 32px;
+    }
+
+    .rel-scroll {
+      padding: 6px 20px 24px;
+      scroll-padding-left: 20px;
+    }
+  }
+</style>
