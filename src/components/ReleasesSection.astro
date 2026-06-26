@@ -704,6 +704,8 @@ const yearCountsMap: Record<string, number> = Object.fromEntries(
     background: rgba(255, 255, 255, 0.28);
     border-radius: 2px;
     overflow: hidden;
+    /* faint dark halo so the thin white bars read on any photo (design look kept) */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
   }
 
   .rel-seg-fill {
