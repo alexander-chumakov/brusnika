@@ -82,6 +82,11 @@
   --font-serif: 'Prata', serif;
   --font-sans: 'Golos Text', system-ui, sans-serif;
   --font-mono: ui-monospace, monospace;
+
+  /* Releases carousel — placeholder tile colours (night) */
+  --rel-a: #191919;
+  --rel-b: #0e0e0e;
+  --rel-fg: #efe9e0;
 }
 
 /* -------------------------------------------------------
@@ -122,6 +127,11 @@
   --color-bg-marquee: #e8e3da;
   --color-bg-sing: #eae5dc;
   --color-border-strong: rgba(35, 25, 22, 0.26);
+
+  /* Releases carousel — placeholder tile colours (day) */
+  --rel-a: #efe6d8;
+  --rel-b: #e6dccb;
+  --rel-fg: #6a5a48;
 }
 
 /* -------------------------------------------------------
