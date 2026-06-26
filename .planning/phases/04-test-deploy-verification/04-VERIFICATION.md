@@ -12,10 +12,10 @@
 | SC1 | Site is private (noindex + robots.txt) | FND-07 | ✅ | Meta `name="robots" content="noindex, nofollow"` in live HTML; `/robots.txt` returns HTTP 200 with `User-agent: *` / `Disallow: /` |
 | SC2 | Zero Google Fonts requests | FND-02 | ✅ | `fonts.googleapis.com` / `fonts.gstatic.com` count = 0 in live HTML; count = 0 in both linked CSS bundles (`/_astro/GallerySection.pe3E5Za-.css`, `/_astro/index.SY6LcFkL.css`); `@font-face` URLs all point to `/_astro/*.woff2` (self-hosted Prata + Golos Text) |
 | SC3 (server) | CDN audio is seekable (Accept-Ranges + 206) | AUD-05 | ✅ | `accept-ranges: bytes` header present; `Range: bytes=1000-2000` returns HTTP `206` with `content-range: bytes 1000-2000/675840` |
-| SC3 (device) | iOS Safari audio seek mid-track | AUD-05 | ⏳ | Needs real iPhone in Safari — instructions below |
+| SC3 (device) | iOS Safari audio seek mid-track | AUD-05 | ➖ N/A | Waived by band (2026-06-26): tracks are 20–30s excerpts, so mid-track scrubbing is not a real use case for v1. Server-side range support already verified ✅ (SC3 server). |
 | SC4 | All outbound links audited; `#` placeholders inventoried | LINK-01/02 | ✅ | 4 real links all 200; 9 `#` placeholders inventoried (see tracker below) |
 | SC5 (server) | Booking endpoint reachable; no token in client bundle | BOOK-02 | ✅ | POST `/api/book` with honeypot field returns HTTP `200 {"ok":true}` (no Telegram delivery); `api.telegram.org` and bot token variable count = 0 in HTML and all 3 JS bundles |
-| SC5 (receipt) | Booking form → Соня's Telegram delivers correctly | BOOK-02 | ⏳ | Needs real form submission + Соня to confirm receipt — instructions below |
+| SC5 (receipt) | Booking form → Соня's Telegram delivers correctly | BOOK-02 | ✅ | Band confirmed (2026-06-26): a live booking submission reaches the band's Telegram. Only the pass outcome is recorded — no submitted fields, token, or chat id. |
 
 ---
 
@@ -150,6 +150,8 @@ Share button present in the video (clips) section. Desktop fallbacks for Telegra
 
 ### SC3 — Перемотка аудио (проверяет Соня или кто-то с iPhone)
 
+> **Итог (2026-06-26): не проверяется — не требуется.** Треки в плеере — короткие фрагменты по 20–30 секунд, перемотка по середине для них смысла не имеет. Серверная часть (диапазонные запросы, Accept-Ranges + 206) уже подтверждена ✅. Проверка на устройстве снята с области v1 по решению группы.
+
 1. Открой https://vnimanie-brusnika.vercel.app на айфоне в Safari.
 2. Прокрути вниз до раздела «Музыка» и нажми «слушать» на любом треке.
 3. Когда трек начнёт играть, перемотай ползунок примерно на середину (50%).
@@ -157,6 +159,8 @@ Share button present in the video (clips) section. Desktop fallbacks for Telegra
 5. Если после перемотки трек начинает играть снова с начала — это ошибка, сообщи нам.
 
 ### SC5 — Получение заявки (проверяет Соня)
+
+> **Итог (2026-06-26): ✅ заявка доходит.** Группа подтвердила, что отправленная с сайта заявка приходит в Telegram. В документе зафиксирован только результат «прошло» — без введённых данных, токена и chat id.
 
 1. Открой https://vnimanie-brusnika.vercel.app на любом устройстве.
 2. Нажми кнопку «Записаться» (в навигации или в разделе «Пойте с нами»).
