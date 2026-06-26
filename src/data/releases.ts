@@ -5,9 +5,10 @@
  * All CTAs point to the Spotify artist page; per-release deep-links are
  * deferred until the band confirms canonical URLs (mirrors site.ts convention).
  *
- * 10 releases carry a photo; the other 9 render as themed placeholder tiles
- * in ReleasesSection. Images are imported as ESM assets so Astro's <Image>
- * component can process and optimise them at build time.
+ * 13 releases carry artwork (10 wide-photo slides + 3 designed-cover slides);
+ * the other 6 render as themed placeholder tiles in ReleasesSection.
+ * Images are imported as ESM assets so Astro's <Image> component can process
+ * and optimise them at build time.
  */
 
 import type { ImageMetadata } from 'astro';
@@ -21,6 +22,9 @@ import klubNadezhdImg from '../assets/images/klub-nadezhd.jpg';
 import razvlechenieImg from '../assets/images/razvlechenie.jpg';
 import gGuitarImg from '../assets/images/g-guitar.jpg';
 import neodnoznachnoeImg from '../assets/images/neodnoznachnoe.jpg';
+import kudaLetyatMysliImg from '../assets/images/kuda-letyat-mysli.png';
+import neaktualnoeImg from '../assets/images/neaktualnoe.jpg';
+import pariImg from '../assets/images/pari.jpg';
 
 export interface Release {
   year: string;
@@ -31,6 +35,7 @@ export interface Release {
   desc?: string;
   image?: ImageMetadata;
   imagePosition?: string;
+  cover?: boolean;
   url: string;
 }
 
@@ -131,6 +136,9 @@ export const releases: Release[] = [
     title: 'куда летят мысли?',
     eyebrow: 'remix · 2025',
     meta: 'remix · 2025',
+    desc: 'Ремикс-пак — новое прочтение трека.',
+    image: kudaLetyatMysliImg,
+    cover: true,
     url: SP,
   },
   // ── 2024 ────────────────────────────────────────────────
@@ -151,6 +159,9 @@ export const releases: Release[] = [
     title: 'неактуальное',
     eyebrow: 'EP · 2024',
     meta: 'EP · 29 января 2024',
+    desc: 'Мини-альбом тихих песен между большими релизами.',
+    image: neaktualnoeImg,
+    cover: true,
     url: SP,
   },
   {
@@ -178,6 +189,9 @@ export const releases: Release[] = [
     title: 'Пари',
     eyebrow: 'сингл · 2023',
     meta: 'сингл · 2023',
+    desc: 'Сингл 2023 года.',
+    image: pariImg,
+    cover: true,
     url: SP,
   },
   // ── 2022 ────────────────────────────────────────────────
