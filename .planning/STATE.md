@@ -124,6 +124,7 @@ None currently.
 | 260626-krg | Redo releases as hero slideshow with year selector (canonical design; supersedes 260626-j7a carousel) | 2026-06-26 | 2126035 | [260626-krg-redo-releases-section-as-hero-slideshow-](./quick/260626-krg-redo-releases-section-as-hero-slideshow-/) |
 | fast | Serve real berry favicon.ico + bump cache version (fixes stale Astro tab icon) | 2026-06-26 | 40e1439 | — (inline /gsd-fast) |
 | 260626-ld1 | Full 19-release discography (2021–2026) in releases section; year selector strictly filters by year | 2026-06-26 | b1cb058 | [260626-ld1-full-discography-in-releases-section-yea](./quick/260626-ld1-full-discography-in-releases-section-yea/) |
+| 260626-wil | Cover mode for designed square album covers (Куда летят мысли, Неактуальное, Пари) — full art on blurred bg | 2026-06-26 | eec27fa | [260626-wil-cover-mode-for-designed-square-album-cov](./quick/260626-wil-cover-mode-for-designed-square-album-cov/) |
 | fast | Add band photos for Доодури + Home Session Live releases | 2026-06-26 | 58f59c8 | — (inline /gsd-fast) |
 
 ### Todos
