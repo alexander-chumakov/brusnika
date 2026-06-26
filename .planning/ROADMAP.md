@@ -12,7 +12,7 @@
 - [x] **Phase 1: Foundation & Static Site** — Astro scaffold, self-hosted fonts, all static sections, shows data, real links, noindex gate, deployed to Vercel (completed 2026-06-24)
 - [x] **Phase 2: Media Islands** — Working audio player (CDN-backed), video player, photo lightbox gallery (completed 2026-06-24)
 - [x] **Phase 3: Sharing & Booking** — Social share button with mobile/desktop paths; booking form wired to Соня's Telegram bot (completed 2026-06-25)
-- [ ] **Phase 4: Pre-Launch Verification** — Noindex confirmed correct, no Google Fonts, iOS audio seekable, all links real, booking tested end-to-end, launch-time toggle documented
+- [x] **Phase 4: Pre-Launch Verification** — Noindex confirmed correct, no Google Fonts, iOS audio seekable, all links real, booking tested end-to-end, launch-time toggle documented (completed 2026-06-26)
 
 ---
 
@@ -135,7 +135,7 @@ Plans:
 
 **Deferred to a future Launch milestone (NOT v1):** flipping `NOINDEX` to `false` to go public, writing the band-facing launch procedure, and the zero-placeholder-links gate. These are launch actions, not test-deploy verification.
 
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 **Wave 1**
 
@@ -143,7 +143,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 — needs the live robots.txt + the verification doc to update)*
 
-- [ ] 04-02-PLAN.md — Two locked human checks: iPhone Safari audio-seek (SC3 device half) + live booking → band confirms Telegram receipt (SC5); record outcomes in the doc
+- [x] 04-02-PLAN.md — Two locked human checks: iPhone Safari audio-seek (SC3 device half) + live booking → band confirms Telegram receipt (SC5); record outcomes in the doc
 
 ---
 
@@ -155,7 +155,7 @@ Plans:
 | 2. Media Islands | 4/4 | Complete   | 2026-06-24 |
 | 3. Sharing & Booking | 2/2 | Complete   | 2026-06-25 |
 | 3.1 Day/Night Theme (inserted) | 0/? | Not planned | - |
-| 4. Test Deploy & Verification | 1/2 | In Progress|  |
+| 4. Test Deploy & Verification | 2/2 | Complete   | 2026-06-26 |
 
 ---
 
