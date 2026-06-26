@@ -5,15 +5,18 @@
  * All CTAs point to the Spotify artist page; per-release deep-links are
  * deferred until the band confirms canonical URLs (mirrors site.ts convention).
  *
- * 4 releases carry a photo (dooduri.jpg / home-session.jpg / g-guitar.jpg /
- * featured.jpg). The other 15 render as themed placeholder tiles in
- * ReleasesSection. Images are imported as ESM assets so Astro's <Image>
- * component can process and optimise them at build time.
+ * 7 releases carry a photo (dooduri / home-session / vesennee-tango /
+ * live-urban / vspomni-menya / g-guitar / featured). The other 12 render as
+ * themed placeholder tiles in ReleasesSection. Images are imported as ESM
+ * assets so Astro's <Image> component can process and optimise them at build time.
  */
 
 import type { ImageMetadata } from 'astro';
 import dooduriImg from '../assets/images/dooduri.jpg';
 import homeSessionImg from '../assets/images/home-session.jpg';
+import vesenneeTangoImg from '../assets/images/vesennee-tango.jpg';
+import liveUrbanImg from '../assets/images/live-urban.jpg';
+import vspomniMenyaImg from '../assets/images/vspomni-menya.jpg';
 import gGuitarImg from '../assets/images/g-guitar.jpg';
 import featuredImg from '../assets/images/featured.jpg';
 
@@ -50,6 +53,9 @@ export const releases: Release[] = [
     title: 'Весеннее танго',
     eyebrow: 'сингл · 2026',
     meta: 'кавер на Анну Герман',
+    desc: 'Воздушный весенний кавер на Анну Герман.',
+    image: vesenneeTangoImg,
+    imagePosition: 'center 30%',
     url: SP,
   },
   {
@@ -81,6 +87,9 @@ export const releases: Release[] = [
     title: 'Live Урбан 2024',
     eyebrow: 'live EP · 2025',
     meta: 'live EP · 14 марта 2025',
+    desc: 'Запись живого концерта — энергия зала «Урбан».',
+    image: liveUrbanImg,
+    imagePosition: 'center 30%',
     url: SP,
   },
   {
@@ -97,6 +106,9 @@ export const releases: Release[] = [
     title: 'Вспомни меня',
     eyebrow: 'сингл · 2025',
     meta: 'с YERKATT · 2025',
+    desc: 'Дуэт с YERKATT — о памяти и о том, что трудно отпустить.',
+    image: vspomniMenyaImg,
+    imagePosition: 'center 35%',
     url: SP,
   },
   {
