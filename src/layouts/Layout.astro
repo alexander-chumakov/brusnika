@@ -43,8 +43,10 @@ const noindex = import.meta.env.NOINDEX === 'true';
       name="description"
       content="внимание брусника! — камерный dream-pop проект. Негромкие песни о любви и о том, что трудно сказать вслух."
     />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2" />
-    <link rel="icon" type="image/svg+xml" sizes="any" href="/favicon.svg?v=2" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=3" />
+    <link rel="icon" type="image/svg+xml" sizes="any" href="/favicon.svg?v=3" />
+    <!-- .ico fallback for browsers that request /favicon.ico directly (overwrites the stale Astro icon cached from early scaffold) -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico?v=3" sizes="32x32" />
     <meta name="generator" content={Astro.generator} />
     {noindex && <meta name="robots" content="noindex, nofollow" />}
 
