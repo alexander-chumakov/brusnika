@@ -697,24 +697,24 @@ const yearCountsMap: Record<string, number> = Object.fromEntries(
     box-sizing: border-box;
     /* Dark translucent pill (same treatment as the arrows) so the white
        segments stay visible on LIGHT photos too, not just dark ones. */
-    padding: 8px 12px;
+    padding: 9px 13px;
     border-radius: 999px;
-    background: rgba(0, 0, 0, 0.32);
+    background: rgba(0, 0, 0, 0.45);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
   }
 
   .rel-seg {
     flex: 1;
-    height: 4px;
-    background: rgba(255, 255, 255, 0.4);
-    border-radius: 2px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.55);
+    border-radius: 3px;
     overflow: hidden;
   }
 
   .rel-seg-fill {
     height: 100%;
-    background: #fff;
+    background: #f3a9bd; /* brand pink — pops on any photo */
     width: 0%;
   }
 
