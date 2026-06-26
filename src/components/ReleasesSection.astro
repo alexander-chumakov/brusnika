@@ -601,7 +601,7 @@ const yearCountsMap: Record<string, number> = Object.fromEntries(
     flex-direction: column;
     padding: clamp(28px, 5vw, 60px);
     /* Bottom padding clears the progress-bar + arrows row */
-    padding-bottom: calc(clamp(34px, 4vw, 52px) + clamp(28px, 5vw, 48px) + 28px);
+    padding-bottom: clamp(52px, 5vw, 72px);
     max-width: 600px;
   }
 
@@ -792,7 +792,7 @@ const yearCountsMap: Record<string, number> = Object.fromEntries(
     height: 100%;
     padding: clamp(24px, 4vw, 56px);
     /* Extra bottom padding clears the progress-bar + arrows row */
-    padding-bottom: calc(clamp(34px, 4vw, 52px) + clamp(28px, 5vw, 48px) + 28px);
+    padding-bottom: clamp(52px, 5vw, 72px);
     max-width: 1180px;
     margin: 0 auto;
     width: 100%;
@@ -882,7 +882,7 @@ const yearCountsMap: Record<string, number> = Object.fromEntries(
       gap: clamp(16px, 4vw, 28px);
       padding: clamp(20px, 4vw, 36px);
       /* allow padding to expand on mobile so nothing overlaps the arrows */
-      padding-bottom: calc(clamp(34px, 4vw, 52px) + clamp(28px, 5vw, 48px) + 28px);
+      padding-bottom: clamp(52px, 5vw, 72px);
     }
 
     /* Cover square appears first (above text) */
