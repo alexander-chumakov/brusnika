@@ -698,10 +698,12 @@ const yearCountsMap: Record<string, number> = Object.fromEntries(
 
   .rel-seg {
     flex: 1;
-    height: 3px;
-    background: rgba(255, 255, 255, 0.28);
+    height: 4px;
+    background: rgba(255, 255, 255, 0.45);
     border-radius: 2px;
     overflow: hidden;
+    /* keep the track readable over both light and dark photo corners */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
   }
 
   .rel-seg-fill {
